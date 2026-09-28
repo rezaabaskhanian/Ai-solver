@@ -4,8 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go/option"
-
 	"mathmotion/go-api/internal/pkg/richerror"
 )
 
@@ -14,7 +12,7 @@ func TestRecognizeEquation_Success(t *testing.T) {
 	defer srv.Close()
 
 	repo := &fakeRepo{countProblems: 0}
-	client := NewClient("test-key", option.WithBaseURL(srv.URL))
+	client := newAnthropicTestClient(srv.URL)
 	svc := New(repo, client, 5)
 
 	problems, err := svc.RecognizeEquations(context.Background(), "user-1", false, "ZmFrZQ==", "image/jpeg")
@@ -31,7 +29,7 @@ func TestRecognizeEquation_QuotaExceededBlocksNonPremiumUser(t *testing.T) {
 	// didn't short-circuit first, this would fail with a connection
 	// error instead of the expected quota error.
 	repo := &fakeRepo{countProblems: 5}
-	client := NewClient("test-key", option.WithBaseURL("http://127.0.0.1:0"))
+	client := newAnthropicTestClient("http://127.0.0.1:0")
 	svc := New(repo, client, 5)
 
 	_, err := svc.RecognizeEquations(context.Background(), "user-1", false, "ZmFrZQ==", "image/jpeg")
@@ -53,7 +51,7 @@ func TestRecognizeEquation_PremiumUserBypassesQuota(t *testing.T) {
 	defer srv.Close()
 
 	repo := &fakeRepo{countProblems: 999}
-	client := NewClient("test-key", option.WithBaseURL(srv.URL))
+	client := newAnthropicTestClient(srv.URL)
 	svc := New(repo, client, 5)
 
 	_, err := svc.RecognizeEquations(context.Background(), "user-1", true, "ZmFrZQ==", "image/jpeg")
@@ -67,7 +65,7 @@ func TestRecognizeEquation_NotRecognizedMapsToInvalidKind(t *testing.T) {
 	defer srv.Close()
 
 	repo := &fakeRepo{}
-	client := NewClient("test-key", option.WithBaseURL(srv.URL))
+	client := newAnthropicTestClient(srv.URL)
 	svc := New(repo, client, 5)
 
 	_, err := svc.RecognizeEquations(context.Background(), "user-1", false, "ZmFrZQ==", "image/jpeg")

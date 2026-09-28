@@ -44,6 +44,15 @@
 - **این فقط زیرساخت سمت ریپوئه — خودِ سرور Xray (VPS، نصب xray-core، کلید Reality) هنوز راه‌اندازی
   نشده؛ کاربر قراره خودش انجامش بده.**
 
+### ۱.۶ پنل ادمین (مثل LingoFlow) + چند provider برای Vision
+- `backend/admin-panel/` (Next.js 14، همان ظاهر پنل LingoFlow). دو تب دارد: «هوش مصنوعی» و «پراکسی Xray».
+- بک‌اند: جدول `app_settings` (migration 004)، `internal/service/settings` (کش + fallback به env + refresh هر ۳۰ ثانیه)،
+  `GET/PUT /admin/settings`، `GET /admin/proxy/status`، و CORS برای پنل (`ADMIN_PANEL_ORIGINS`).
+- `internal/service/vision` حالا در هر درخواست `AI_PROVIDER` را می‌خواند: `anthropic` (SDK)،
+  `openrouter` یا `deepseek` (هر دو Chat Completions سازگار با OpenAI + تصویر به‌صورت data URL).
+- ورود پنل با توکن ثابت `ADMIN_TOKEN` است (`PROXY_ADMIN_TOKEN` قدیمی هم پذیرفته می‌شود).
+- **ریسک باز:** API رسمی DeepSeek ممکن است تصویر نپذیرد. برای vision، OpenRouter امن‌تر است.
+
 ---
 
 ## ۲. قدم‌های بعدی (به ترتیب منطقی)
@@ -52,6 +61,7 @@
 - [ ] `cd backend/go-api && go mod tidy` — چون `golang.org/x/net` دستی از indirect به direct
       منتقل شد (برای `outboundhttp`)، باید verify بشه.
 - [ ] `cd mobile/MathMotion && npm install` — برای `react-native-reanimated`.
+- [ ] `cd backend/admin-panel && npm install && npm run dev` و ست کردن `ADMIN_TOKEN` در `.env` بک‌اند.
 - [ ] اجرای `pytest` (math-engine)، `go test ./...` (go-api)، `tsc --noEmit`، `eslint`، `jest`
       (موبایل) — هیچ‌کدوم این چند پاس اجرا نشدن (تصمیم قبلی: تست/اجرا دست خود کاربره).
 

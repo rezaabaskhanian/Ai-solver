@@ -8,19 +8,19 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// Admin gates operator-only endpoints (currently just POST /admin/proxy)
+// Admin gates the operator-only /admin/* endpoints (settings, Xray proxy)
 // behind a static bearer token from config -- there's no real admin user
 // system in this MVP, unlike Device which resolves the mobile client's
 // device-scoped users. An empty token always rejects (fails closed): the
-// endpoint is unusable rather than unlocked if PROXY_ADMIN_TOKEN was
-// never configured.
+// endpoints are unusable rather than unlocked if ADMIN_TOKEN was never
+// configured.
 func Admin(token string) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			if token == "" {
 				return c.JSON(http.StatusServiceUnavailable, map[string]string{
 					"error":   "admin_disabled",
-					"message": "The admin proxy endpoint is not configured.",
+					"message": "Admin endpoints are not configured (ADMIN_TOKEN is unset).",
 				})
 			}
 

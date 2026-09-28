@@ -1,0 +1,13 @@
+// Package postgressettings implements [settings.Repository] on top of the
+// app_settings table (migration 004).
+package postgressettings
+
+import "github.com/jackc/pgx/v5/pgxpool"
+
+type DB struct {
+	conn *pgxpool.Pool
+}
+
+func New(conn *pgxpool.Pool) DB {
+	return DB{conn: conn}
+}

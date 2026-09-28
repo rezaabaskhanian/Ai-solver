@@ -12,7 +12,7 @@
 |---|---|
 | **Type Problem** — تایپ دستی معادله با پیش‌نمایش زنده‌ی parse (debounce) | ✅ ساخته شد |
 | **Scan Problem** — گرفتن عکس از مسئله با دوربین | ✅ ساخته شد (Android) |
-| تشخیص معادله از روی عکس (OCR/Vision با Claude، سمت بک‌اند) | ✅ ساخته شد |
+| تشخیص معادله از روی عکس (OCR/Vision سمت بک‌اند — Claude، OpenRouter یا DeepSeek، قابل تعویض از پنل ادمین) | ✅ ساخته شد |
 | **اسکن چندمسئله‌ای** — تشخیص همه‌ی مسائل یک عکس + تأیید کاربر قبل از حل | ✅ ساخته شد |
 | اصلاح خطاهای رایج ورودی/OCR با confidence | ✅ ساخته شد — حدس حروف OCR‌ (`S→5` و مشابه) فقط وقتی parse مستقیم شکست بخورد، با confidence پایین (`backend/BACKEND.md` بخش ۷.۵) |
 | نمایش خطای «مسئله قابل تشخیص نیست» با راهنمایی به ورود دستی | ✅ ساخته شد |
@@ -77,7 +77,8 @@
 | تست خودکار موبایل فراتر از smoke test | ✅ ساخته شد — ۵ فایل jest جدید روی منطق خالص (`mobile/MathMotion/APP.md` بخش ۱۲) |
 | پشتیبانی iOS برای Scan/AR | ❌ عمداً خارج از اسکوپ فعلی (فقط Android) |
 | تست دستی واقعی Scan → AR روی گوشی | ❌ نیاز به دستگاه واقعی |
-| پراکسی خروجی Xray (VLESS+Reality) برای فراخوانی‌های Claude Vision — `POST /admin/proxy` | ✅ ساخته شد — راه‌اندازی خودِ سرور Xray دست کاربره، جزئیات در `backend/docs/xray-proxy-setup.md` |
+| پراکسی خروجی Xray (VLESS+Reality) برای فراخوانی‌های Vision — `POST /admin/proxy` | ✅ ساخته شد — راه‌اندازی خودِ سرور Xray دست کاربره، جزئیات در `backend/docs/xray-proxy-setup.md` |
+| **پنل ادمین** (Next.js، مثل LingoFlow) — انتخاب provider (Claude / OpenRouter / DeepSeek) + کلید و مدل، و اتصال/تست Xray بدون ری‌استارت | ✅ ساخته شد — `backend/admin-panel/README.md` (نیاز به `npm install`) |
 
 ---
 

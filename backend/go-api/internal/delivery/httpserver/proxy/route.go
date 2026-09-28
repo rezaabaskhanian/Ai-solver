@@ -2,13 +2,12 @@ package proxyhandler
 
 import "github.com/labstack/echo/v4"
 
-// SetProxyRoutes registers the admin-only outbound-proxy control
-// endpoint. Deliberately outside the /api/v1 group used by
-// SetProblemRoutes/SetBillingRoutes/SetVisionRoutes: this is an operator
-// tool (see docs/xray-proxy-setup.md), not part of the mobile client's
-// API surface, and is gated by middleware.Admin instead of device
+// SetProxyRoutes registers the outbound-proxy controls on the admin group
+// (see httpserver.Server): an operator tool (docs/xray-proxy-setup.md and
+// the admin panel's «پراکسی Xray» tab), not part of the mobile client's
+// API surface, so it's gated by middleware.Admin instead of device
 // resolution + rate limiting.
-func (h Handler) SetProxyRoutes(e *echo.Echo, mws ...echo.MiddlewareFunc) {
-	group := e.Group("/admin/proxy", mws...)
-	group.POST("", h.Connect)
+func (h Handler) SetProxyRoutes(admin *echo.Group) {
+	admin.POST("/proxy", h.Connect)
+	admin.GET("/proxy/status", h.Status)
 }

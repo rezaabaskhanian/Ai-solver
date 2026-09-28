@@ -1,6 +1,7 @@
 package proxyhandler
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
@@ -18,10 +19,19 @@ import (
 // out here Connect's only real logic is request parsing and error-shape
 // mapping, which none of these cases need real network access for.
 
+type memLinkStore map[string]string
+
+func (m memLinkStore) Get(key string) string { return m[key] }
+
+func (m memLinkStore) Set(_ context.Context, key, value string) error {
+	m[key] = value
+	return nil
+}
+
 func newTestHandler(t *testing.T) Handler {
 	t.Helper()
 	configPath := filepath.Join(t.TempDir(), "config.json")
-	return New(proxyservice.New(configPath, ""))
+	return New(proxyservice.New(configPath, ""), memLinkStore{})
 }
 
 func TestConnect_InvalidJSONBodyReturns400(t *testing.T) {

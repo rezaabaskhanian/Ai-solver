@@ -43,7 +43,7 @@ xray sidecar (deploy/xray) ──VLESS+Reality──► سرور Xray خودت (
 | متغیر | پیش‌فرض | توضیح |
 |---|---|---|
 | `AI_OUTBOUND_PROXY` | خالی (مستقیم dial می‌کنه) | باید `socks5://xray:1080` باشه تا فراخوانی‌های Claude Vision از سایدکار رد بشن |
-| `PROXY_ADMIN_TOKEN` | خالی (اندپوینت غیرفعال، همیشه `503`) | Bearer token لازم برای `POST /admin/proxy` |
+| `ADMIN_TOKEN` (یا نام قدیمی `PROXY_ADMIN_TOKEN`) | خالی (اندپوینت غیرفعال، همیشه `503`) | Bearer token لازم برای `POST /admin/proxy` و بقیه‌ی `/admin/*`. همین کار از تب «پراکسی Xray» در پنل ادمین (`backend/admin-panel`) هم انجام می‌شود |
 | `XRAY_CONFIG_PATH` | `/etc/xray/config.json` | مسیر فایل کانفیگی که هم go-api می‌نویسه هم سایدکار می‌خونه (باید روی یک volume مشترک باشن) |
 
 ## استفاده — `POST /admin/proxy`
@@ -54,7 +54,7 @@ API موبایل نیست، فقط یک ابزار عملیاتی برای اپ�
 
 ```bash
 curl -X POST https://<your-host>/admin/proxy \
-  -H "Authorization: Bearer $PROXY_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "vless_link": "vless://<uuid>@<server-ip>:443?security=reality&sni=www.microsoft.com&fp=chrome&pbk=<public-key>&sid=&type=tcp&flow=xtls-rprx-vision"

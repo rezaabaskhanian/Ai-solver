@@ -1,6 +1,27 @@
+# ============================================================
+# MathMotion (Ai-solver) — production, on the same VPS as LingoFlow.
+# Same setup as Shadowing-backend/docker-compose.prod.yaml: Arvan handles
+# SSL, the aramina project's Traefik only routes by Host() on the
+# "web" entrypoint. Only go-api and the admin panel join Traefik's shared
+# network; postgres, math-engine and xray stay on this project's own
+# private network.
+#
+# Every service name is prefixed with "mathmotion-" on purpose: LingoFlow
+# already has services called "postgres"/"xray"/"backend"/"admin" on the
+# shared aramina_net, and Docker DNS would resolve a bare "postgres" from
+# go-api (which sits on both networks) to either project's database.
+#
+# No host ports are published — everything goes through Traefik.
+#
+#   cp .env.prod.example .env    # fill it in
+#   docker compose -f docker-compose.prod.yaml up -d --build
+# ============================================================
+
 services:
-  postgres:
+  mathmotion-postgres:
     image: postgres:16-alpine
+    container_name: mathmotion_postgres_prod
+    restart: unless-stopped
     environment:
       POSTGRES_USER: ${DB_USERNAME:-mathmotion}
       POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
@@ -8,67 +29,120 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-mathmotion}"]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-mathmotion} -d ${DB_NAME:-mathmotion}"]
+      interval: 10s
       timeout: 5s
       retries: 5
-    restart: unless-stopped
+    mem_limit: 512m
+    networks:
+      - internal
 
-  math-engine:
+  mathmotion-math-engine:
     build: ./math-engine
+    container_name: mathmotion_math_engine_prod
     restart: unless-stopped
+    # SymPy can spike CPU on a hard input — capped so it can't starve
+    # LingoFlow's whisper/backend on the shared box.
+    cpus: 1.0
+    mem_limit: 768m
+    networks:
+      - internal
 
   # Client-side sidecar for go-api's outbound AI calls when this server's
-  # own IP is blocked by a provider — see docs/xray-proxy-setup.md.
-  # Starts as a direct passthrough (deploy/xray/watch.sh's placeholder)
-  # until an operator configures a real VLESS+Reality server via
-  # POST /admin/proxy.
-  xray:
+  # own IP is blocked by a provider — see docs/xray-proxy-setup.md. Starts
+  # as a direct passthrough until a vless link is set from the admin
+  # panel's «پراکسی Xray» tab (the same link LingoFlow uses works here too).
+  mathmotion-xray:
     build: ./deploy/xray
+    container_name: mathmotion_xray_prod
+    restart: unless-stopped
     volumes:
       - xray-config:/etc/xray
-    restart: unless-stopped
+    mem_limit: 128m
+    networks:
+      - internal
 
-  go-api:
+  mathmotion-api:
     build: ./go-api
+    container_name: mathmotion_api_prod
+    restart: unless-stopped
+    depends_on:
+      mathmotion-postgres:
+        condition: service_healthy
+      mathmotion-math-engine:
+        condition: service_started
+      mathmotion-xray:
+        condition: service_started
     environment:
       ENV: production
+      RUN_MIGRATIONS: "true"
       PORT: "8080"
-      DB_HOST: postgres
+      DB_HOST: mathmotion-postgres
       DB_PORT: "5432"
       DB_USERNAME: ${DB_USERNAME:-mathmotion}
       DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
       DB_NAME: ${DB_NAME:-mathmotion}
-      MATH_ENGINE_URL: http://math-engine:8000
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:?set ANTHROPIC_API_KEY}
+      MATH_ENGINE_URL: http://mathmotion-math-engine:8000
+      # AI provider keys can also be set (and changed later) from the admin
+      # panel's «هوش مصنوعی» tab — values saved there override these.
+      AI_PROVIDER: ${AI_PROVIDER:-anthropic}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
       BAZAAR_PACKAGE_NAME: ${BAZAAR_PACKAGE_NAME:-com.mathmotion}
       BAZAAR_PRODUCT_ID: ${BAZAAR_PRODUCT_ID:-mathmotion_premium_unlock}
       BAZAAR_CLIENT_ID: ${BAZAAR_CLIENT_ID:-}
       BAZAAR_CLIENT_SECRET: ${BAZAAR_CLIENT_SECRET:-}
       BAZAAR_REFRESH_TOKEN: ${BAZAAR_REFRESH_TOKEN:-}
       FREE_SOLVE_LIMIT: ${FREE_SOLVE_LIMIT:-5}
-      # Claude Vision calls route through the xray sidecar's local SOCKS5
-      # inbound instead of dialing Anthropic directly — see
-      # internal/pkg/outboundhttp and docs/xray-proxy-setup.md. Safe to
-      # leave set even before /admin/proxy has ever been called: the
-      # sidecar's placeholder config forwards everything straight
-      # through, so this is a no-op until it's actually needed.
-      AI_OUTBOUND_PROXY: socks5://xray:1080
-      PROXY_ADMIN_TOKEN: ${PROXY_ADMIN_TOKEN:?set PROXY_ADMIN_TOKEN}
+      # All AI calls leave through the xray sidecar (a no-op passthrough
+      # until a vless link is set) — see internal/pkg/outboundhttp.
+      AI_OUTBOUND_PROXY: socks5://mathmotion-xray:1080
       XRAY_CONFIG_PATH: /etc/xray/config.json
+      # Bearer token the admin panel logs in with (every /admin/* endpoint).
+      ADMIN_TOKEN: ${ADMIN_TOKEN:?set ADMIN_TOKEN}
+      # The browser sees the panel over https (Arvan terminates SSL).
+      ADMIN_PANEL_ORIGINS: https://${ADMIN_HOST:?set ADMIN_HOST}
     volumes:
       - xray-config:/etc/xray
-    ports:
-      - "8080:8080"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      math-engine:
-        condition: service_started
-      xray:
-        condition: service_started
+    mem_limit: 256m
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mathmotion-api.rule=Host(`${API_HOST:?set API_HOST}`)"
+      - "traefik.http.routers.mathmotion-api.entrypoints=web"
+      - "traefik.http.services.mathmotion-api.loadbalancer.server.port=8080"
+      - "traefik.docker.network=arama_aramina_net"
+    networks:
+      - internal
+      - aramina_net
+
+  # Admin panel (Next.js). NEXT_PUBLIC_API_URL is baked in at build time,
+  # so it's the public https API address the operator's browser uses.
+  mathmotion-admin:
+    build:
+      context: ./admin-panel
+      args:
+        NEXT_PUBLIC_API_URL: https://${API_HOST:?set API_HOST}
+    container_name: mathmotion_admin_prod
     restart: unless-stopped
+    depends_on:
+      - mathmotion-api
+    mem_limit: 256m
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mathmotion-admin.rule=Host(`${ADMIN_HOST:?set ADMIN_HOST}`)"
+      - "traefik.http.routers.mathmotion-admin.entrypoints=web"
+      - "traefik.http.services.mathmotion-admin.loadbalancer.server.port=3000"
+      - "traefik.docker.network=arama_aramina_net"
+    networks:
+      - aramina_net
 
 volumes:
   pgdata:
   xray-config:
+
+networks:
+  internal:
+  aramina_net:
+    external: true
+    name: arama_aramina_net

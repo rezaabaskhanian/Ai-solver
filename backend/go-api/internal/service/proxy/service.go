@@ -46,7 +46,12 @@ func New(configPath, proxyURL string) Service {
 type ConnectResult struct {
 	Connected bool   `json:"connected"`
 	IP        string `json:"ip,omitempty"`
+	Country   string `json:"country,omitempty"`
+	Org       string `json:"org,omitempty"`
 	Error     string `json:"error,omitempty"`
+	// ViaProxy is false when AI_OUTBOUND_PROXY is unset: the check then
+	// dials directly, so IP is this server's own address, not the tunnel's.
+	ViaProxy bool `json:"via_proxy"`
 }
 
 // Connect parses vlessLink, writes it as the sidecar's Xray config, waits
@@ -87,7 +92,20 @@ func (s Service) writeConfig(parsed ParsedVless) error {
 	return nil
 }
 
+// Status runs the same connectivity check Connect ends with, without
+// touching the Xray config — backs GET /admin/proxy/status, so the admin
+// panel can show whether AI traffic currently leaves through the tunnel.
+func (s Service) Status(ctx context.Context) ConnectResult {
+	return s.testConnectivity(ctx)
+}
+
 func (s Service) testConnectivity(ctx context.Context) ConnectResult {
+	result := s.checkConnectivity(ctx)
+	result.ViaProxy = s.proxyURL != ""
+	return result
+}
+
+func (s Service) checkConnectivity(ctx context.Context) ConnectResult {
 	client, err := outboundhttp.New(s.proxyURL)
 	if err != nil {
 		return ConnectResult{Connected: false, Error: fmt.Sprintf("building proxied http client: %v", err)}
@@ -116,11 +134,13 @@ func (s Service) testConnectivity(ctx context.Context) ConnectResult {
 	}
 
 	var info struct {
-		IP string `json:"ip"`
+		IP      string `json:"ip"`
+		Country string `json:"country"`
+		Org     string `json:"org"`
 	}
 	if err := json.Unmarshal(body, &info); err != nil {
 		return ConnectResult{Connected: false, Error: "could not parse connectivity check response"}
 	}
 
-	return ConnectResult{Connected: true, IP: info.IP}
+	return ConnectResult{Connected: true, IP: info.IP, Country: info.Country, Org: info.Org}
 }

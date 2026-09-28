@@ -2,12 +2,11 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"log"
 	"os"
 	"strconv"
 	"strings"
-
-	"github.com/anthropics/anthropic-sdk-go/option"
 
 	"mathmotion/go-api/internal/config"
 	"mathmotion/go-api/internal/delivery/httpserver"
@@ -16,10 +15,12 @@ import (
 	"mathmotion/go-api/internal/repository/postgres"
 	postgresbilling "mathmotion/go-api/internal/repository/postgres/billing"
 	postgresproblem "mathmotion/go-api/internal/repository/postgres/problem"
+	postgressettings "mathmotion/go-api/internal/repository/postgres/settings"
 	postgresuser "mathmotion/go-api/internal/repository/postgres/user"
 	billingservice "mathmotion/go-api/internal/service/billing"
 	problemservice "mathmotion/go-api/internal/service/problem"
 	proxyservice "mathmotion/go-api/internal/service/proxy"
+	settingsservice "mathmotion/go-api/internal/service/settings"
 	userservice "mathmotion/go-api/internal/service/user"
 	visionservice "mathmotion/go-api/internal/service/vision"
 )
@@ -69,6 +70,17 @@ func getEnvInt(key string, fallback int) int {
 	return n
 }
 
+// splitCSV turns "a, b,,c" into [a b c].
+func splitCSV(v string) []string {
+	var out []string
+	for _, part := range strings.Split(v, ",") {
+		if part = strings.TrimSpace(part); part != "" {
+			out = append(out, part)
+		}
+	}
+	return out
+}
+
 func main() {
 	loadEnv(".env")
 
@@ -91,15 +103,18 @@ func main() {
 			RefreshToken:   getEnv("BAZAAR_REFRESH_TOKEN", ""),
 			FreeSolveLimit: getEnvInt("FREE_SOLVE_LIMIT", 5),
 		},
-		Vision: config.Vision{
-			AnthropicAPIKey: getEnv("ANTHROPIC_API_KEY", ""),
-		},
 		Outbound: config.Outbound{
 			ProxyURL: getEnv("AI_OUTBOUND_PROXY", ""),
 		},
 		Proxy: config.Proxy{
-			AdminToken:     getEnv("PROXY_ADMIN_TOKEN", ""),
 			XrayConfigPath: getEnv("XRAY_CONFIG_PATH", "/etc/xray/config.json"),
+		},
+		Admin: config.Admin{
+			// PROXY_ADMIN_TOKEN is the name this token had before the admin
+			// panel existed (it only guarded POST /admin/proxy) — still
+			// honored so existing deployments keep working.
+			Token:        getEnv("ADMIN_TOKEN", getEnv("PROXY_ADMIN_TOKEN", "")),
+			PanelOrigins: splitCSV(getEnv("ADMIN_PANEL_ORIGINS", "http://localhost:3000")),
 		},
 	}
 
@@ -109,18 +124,16 @@ func main() {
 			"these are configured from Cafe Bazaar's developer panel (see mobile/MathMotion/APP.md)")
 	}
 
-	if cfg.Vision.AnthropicAPIKey == "" {
-		log.Println("warning: ANTHROPIC_API_KEY not set — POST /api/v1/problems/recognize " +
-			"(camera-based Scan Problem) will fail until this is configured")
+	if cfg.Admin.Token == "" {
+		log.Println("warning: ADMIN_TOKEN not set — the admin panel and every /admin/* endpoint " +
+			"will return 503 until it's configured (see backend/admin-panel/README.md)")
 	}
 
-	if cfg.Proxy.AdminToken == "" {
-		log.Println("warning: PROXY_ADMIN_TOKEN not set — POST /admin/proxy will always return 503 " +
-			"until it's configured (see docs/xray-proxy-setup.md)")
-	}
-
+	// Production skips migrations by default (an operator may prefer to run
+	// them by hand); RUN_MIGRATIONS=true opts in — docker-compose.prod.yaml
+	// sets it, since sql-migrate only applies what hasn't run yet.
 	dbMigrator := migrator.New(cfg.Postgres)
-	if os.Getenv("ENV") != "production" {
+	if os.Getenv("ENV") != "production" || os.Getenv("RUN_MIGRATIONS") == "true" {
 		dbMigrator.Up()
 	}
 
@@ -129,6 +142,15 @@ func main() {
 	userRepo := postgresuser.New(db.Pool)
 	problemRepo := postgresproblem.New(db.Pool)
 	billingRepo := postgresbilling.New(db.Pool)
+	settingsRepo := postgressettings.New(db.Pool)
+
+	// AI provider/keys/models and the last Xray link are editable from the
+	// admin panel at runtime; anything not saved there falls back to .env.
+	settingsSvc := settingsservice.New(settingsRepo)
+	if err := settingsSvc.LoadAll(context.Background()); err != nil {
+		log.Printf("warning: loading app_settings failed, using .env values only until the next refresh: %v", err)
+	}
+	go settingsSvc.StartAutoRefresh(context.Background(), 0)
 
 	userSvc := userservice.New(userRepo)
 	mathEngine := problemservice.NewMathEngineClient(cfg.MathEngineURL)
@@ -136,18 +158,24 @@ func main() {
 	bazaarClient := billingservice.NewBazaarClient(cfg.Billing.ClientID, cfg.Billing.ClientSecret, cfg.Billing.RefreshToken)
 	billingSvc := billingservice.New(billingRepo, bazaarClient, cfg.Billing.PackageName, cfg.Billing.ProductID)
 
-	// Claude Vision calls go through internal/pkg/outboundhttp so a
-	// server whose IP the provider blocks can route through the Xray
-	// sidecar (see docs/xray-proxy-setup.md) just by setting
-	// AI_OUTBOUND_PROXY — nothing else about visionservice changes.
+	// Vision calls (whichever provider AI_PROVIDER picks) go through
+	// internal/pkg/outboundhttp so a server whose IP the provider blocks
+	// can route through the Xray sidecar (see docs/xray-proxy-setup.md)
+	// just by setting AI_OUTBOUND_PROXY — nothing else about
+	// visionservice changes.
 	outboundClient, err := outboundhttp.New(cfg.Outbound.ProxyURL)
 	if err != nil {
 		log.Fatalf("building outbound http client: %v", err)
 	}
-	visionClient := visionservice.NewClient(cfg.Vision.AnthropicAPIKey, option.WithHTTPClient(outboundClient))
+	visionClient := visionservice.NewClient(settingsSvc, outboundClient)
 	visionSvc := visionservice.New(problemRepo, visionClient, cfg.Billing.FreeSolveLimit)
+	if !visionClient.Enabled() {
+		log.Printf("warning: no API key for AI provider %q — POST /api/v1/problems/recognize "+
+			"(camera-based Scan Problem) will fail until one is set from the admin panel or .env",
+			visionClient.ActiveProvider())
+	}
 
 	proxySvc := proxyservice.New(cfg.Proxy.XrayConfigPath, cfg.Outbound.ProxyURL)
 
-	httpserver.New(cfg, userSvc, problemSvc, billingSvc, visionSvc, proxySvc).Server()
+	httpserver.New(cfg, userSvc, problemSvc, billingSvc, visionSvc, visionClient, proxySvc, settingsSvc).Server()
 }

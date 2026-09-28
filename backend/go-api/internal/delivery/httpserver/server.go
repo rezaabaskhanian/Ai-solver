@@ -11,23 +11,26 @@ import (
 	billinghandler "mathmotion/go-api/internal/delivery/httpserver/billing"
 	problemhandler "mathmotion/go-api/internal/delivery/httpserver/problem"
 	proxyhandler "mathmotion/go-api/internal/delivery/httpserver/proxy"
+	settingshandler "mathmotion/go-api/internal/delivery/httpserver/settings"
 	visionhandler "mathmotion/go-api/internal/delivery/httpserver/vision"
 	"mathmotion/go-api/internal/delivery/middleware"
 	billingservice "mathmotion/go-api/internal/service/billing"
 	problemservice "mathmotion/go-api/internal/service/problem"
 	proxyservice "mathmotion/go-api/internal/service/proxy"
+	settingsservice "mathmotion/go-api/internal/service/settings"
 	userservice "mathmotion/go-api/internal/service/user"
 	visionservice "mathmotion/go-api/internal/service/vision"
 )
 
 type Service struct {
-	cfg            config.Config
-	problemHandler problemhandler.Handler
-	billingHandler billinghandler.Handler
-	visionHandler  visionhandler.Handler
-	proxyHandler   proxyhandler.Handler
-	userSvc        userservice.Service
-	rateLimiter    *middleware.RateLimiter
+	cfg             config.Config
+	problemHandler  problemhandler.Handler
+	billingHandler  billinghandler.Handler
+	visionHandler   visionhandler.Handler
+	proxyHandler    proxyhandler.Handler
+	settingsHandler settingshandler.Handler
+	userSvc         userservice.Service
+	rateLimiter     *middleware.RateLimiter
 }
 
 func New(
@@ -36,16 +39,19 @@ func New(
 	problemSvc problemservice.Service,
 	billingSvc billingservice.Service,
 	visionSvc visionservice.Service,
+	visionClient *visionservice.Client,
 	proxySvc proxyservice.Service,
+	settingsSvc *settingsservice.Service,
 ) Service {
 	return Service{
-		cfg:            cfg,
-		problemHandler: problemhandler.New(problemSvc),
-		billingHandler: billinghandler.New(billingSvc),
-		visionHandler:  visionhandler.New(visionSvc),
-		proxyHandler:   proxyhandler.New(proxySvc),
-		userSvc:        userSvc,
-		rateLimiter:    middleware.NewRateLimiter(cfg.RateLimit.RPS, cfg.RateLimit.Burst),
+		cfg:             cfg,
+		problemHandler:  problemhandler.New(problemSvc),
+		billingHandler:  billinghandler.New(billingSvc),
+		visionHandler:   visionhandler.New(visionSvc),
+		proxyHandler:    proxyhandler.New(proxySvc, settingsSvc),
+		settingsHandler: settingshandler.New(settingsSvc, visionClient),
+		userSvc:         userSvc,
+		rateLimiter:     middleware.NewRateLimiter(cfg.RateLimit.RPS, cfg.RateLimit.Burst),
 	}
 }
 
@@ -54,6 +60,15 @@ func (s Service) Server() {
 
 	e.Use(echomw.Logger())
 	e.Use(echomw.Recover())
+	// Only the admin panel (a browser app on another origin) needs CORS;
+	// the mobile client sends no Origin header, so this doesn't affect it.
+	if len(s.cfg.Admin.PanelOrigins) > 0 {
+		e.Use(echomw.CORSWithConfig(echomw.CORSConfig{
+			AllowOrigins: s.cfg.Admin.PanelOrigins,
+			AllowMethods: []string{http.MethodGet, http.MethodPost, http.MethodPut},
+			AllowHeaders: []string{echo.HeaderAuthorization, echo.HeaderContentType},
+		}))
+	}
 
 	e.GET("/health", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{"status": "ok"})
@@ -66,9 +81,11 @@ func (s Service) Server() {
 	s.billingHandler.SetBillingRoutes(e, s.rateLimiter.Middleware, middleware.Device(s.userSvc))
 	s.visionHandler.SetVisionRoutes(e, s.rateLimiter.Middleware, middleware.Device(s.userSvc))
 
-	// Operator-only, no device resolution or rate limiting — gated by a
-	// static bearer token instead (see middleware.Admin).
-	s.proxyHandler.SetProxyRoutes(e, middleware.Admin(s.cfg.Proxy.AdminToken))
+	// Operator-only (the admin panel), no device resolution or rate
+	// limiting — gated by a static bearer token instead (see middleware.Admin).
+	admin := e.Group("/admin", middleware.Admin(s.cfg.Admin.Token))
+	s.proxyHandler.SetProxyRoutes(admin)
+	s.settingsHandler.SetSettingsRoutes(admin)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", s.cfg.HttpServer.Port)))
 }

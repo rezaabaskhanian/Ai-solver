@@ -25,17 +25,8 @@ type Billing struct {
 	FreeSolveLimit int
 }
 
-// Vision configures the camera-based "Scan Problem" flow
-// (internal/service/vision): a vision-capable Claude model reads a
-// photo of a handwritten/printed equation and returns it as plain
-// text — it never computes or verifies an answer (PRD section 38);
-// the recognized text is handed to the existing Solve flow unchanged.
-type Vision struct {
-	AnthropicAPIKey string
-}
-
 // Outbound configures how this server's outbound calls to third-party AI
-// APIs (currently just Claude Vision) reach the internet
+// APIs (the Scan Problem vision provider — Claude, OpenRouter or DeepSeek) reach the internet
 // (internal/pkg/outboundhttp). Empty ProxyURL means dial directly — the
 // default, for a server whose IP the provider doesn't block. When it
 // does, ProxyURL points at the local Xray sidecar's SOCKS5 inbound (e.g.
@@ -50,11 +41,20 @@ type Outbound struct {
 // vless:// (VLESS+Reality) link and have the Xray sidecar reconfigure
 // itself without a redeploy.
 type Proxy struct {
-	AdminToken string
 	// XrayConfigPath is where the sidecar's config.json lives on the
 	// volume this container shares with it (deploy/xray/watch.sh reads
 	// the same path from the other side).
 	XrayConfigPath string
+}
+
+// Admin configures the /admin/* endpoints the admin panel
+// (backend/admin-panel) calls. There's no admin user system in this MVP:
+// Token is a static bearer token the operator types into the panel's
+// login page (see middleware.Admin). PanelOrigins are the browser origins
+// allowed to call the API cross-origin (CORS), e.g. the panel's own URL.
+type Admin struct {
+	Token        string
+	PanelOrigins []string
 }
 
 type Config struct {
@@ -63,7 +63,7 @@ type Config struct {
 	HttpServer    HttpServer
 	RateLimit     RateLimit
 	Billing       Billing
-	Vision        Vision
 	Outbound      Outbound
 	Proxy         Proxy
+	Admin         Admin
 }
