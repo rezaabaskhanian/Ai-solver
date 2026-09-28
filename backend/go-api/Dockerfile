@@ -1,11 +1,20 @@
-FROM golang:1.24-alpine AS build
+# Base images match LingoFlow's (already cached on the shared aramina
+# server, where Docker Hub pulls are very slow).
+FROM golang:1.25-alpine AS build
+
+# proxy.golang.org / sum.golang.org often return 403 to the (Iranian)
+# server's IP, and the Xray sidecar only covers go-api at runtime, not
+# this build step — so use the goproxy.cn mirror, same as LingoFlow.
+ENV GOPROXY=https://goproxy.cn,direct
+ENV GOSUMDB=sum.golang.google.cn
+
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 go build -o /out/api ./cmd/api
 
-FROM alpine:3.20
+FROM alpine:latest
 RUN apk add --no-cache ca-certificates
 WORKDIR /app
 COPY --from=build /out/api /app/api
