@@ -145,5 +145,66 @@
     "androidOnly": "Premium purchases are only available on Android for now.",
     "bazaarNotInstalled": "Install the Cafe Bazaar app to purchase Premium.",
     "purchaseSuccess": "Premium unlocked — thank you!"
+  },
+  "drawer": {
+    "open": "Open menu",
+    "tagline": "See math solved step by step",
+    "home": "Home",
+    "topics": "Topics",
+    "history": "Solved problems"
+  },
+  "topics": {
+    "title": "Topics",
+    "intro": "Pick a topic for a short intro, worked examples and practice.",
+    "tipLabel": "Tip",
+    "examplesTitle": "Examples",
+    "examplesHint": "Tap an example to solve it and see the steps.",
+    "practice": "Give me a new practice problem",
+    "generatingPractice": "Generating a problem…",
+    "arithmetic": {
+      "title": "Arithmetic",
+      "summary": "Add, subtract, multiply, divide — and the order of operations.",
+      "tip": "Order of operations: parentheses, then powers, then multiply/divide (left to right), then add/subtract."
+    },
+    "fractions": {
+      "title": "Fractions",
+      "summary": "Adding, subtracting, multiplying and simplifying fractions.",
+      "tip": "To add or subtract, find a common denominator first. To multiply, multiply the numerators and the denominators."
+    },
+    "powers": {
+      "title": "Powers",
+      "summary": "Exponent rules: products, quotients and powers of powers.",
+      "tip": "With the same base, multiplying adds the exponents, and a power of a power multiplies them."
+    },
+    "expressions": {
+      "title": "Simplifying expressions",
+      "summary": "Expanding parentheses and combining like terms.",
+      "tip": "Only like terms (e.g. 2x and 3x) combine; x terms and constants stay separate."
+    },
+    "linear": {
+      "title": "Linear equations",
+      "summary": "Find the unknown by doing the same thing to both sides.",
+      "tip": "Whatever you do to one side, do to the other so the equation stays balanced."
+    },
+    "quadratic": {
+      "title": "Quadratic equations",
+      "summary": "Solve by factoring or with the quadratic formula.",
+      "tip": "If it factors, set each factor to zero; if not, use the formula and the discriminant (b² - 4ac)."
+    },
+    "trig": {
+      "title": "Trigonometry",
+      "summary": "Simplifying sine, cosine and tangent expressions.",
+      "tip": "Remember the key identity: sin²x + cos²x = 1."
+    },
+    "derivative": {
+      "title": "Derivatives",
+      "summary": "Term-by-term differentiation with the power rule and trig derivatives.",
+      "tip": "Power rule: the derivative of xⁿ is n·xⁿ⁻¹, and the derivative of a constant is 0."
+    },
+    "integral": {
+      "title": "Integrals",
+      "summary": "Indefinite integrals term by term, plus the constant of integration.",
+      "tip": "Reverse power rule: the integral of xⁿ is xⁿ⁺¹/(n+1). Don't forget + C."
+    }
   }
 }

@@ -1,3 +1,6 @@
+import type { NavigatorScreenParams } from '@react-navigation/native';
+
+import type { TopicId } from '../content/topics';
 import type { SolveResult } from '../types/problem';
 
 // The Solution screen receives an already-fetched SolveResult: the Solve
@@ -7,7 +10,9 @@ import type { SolveResult } from '../types/problem';
 // state to build here.
 export type RootStackParamList = {
   Home: undefined;
-  ProblemInput: undefined;
+  // initialProblem pre-fills the input (a topic's example) — the user
+  // still taps Solve/Quiz/Check themselves, so quota/paywall stay in play.
+  ProblemInput: { initialProblem?: string } | undefined;
   Solution: { problem: string; result: SolveResult };
   History: undefined;
   Scan: undefined;
@@ -24,4 +29,14 @@ export type RootStackParamList = {
   // Solution, but revealed one multiple-choice "what's next?" question at
   // a time instead of all at once.
   Quiz: { problem: string; result: SolveResult };
+  // «مباحث درسی»: the topic list, and one topic's intro + examples.
+  Topics: undefined;
+  Topic: { topicId: TopicId };
+};
+
+// The side drawer wraps the whole stack as a single "Main" screen, so
+// opening History/Topics from it pushes onto the same stack (Back works
+// as usual) instead of swapping in a separate drawer page.
+export type DrawerParamList = {
+  Main: NavigatorScreenParams<RootStackParamList> | undefined;
 };

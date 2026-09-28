@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -20,8 +20,9 @@ import { colors, spacing } from '../../theme';
 export function ProblemInputScreen() {
   const { t } = useTranslation();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { params } = useRoute<RouteProp<RootStackParamList, 'ProblemInput'>>();
 
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState(params?.initialProblem ?? '');
   const [solving, setSolving] = useState(false);
   const [solveErrorKey, setSolveErrorKey] = useState<string | null>(null);
   const [quizzing, setQuizzing] = useState(false);
@@ -94,7 +95,7 @@ export function ProblemInputScreen() {
   return (
     <ScreenContainer>
       <View style={styles.field}>
-        <EquationInput value={input} onChangeText={setInput} autoFocus />
+        <EquationInput value={input} onChangeText={setInput} autoFocus={!params?.initialProblem} />
         <ParsePreviewBanner result={preview.result} error={preview.error} loading={preview.loading} />
       </View>
 

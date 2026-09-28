@@ -10,7 +10,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import './src/i18n';
-import { RootNavigator } from './src/navigation/RootNavigator';
+import { AppDrawer } from './src/navigation/AppDrawer';
 import { useEntitlementStore } from './src/store/useEntitlementStore';
 import { useLanguageStore } from './src/store/useLanguageStore';
 
@@ -33,7 +33,7 @@ function App() {
       <SafeAreaProvider>
         <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
         <NavigationContainer>
-          <RootNavigator />
+          <AppDrawer />
         </NavigationContainer>
       </SafeAreaProvider>
     </GestureHandlerRootView>
