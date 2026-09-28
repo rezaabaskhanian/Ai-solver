@@ -1,4 +1,8 @@
-FROM python:3.11-slim
+# REGISTRY lets the aramina server pull base images through Arvan's
+# Docker Hub mirror (DOCKER_REGISTRY=docker.arvancloud.ir in .env) —
+# direct Docker Hub pulls from there crawl at a few KB/s.
+ARG REGISTRY=docker.io
+FROM ${REGISTRY}/library/python:3.11-slim
 
 WORKDIR /app
 

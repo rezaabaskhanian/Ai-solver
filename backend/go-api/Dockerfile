@@ -1,6 +1,10 @@
 # Base images match LingoFlow's (already cached on the shared aramina
 # server, where Docker Hub pulls are very slow).
-FROM golang:1.25-alpine AS build
+# REGISTRY lets the aramina server pull base images through Arvan's
+# Docker Hub mirror (DOCKER_REGISTRY=docker.arvancloud.ir in .env) —
+# direct Docker Hub pulls from there crawl at a few KB/s.
+ARG REGISTRY=docker.io
+FROM ${REGISTRY}/library/golang:1.25-alpine AS build
 
 # proxy.golang.org / sum.golang.org often return 403 to the (Iranian)
 # server's IP, and the Xray sidecar only covers go-api at runtime, not
@@ -14,7 +18,7 @@ RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 go build -o /out/api ./cmd/api
 
-FROM alpine:latest
+FROM ${REGISTRY}/library/alpine:latest
 RUN apk add --no-cache ca-certificates
 WORKDIR /app
 COPY --from=build /out/api /app/api

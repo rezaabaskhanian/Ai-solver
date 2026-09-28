@@ -23,7 +23,7 @@
 
 services:
   mathmotion-postgres:
-    image: postgres:15-alpine
+    image: ${DOCKER_REGISTRY:-docker.io}/library/postgres:15-alpine
     container_name: mathmotion_postgres_prod
     restart: unless-stopped
     environment:
@@ -42,7 +42,10 @@ services:
       - internal
 
   mathmotion-math-engine:
-    build: ./math-engine
+    build:
+      context: ./math-engine
+      args:
+        REGISTRY: ${DOCKER_REGISTRY:-docker.io}
     container_name: mathmotion_math_engine_prod
     restart: unless-stopped
     # SymPy can spike CPU on a hard input — capped at half of the shared
@@ -57,7 +60,10 @@ services:
   # as a direct passthrough until a vless link is set from the admin
   # panel's «پراکسی Xray» tab (the same link LingoFlow uses works here too).
   mathmotion-xray:
-    build: ./deploy/xray
+    build:
+      context: ./deploy/xray
+      args:
+        REGISTRY: ${DOCKER_REGISTRY:-docker.io}
     container_name: mathmotion_xray_prod
     restart: unless-stopped
     volumes:
@@ -67,7 +73,10 @@ services:
       - internal
 
   mathmotion-api:
-    build: ./go-api
+    build:
+      context: ./go-api
+      args:
+        REGISTRY: ${DOCKER_REGISTRY:-docker.io}
     container_name: mathmotion_api_prod
     restart: unless-stopped
     depends_on:
@@ -127,6 +136,7 @@ services:
       context: ./admin-panel
       args:
         NEXT_PUBLIC_API_URL: https://${API_HOST:?set API_HOST}
+        REGISTRY: ${DOCKER_REGISTRY:-docker.io}
     container_name: mathmotion_admin_prod
     restart: unless-stopped
     depends_on:

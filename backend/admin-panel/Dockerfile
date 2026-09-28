@@ -1,4 +1,8 @@
-FROM node:20-alpine AS builder
+# REGISTRY lets the aramina server pull base images through Arvan's
+# Docker Hub mirror (DOCKER_REGISTRY=docker.arvancloud.ir in .env) —
+# direct Docker Hub pulls from there crawl at a few KB/s.
+ARG REGISTRY=docker.io
+FROM ${REGISTRY}/library/node:20-alpine AS builder
 
 WORKDIR /app
 
@@ -12,7 +16,7 @@ ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
 RUN npm run build
 
-FROM node:20-alpine
+FROM ${REGISTRY}/library/node:20-alpine
 
 WORKDIR /app
 ENV NODE_ENV=production

@@ -2,7 +2,11 @@
 # docs/xray-proxy-setup.md and watch.sh). Same base image LingoFlow's
 # sidecar uses on the shared aramina server — already cached there, and
 # Docker Hub/GitHub downloads from that (Iranian) server are very slow.
-FROM teddysun/xray:latest
+# REGISTRY lets the aramina server pull base images through Arvan's
+# Docker Hub mirror (DOCKER_REGISTRY=docker.arvancloud.ir in .env) —
+# direct Docker Hub pulls from there crawl at a few KB/s.
+ARG REGISTRY=docker.io
+FROM ${REGISTRY}/teddysun/xray:latest
 
 # The image ships a default *server* config; on a fresh named volume at
 # /etc/xray Docker would copy it in, and watch.sh would run it instead of
