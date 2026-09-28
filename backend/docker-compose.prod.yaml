@@ -13,6 +13,10 @@
 #
 # No host ports are published — everything goes through Traefik.
 #
+# The box is small (1 vCPU, ~2 GB RAM, shared with LingoFlow and
+# wallpaper), hence the tight mem/cpu limits and building one image at a
+# time (see backend/DEPLOY.md).
+#
 #   cp .env.prod.example .env    # fill it in
 #   docker compose -f docker-compose.prod.yaml up -d --build
 # ============================================================
@@ -33,7 +37,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    mem_limit: 512m
+    mem_limit: 256m
     networks:
       - internal
 
@@ -41,10 +45,10 @@ services:
     build: ./math-engine
     container_name: mathmotion_math_engine_prod
     restart: unless-stopped
-    # SymPy can spike CPU on a hard input — capped so it can't starve
-    # LingoFlow's whisper/backend on the shared box.
-    cpus: 1.0
-    mem_limit: 768m
+    # SymPy can spike CPU on a hard input — capped at half of the shared
+    # box's single vCPU so it can't starve LingoFlow/wallpaper.
+    cpus: 0.5
+    mem_limit: 512m
     networks:
       - internal
 
@@ -127,7 +131,7 @@ services:
     restart: unless-stopped
     depends_on:
       - mathmotion-api
-    mem_limit: 256m
+    mem_limit: 192m
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.mathmotion-admin.rule=Host(`${ADMIN_HOST:?set ADMIN_HOST}`)"
