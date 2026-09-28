@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 import { API_BASE_URL, REQUEST_TIMEOUT_MS } from '../../config/env';
+import { useLanguageStore } from '../../store/useLanguageStore';
 import { getDeviceId, saveDeviceId } from './deviceId';
 
 export const apiClient = axios.create({
@@ -14,6 +15,9 @@ apiClient.interceptors.request.use(async config => {
   if (deviceId) {
     config.headers['X-Device-Id'] = deviceId;
   }
+  // The math engine words step explanations in this language (PRD
+  // section 18). Read per request, so it follows the UI language.
+  config.headers['Accept-Language'] = useLanguageStore.getState().language;
   return config;
 });
 

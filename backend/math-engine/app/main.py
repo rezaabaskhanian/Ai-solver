@@ -19,12 +19,22 @@ from .solver.expression import solve_expression
 from .solver.formatting import format_expr
 from .solver.integral import IntegrationUnsupported, solve_integral
 from .solver.linear import solve_linear
+from .solver.messages import normalize_lang
 from .solver.parser import ParseError, parse_problem
 from .solver.practice import UnsupportedPracticeType, generate_practice_problem
 from .solver.quadratic import solve_quadratic
+from .solver.schemas_internal import StepData
 from .solver.verify import verify_equation_root, verify_integral
 
 app = FastAPI(title="MathMotion Math Engine", version="0.1.0")
+
+
+def _to_step(step: StepData, lang: str) -> Step:
+    return Step(
+        id=step.id, before=step.before, after=step.after,
+        operation=step.operation, value=step.value, target=step.target,
+        explanation=step.explanation_in(lang),
+    )
 
 
 @app.get("/health")
@@ -109,7 +119,8 @@ def solve(req: SolveRequest):
             },
         )
 
-    steps = [Step(**s.__dict__) for s in step_data]
+    lang = normalize_lang(req.lang)
+    steps = [_to_step(s, lang) for s in step_data]
 
     if not verified:
         return JSONResponse(
@@ -147,7 +158,8 @@ def check(req: CheckRequest):
             content={"error": "unsupported_problem_type", "message": exc.message},
         )
 
-    hint = Step(**outcome.next_step_hint.__dict__) if outcome.next_step_hint else None
+    lang = normalize_lang(req.lang)
+    hint = _to_step(outcome.next_step_hint, lang) if outcome.next_step_hint else None
     return CheckResponse(
         status=outcome.status,
         step_statuses=outcome.step_statuses,

@@ -15,6 +15,8 @@ class ParseResponse(BaseModel):
 
 class SolveRequest(BaseModel):
     problem: str
+    # Language of step explanations ("en" | "fa"); anything else → "en".
+    lang: str = "en"
 
 
 class Step(BaseModel):
@@ -43,6 +45,7 @@ class ErrorResponse(BaseModel):
 class CheckRequest(BaseModel):
     problem: str
     student_steps: list[str]
+    lang: str = "en"
 
 
 class CheckResponse(BaseModel):

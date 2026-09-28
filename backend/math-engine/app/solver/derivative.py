@@ -1,6 +1,7 @@
 import sympy
 
 from .formatting import format_expr, join_signed_terms
+from .messages import explained
 from .schemas_internal import StepData
 
 _TRIG_FUNCTIONS = (sympy.sin, sympy.cos, sympy.tan)
@@ -26,7 +27,7 @@ def solve_derivative(expr: sympy.Expr, symbol: sympy.Symbol) -> tuple[list[StepD
             id=step_id, before=format_expr(expanded),
             after=join_signed_terms(terms),
             operation="sum_rule", value=None, target="expression",
-            explanation="Differentiate each term separately (sum rule).",
+            **explained("derivative_sum_rule"),
         ))
         step_id += 1
 
@@ -45,7 +46,7 @@ def solve_derivative(expr: sympy.Expr, symbol: sympy.Symbol) -> tuple[list[StepD
             before=join_signed_terms(term_derivatives),
             after=format_expr(result),
             operation="combine", value=None, target="expression",
-            explanation="Combine the differentiated terms.",
+            **explained("derivative_combine"),
         ))
         step_id += 1
 
@@ -60,23 +61,23 @@ def _differentiate_term(term: sympy.Expr, symbol: sympy.Symbol, step_id: int) ->
         return derivative, StepData(
             id=step_id, before=before, after=after,
             operation="constant_rule", value=None, target="term",
-            explanation="The derivative of a constant is 0.",
+            **explained("derivative_constant_rule"),
         )
 
     _, base = term.as_independent(symbol, as_Add=False)
 
     if base == symbol or (base.is_Pow and base.base == symbol and base.exp.is_number):
         operation = "power_rule"
-        explanation = "Power rule: bring the exponent down and reduce it by one."
+        message = explained("derivative_power_rule")
     elif base.func in _TRIG_FUNCTIONS and base.args[0] == symbol:
         operation = "trig_rule"
-        explanation = f"Derivative of {format_expr(base)}."
+        message = explained("derivative_trig_rule", func=format_expr(base))
     else:
         operation = "apply_derivative_rules"
-        explanation = "Apply differentiation rules."
+        message = explained("derivative_apply_rules")
 
     return derivative, StepData(
         id=step_id, before=before, after=after,
         operation=operation, value=None, target="term",
-        explanation=explanation,
+        **message,
     )

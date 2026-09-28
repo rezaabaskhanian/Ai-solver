@@ -1,6 +1,7 @@
 import sympy
 
 from .formatting import format_expr, join_signed_terms
+from .messages import explained
 from .schemas_internal import StepData
 
 _TRIG_FUNCTIONS = (sympy.sin, sympy.cos)
@@ -35,7 +36,7 @@ def solve_integral(expr: sympy.Expr, symbol: sympy.Symbol) -> tuple[list[StepDat
             id=step_id, before=format_expr(expanded),
             after=join_signed_terms(terms),
             operation="sum_rule", value=None, target="expression",
-            explanation="Integrate each term separately (sum rule).",
+            **explained("integral_sum_rule"),
         ))
         step_id += 1
 
@@ -58,14 +59,14 @@ def solve_integral(expr: sympy.Expr, symbol: sympy.Symbol) -> tuple[list[StepDat
             before=join_signed_terms(term_integrals),
             after=format_expr(result),
             operation="combine", value=None, target="expression",
-            explanation="Combine the integrated terms.",
+            **explained("integral_combine"),
         ))
         step_id += 1
 
     steps.append(StepData(
         id=step_id, before=format_expr(result), after=f"{format_expr(result)} + C",
         operation="add_constant", value=None, target="expression",
-        explanation="Add the constant of integration, C, since the derivative of any constant is 0.",
+        **explained("integral_add_constant"),
     ))
 
     return steps, result
@@ -84,26 +85,26 @@ def _integrate_term(term: sympy.Expr, symbol: sympy.Symbol, step_id: int) -> tup
         return integral, StepData(
             id=step_id, before=before, after=after,
             operation="constant_rule", value=None, target="term",
-            explanation=f"The integral of a constant c is c·{symbol}.",
+            **explained("integral_constant_rule", symbol=symbol),
         )
 
     _, base = term.as_independent(symbol, as_Add=False)
 
     if base.is_Pow and base.base == symbol and base.exp == -1:
         operation = "log_rule"
-        explanation = f"Integral of 1/{symbol} is ln|{symbol}|."
+        message = explained("integral_log_rule", symbol=symbol)
     elif base == symbol or (base.is_Pow and base.base == symbol and base.exp.is_number):
         operation = "power_rule"
-        explanation = "Reverse power rule: raise the exponent by one and divide by the new exponent."
+        message = explained("integral_power_rule")
     elif base.func in _TRIG_FUNCTIONS and base.args[0] == symbol:
         operation = "trig_rule"
-        explanation = f"Antiderivative of {format_expr(base)}."
+        message = explained("integral_trig_rule", func=format_expr(base))
     else:
         operation = "apply_integration_rules"
-        explanation = "Apply integration rules."
+        message = explained("integral_apply_rules")
 
     return integral, StepData(
         id=step_id, before=before, after=after,
         operation=operation, value=None, target="term",
-        explanation=explanation,
+        **message,
     )

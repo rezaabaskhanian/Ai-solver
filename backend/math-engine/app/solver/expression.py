@@ -1,6 +1,7 @@
 import sympy
 
 from .formatting import format_expr
+from .messages import explained
 from .schemas_internal import StepData
 
 
@@ -16,7 +17,7 @@ def solve_expression(expr: sympy.Expr) -> tuple[list[StepData], sympy.Expr]:
         steps.append(StepData(
             id=1, before=format_expr(expr), after=format_expr(simplified),
             operation="simplify", value=None, target="expression",
-            explanation="Simplify the expression.",
+            **explained("simplify"),
         ))
 
     return steps, simplified

@@ -15,6 +15,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"mathmotion/go-api/internal/pkg/locale"
 )
 
 type MathEngineClient struct {
@@ -87,13 +89,16 @@ func (c *MathEngineClient) Parse(ctx context.Context, input string) (engineParse
 
 func (c *MathEngineClient) Solve(ctx context.Context, problem string) (engineSolveResult, error) {
 	var result engineSolveResult
-	err := c.post(ctx, "/solve", map[string]string{"problem": problem}, &result)
+	// lang words the step explanations (PRD section 18); the math itself
+	// is language-independent.
+	body := map[string]string{"problem": problem, "lang": locale.FromContext(ctx)}
+	err := c.post(ctx, "/solve", body, &result)
 	return result, err
 }
 
 func (c *MathEngineClient) Check(ctx context.Context, problem string, studentSteps []string) (engineCheckResult, error) {
 	var result engineCheckResult
-	body := map[string]any{"problem": problem, "student_steps": studentSteps}
+	body := map[string]any{"problem": problem, "student_steps": studentSteps, "lang": locale.FromContext(ctx)}
 	err := c.post(ctx, "/check", body, &result)
 	return result, err
 }

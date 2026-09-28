@@ -1,6 +1,7 @@
 import sympy
 
 from .formatting import format_eq, format_expr
+from .messages import explained
 from .schemas_internal import StepData
 
 
@@ -24,7 +25,7 @@ def solve_linear(lhs: sympy.Expr, rhs: sympy.Expr, symbol: sympy.Symbol) -> tupl
         steps.append(StepData(
             id=step_id, before=before, after=after,
             operation="expand", value=None, target="both_sides",
-            explanation="Expand the parentheses.",
+            **explained("expand"),
         ))
         step_id += 1
 
@@ -38,13 +39,11 @@ def solve_linear(lhs: sympy.Expr, rhs: sympy.Expr, symbol: sympy.Symbol) -> tupl
         after = format_eq(new_lhs, new_rhs)
         subtracting = rhs_var_coeff > 0
         op = "subtract" if subtracting else "add"
-        verb = "Subtract" if subtracting else "Add"
-        prep = "from" if subtracting else "to"
         term_str = format_expr(abs(rhs_var_coeff) * symbol)
         steps.append(StepData(
             id=step_id, before=before, after=after,
             operation=op, value=term_str, target="both_sides",
-            explanation=f"{verb} {term_str} {prep} both sides.",
+            **explained(f"{op}_both_sides", value=term_str),
         ))
         lhs, rhs = new_lhs, new_rhs
         step_id += 1
@@ -59,13 +58,11 @@ def solve_linear(lhs: sympy.Expr, rhs: sympy.Expr, symbol: sympy.Symbol) -> tupl
         after = format_eq(new_lhs, new_rhs)
         subtracting = const_term > 0
         op = "subtract" if subtracting else "add"
-        verb = "Subtract" if subtracting else "Add"
-        prep = "from" if subtracting else "to"
         value_str = format_expr(sympy.Abs(const_term))
         steps.append(StepData(
             id=step_id, before=before, after=after,
             operation=op, value=value_str, target="both_sides",
-            explanation=f"{verb} {value_str} {prep} both sides.",
+            **explained(f"{op}_both_sides", value=value_str),
         ))
         lhs, rhs = new_lhs, new_rhs
         step_id += 1
@@ -83,17 +80,17 @@ def solve_linear(lhs: sympy.Expr, rhs: sympy.Expr, symbol: sympy.Symbol) -> tupl
         if coeff_rational.q == 1:
             op = "divide"
             value_str = format_expr(coeff)
-            explanation = f"Divide both sides by {value_str}."
+            message = explained("divide_both_sides", value=value_str)
         else:
             op = "multiply"
             reciprocal = 1 / coeff
             value_str = format_expr(reciprocal)
-            explanation = f"Multiply both sides by {value_str}."
+            message = explained("multiply_both_sides", value=value_str)
 
         steps.append(StepData(
             id=step_id, before=before, after=after,
             operation=op, value=value_str, target="both_sides",
-            explanation=explanation,
+            **message,
         ))
         lhs, rhs = new_lhs, new_rhs
         step_id += 1

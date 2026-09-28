@@ -1,6 +1,7 @@
 import sympy
 
 from .formatting import format_expr
+from .messages import explained
 from .schemas_internal import StepData
 
 
@@ -24,7 +25,7 @@ def solve_quadratic(lhs: sympy.Expr, rhs: sympy.Expr, symbol: sympy.Symbol) -> t
         steps.append(StepData(
             id=step_id, before=before, after=after,
             operation="move_term", value=None, target="both_sides",
-            explanation="Rewrite the equation in standard form (ax^2 + bx + c = 0).",
+            **explained("standard_form"),
         ))
         step_id += 1
 
@@ -37,7 +38,7 @@ def solve_quadratic(lhs: sympy.Expr, rhs: sympy.Expr, symbol: sympy.Symbol) -> t
         steps.append(StepData(
             id=step_id, before=before, after=after,
             operation="factor", value=None, target="both_sides",
-            explanation="Factor the left-hand side.",
+            **explained("factor"),
         ))
         step_id += 1
 
@@ -46,7 +47,7 @@ def solve_quadratic(lhs: sympy.Expr, rhs: sympy.Expr, symbol: sympy.Symbol) -> t
         steps.append(StepData(
             id=step_id, before=f"{format_expr(factored)} = 0", after=roots_str,
             operation="zero_product_property", value=None, target="each_factor",
-            explanation="If a product is zero, at least one factor must be zero.",
+            **explained("zero_product"),
         ))
         step_id += 1
     else:
@@ -54,7 +55,7 @@ def solve_quadratic(lhs: sympy.Expr, rhs: sympy.Expr, symbol: sympy.Symbol) -> t
             id=step_id, before=f"a={format_expr(a)}, b={format_expr(b)}, c={format_expr(c)}",
             after=f"{symbol} = (-b ± √(b² - 4ac)) / 2a",
             operation="apply_quadratic_formula", value=None, target="equation",
-            explanation="Identify a, b, c and apply the quadratic formula.",
+            **explained("apply_quadratic_formula"),
         ))
         step_id += 1
 
@@ -62,7 +63,7 @@ def solve_quadratic(lhs: sympy.Expr, rhs: sympy.Expr, symbol: sympy.Symbol) -> t
         steps.append(StepData(
             id=step_id, before="b² - 4ac", after=format_expr(discriminant),
             operation="compute_discriminant", value=format_expr(discriminant), target="equation",
-            explanation="Compute the discriminant.",
+            **explained("compute_discriminant"),
         ))
         step_id += 1
 
@@ -71,7 +72,7 @@ def solve_quadratic(lhs: sympy.Expr, rhs: sympy.Expr, symbol: sympy.Symbol) -> t
         steps.append(StepData(
             id=step_id, before=f"{symbol} = (-b ± √(b² - 4ac)) / 2a", after=roots_str,
             operation="compute_roots", value=None, target="equation",
-            explanation="Substitute a, b, c and the discriminant to compute the roots.",
+            **explained("compute_roots"),
         ))
         step_id += 1
 

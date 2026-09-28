@@ -14,6 +14,7 @@ import (
 	settingshandler "mathmotion/go-api/internal/delivery/httpserver/settings"
 	visionhandler "mathmotion/go-api/internal/delivery/httpserver/vision"
 	"mathmotion/go-api/internal/delivery/middleware"
+	"mathmotion/go-api/internal/pkg/locale"
 	billingservice "mathmotion/go-api/internal/service/billing"
 	problemservice "mathmotion/go-api/internal/service/problem"
 	proxyservice "mathmotion/go-api/internal/service/proxy"
@@ -60,6 +61,9 @@ func (s Service) Server() {
 
 	e.Use(echomw.Logger())
 	e.Use(echomw.Recover())
+	// The mobile client's UI language (Accept-Language) → request context,
+	// read by the math engine client to word step explanations.
+	e.Use(locale.Middleware)
 	// Only the admin panel (a browser app on another origin) needs CORS;
 	// the mobile client sends no Origin header, so this doesn't affect it.
 	if len(s.cfg.Admin.PanelOrigins) > 0 {
