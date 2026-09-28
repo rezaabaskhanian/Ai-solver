@@ -306,9 +306,11 @@ AR Solution (بخش ۷) هم از همون `useStepNavigation` استفاده م
 انیمیشن جداگانه‌ی Viro (`arAnimations.ts` — `ViroAnimations`) رو داره، نه Reanimated؛ این دو
 سیستم انیمیشن کاملاً مستقلن (یکی 2D View/Text، یکی AR scene)، فقط دکمه‌های پخش رو مشترک کردیم.
 
-**نصب:** `react-native-reanimated` به `package.json` اضافه شد + پلاگین بابل (`babel.config.js`،
-باید آخرین پلاگین باشه). مثل بخش ۹.۴، `npm install` اجرا نشد — طبق تصمیم قبلی، نصب/build/تست دست
-خود کاربره.
+**نصب:** `react-native-reanimated` **نسخه‌ی ۴** (+ `react-native-worklets` 0.13.x که پیش‌نیاز
+نسخه‌ی ۴ است) در `package.json`. پلاگین بابل `react-native-worklets/plugin` است، نه
+`react-native-reanimated/plugin` نسخه‌ی ۳ (`babel.config.js`، باید آخرین پلاگین باشه). نسخه‌ی ۳ با
+React Native 0.87 سازگار نیست؛ Reanimated 4.7 برای RN 0.86 تا 0.88 است و New Architecture
+می‌خواهد (`newArchEnabled=true` از قبل روشن است).
 
 ## ۱۱. Interactive Learning — Quiz Mode (بخش ۲۰ PRD)
 
