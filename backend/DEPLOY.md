@@ -5,8 +5,11 @@
 
 ## ۱. DNS در آروان
 دو رکورد A به IP سرور، با پروکسی آروان روشن (مثل دامنه‌های LingoFlow):
-- `API_HOST` → مثلاً `api.example.ir`
-- `ADMIN_HOST` → مثلاً `admin.example.ir`
+- `api.mathmotion.ir` (همان `API_HOST`)
+- `admin.mathmotion.ir` (همان `ADMIN_HOST`)
+
+حالت ارتباط آروان با سرور (origin) باید **HTTP** باشد، مثل LingoFlow، چون Traefik فقط روی پورت 80
+(entrypoint `web`) گوش می‌دهد.
 
 ## ۲. گرفتن کد
 ```bash

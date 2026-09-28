@@ -7,7 +7,11 @@ import { Platform } from 'react-native';
 // directly. A real device needs the host machine's LAN IP here instead.
 const DEV_API_HOST = Platform.select({ android: '10.0.2.2', default: 'localhost' });
 
-export const API_BASE_URL = `http://${DEV_API_HOST}:8080`;
+// Release builds talk to production (backend/docker-compose.prod.yaml,
+// behind Arvan + Traefik); debug builds keep hitting the local go-api.
+const PROD_API_BASE_URL = 'https://api.mathmotion.ir';
+
+export const API_BASE_URL = __DEV__ ? `http://${DEV_API_HOST}:8080` : PROD_API_BASE_URL;
 
 export const REQUEST_TIMEOUT_MS = 15000;
 
