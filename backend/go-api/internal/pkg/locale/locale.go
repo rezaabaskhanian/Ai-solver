@@ -17,6 +17,9 @@ const (
 	Default = English
 )
 
+// HeaderAcceptLanguage — echo has no constant for this one.
+const HeaderAcceptLanguage = "Accept-Language"
+
 type ctxKey struct{}
 
 // Normalize maps an Accept-Language value ("fa", "fa-IR",
@@ -52,7 +55,7 @@ func FromContext(ctx context.Context) string {
 func Middleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		req := c.Request()
-		lang := Normalize(req.Header.Get(echo.HeaderAcceptLanguage))
+		lang := Normalize(req.Header.Get(HeaderAcceptLanguage))
 		c.SetRequest(req.WithContext(WithLang(req.Context(), lang)))
 		return next(c)
 	}

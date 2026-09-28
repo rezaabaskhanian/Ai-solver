@@ -36,7 +36,7 @@ func TestFromContext_DefaultsWhenUnset(t *testing.T) {
 func TestMiddleware_PutsLangOnRequestContext(t *testing.T) {
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/", nil)
-	req.Header.Set(echo.HeaderAcceptLanguage, "fa-IR")
+	req.Header.Set(HeaderAcceptLanguage, "fa-IR")
 	rec := httptest.NewRecorder()
 
 	var got string
