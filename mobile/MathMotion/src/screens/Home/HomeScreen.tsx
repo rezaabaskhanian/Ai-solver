@@ -10,6 +10,7 @@ import { LanguageSwitch } from '../../components/Home/LanguageSwitch';
 import { RecentProblemsList } from '../../components/Home/RecentProblemsList';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 import { AppText } from '../../components/common/AppText';
+import { LANGUAGE_SWITCH_ENABLED } from '../../config/language';
 import { useRestorePurchases } from '../../hooks/useRestorePurchases';
 import type { RootStackParamList } from '../../navigation/types';
 import { spacing } from '../../theme';
@@ -27,7 +28,7 @@ export function HomeScreen() {
         </AppText>
         <View style={styles.headerActions}>
           <FreeSolvesBadge />
-          <LanguageSwitch />
+          {LANGUAGE_SWITCH_ENABLED && <LanguageSwitch />}
         </View>
       </View>
 

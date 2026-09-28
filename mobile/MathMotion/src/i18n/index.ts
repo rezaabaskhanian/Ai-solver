@@ -1,6 +1,9 @@
 import i18next from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
+// language.ts only imports the AppLanguage *type* back from this file,
+// which is erased at runtime — so this isn't a real import cycle.
+import { DEFAULT_LANGUAGE } from '../config/language';
 import en from './locales/en.json';
 import fa from './locales/fa.json';
 
@@ -18,7 +21,7 @@ i18next.use(initReactI18next).init({
     en: { translation: en },
     fa: { translation: fa },
   },
-  lng: 'en',
+  lng: DEFAULT_LANGUAGE,
   fallbackLng: 'en',
   interpolation: { escapeValue: false },
   returnNull: false,
