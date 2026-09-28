@@ -1,0 +1,74 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-mathmotion}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME:-mathmotion}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-mathmotion}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  math-engine:
+    build: ./math-engine
+    restart: unless-stopped
+
+  # Client-side sidecar for go-api's outbound AI calls when this server's
+  # own IP is blocked by a provider — see docs/xray-proxy-setup.md.
+  # Starts as a direct passthrough (deploy/xray/watch.sh's placeholder)
+  # until an operator configures a real VLESS+Reality server via
+  # POST /admin/proxy.
+  xray:
+    build: ./deploy/xray
+    volumes:
+      - xray-config:/etc/xray
+    restart: unless-stopped
+
+  go-api:
+    build: ./go-api
+    environment:
+      ENV: production
+      PORT: "8080"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USERNAME: ${DB_USERNAME:-mathmotion}
+      DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+      DB_NAME: ${DB_NAME:-mathmotion}
+      MATH_ENGINE_URL: http://math-engine:8000
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:?set ANTHROPIC_API_KEY}
+      BAZAAR_PACKAGE_NAME: ${BAZAAR_PACKAGE_NAME:-com.mathmotion}
+      BAZAAR_PRODUCT_ID: ${BAZAAR_PRODUCT_ID:-mathmotion_premium_unlock}
+      BAZAAR_CLIENT_ID: ${BAZAAR_CLIENT_ID:-}
+      BAZAAR_CLIENT_SECRET: ${BAZAAR_CLIENT_SECRET:-}
+      BAZAAR_REFRESH_TOKEN: ${BAZAAR_REFRESH_TOKEN:-}
+      FREE_SOLVE_LIMIT: ${FREE_SOLVE_LIMIT:-5}
+      # Claude Vision calls route through the xray sidecar's local SOCKS5
+      # inbound instead of dialing Anthropic directly — see
+      # internal/pkg/outboundhttp and docs/xray-proxy-setup.md. Safe to
+      # leave set even before /admin/proxy has ever been called: the
+      # sidecar's placeholder config forwards everything straight
+      # through, so this is a no-op until it's actually needed.
+      AI_OUTBOUND_PROXY: socks5://xray:1080
+      PROXY_ADMIN_TOKEN: ${PROXY_ADMIN_TOKEN:?set PROXY_ADMIN_TOKEN}
+      XRAY_CONFIG_PATH: /etc/xray/config.json
+    volumes:
+      - xray-config:/etc/xray
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      math-engine:
+        condition: service_started
+      xray:
+        condition: service_started
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  xray-config:

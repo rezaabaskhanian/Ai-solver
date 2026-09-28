@@ -1,0 +1,42 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: mathmotion
+      POSTGRES_PASSWORD: mathmotion
+      POSTGRES_DB: mathmotion
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mathmotion"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  math-engine:
+    build: ./math-engine
+    ports:
+      - "8000:8000"
+
+  go-api:
+    build: ./go-api
+    environment:
+      PORT: "8080"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USERNAME: mathmotion
+      DB_PASSWORD: mathmotion
+      DB_NAME: mathmotion
+      MATH_ENGINE_URL: http://math-engine:8000
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      math-engine:
+        condition: service_started
+
+volumes:
+  pgdata:
