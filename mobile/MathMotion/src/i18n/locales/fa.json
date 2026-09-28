@@ -1,0 +1,149 @@
+{
+  "common": {
+    "appName": "مث‌موشن",
+    "retry": "تلاش مجدد",
+    "cancel": "لغو",
+    "loading": "در حال بارگذاری…",
+    "today": "امروز",
+    "yesterday": "دیروز",
+    "daysAgo": "{{count}} روز پیش"
+  },
+  "home": {
+    "greeting": "امروز چه مسئله‌ای رو حل کنیم؟",
+    "scanTitle": "اسکن مسئله",
+    "scanSubtitle": "دوربین رو روی مسئله بگیر",
+    "typeTitle": "تایپ مسئله",
+    "typeSubtitle": "معادله را با صفحه‌کلید وارد کنید",
+    "recentTitle": "مسائل اخیر",
+    "seeAll": "مشاهده همه",
+    "recentEmpty": "مسائل حل‌شده اینجا نمایش داده می‌شوند.",
+    "recentLoadError": "مسائل اخیر بارگذاری نشد."
+  },
+  "scan": {
+    "title": "اسکن مسئله",
+    "instruction": "معادله رو داخل قاب قرار بده",
+    "permissionTitle": "دسترسی به دوربین لازمه",
+    "permissionBody": "مث‌موشن برای اسکن مسئله‌ای که روی کاغذ نوشتی به دوربین نیاز داره.",
+    "permissionDeniedBody": "دسترسی دوربین رد شد. برای اسکن مسئله، از تنظیمات گوشی فعالش کن.",
+    "grantPermission": "اجازه دسترسی به دوربین",
+    "recognizedTitle": "برای حل، روی یک مسئله بزن",
+    "tapToSolve": "بزن تا حل بشه"
+  },
+  "arSolution": {
+    "pointCamera": "دوربین را روی برگه بگیر"
+  },
+  "problemInput": {
+    "title": "تایپ مسئله",
+    "placeholder": "مثلاً: ۲x + ۵ = ۱۷",
+    "clear": "پاک کردن",
+    "solve": "حل کن",
+    "solving": "در حال حل…",
+    "checkEquation": "لطفاً معادله‌ی تشخیص داده‌شده را بررسی کنید.",
+    "checkMySteps": "حل خودم رو چک کن",
+    "quizMe": "با کوییز یاد بگیر",
+    "startingQuiz": "در حال شروع…"
+  },
+  "solution": {
+    "title": "راه‌حل",
+    "verified": "بررسی‌شده",
+    "notVerified": "بررسی نشده",
+    "finalAnswer": "جواب نهایی",
+    "solutionComplete": "حل کامل شد",
+    "stepOf": "مرحله {{current}} از {{total}}",
+    "previous": "قبلی",
+    "next": "بعدی",
+    "play": "پخش",
+    "pause": "توقف",
+    "replay": "دوباره از اول",
+    "done": "پایان",
+    "practiceSimilar": "تمرین مشابه",
+    "generatingPractice": "در حال ساخت…",
+    "share": "اشتراک‌گذاری",
+    "sharing": "در حال اشتراک‌گذاری…",
+    "shareError": "اشتراک‌گذاری راه‌حل انجام نشد. دوباره تلاش کن.",
+    "operations": {
+      "expand": "باز کردن پرانتز",
+      "subtract": "کم کردن",
+      "add": "اضافه کردن",
+      "divide": "تقسیم",
+      "multiply": "ضرب",
+      "move_term": "جابه‌جایی جمله",
+      "factor": "تجزیه",
+      "zero_product_property": "ویژگی ضرب صفر",
+      "apply_quadratic_formula": "فرمول درجه‌دو",
+      "compute_discriminant": "محاسبه دلتا",
+      "compute_roots": "محاسبه ریشه‌ها",
+      "sum_rule": "قاعده جمع",
+      "combine": "ترکیب جمله‌ها",
+      "constant_rule": "قاعده مقدار ثابت",
+      "add_constant": "افزودن ثابت انتگرال‌گیری",
+      "power_rule": "قاعده توان",
+      "trig_rule": "قاعده مثلثاتی",
+      "apply_derivative_rules": "اعمال قواعد مشتق‌گیری",
+      "simplify": "ساده‌سازی"
+    }
+  },
+  "quiz": {
+    "title": "کوییز",
+    "promptFirst": "اولین قدم چیه؟",
+    "promptNext": "قدم بعدی چیه؟",
+    "correct": "✓ درسته!",
+    "continue": "ادامه",
+    "finish": "دیدن جواب نهایی",
+    "complete": "خودت حلش کردی — آفرین!"
+  },
+  "checkSteps": {
+    "title": "چک کردن حل من",
+    "problemLabel": "مسئله",
+    "placeholder": "مراحل حلت رو خط‌به‌خط بنویس\nمثلاً:\n2x = 12\nx = 6",
+    "checkButton": "بررسی کن",
+    "checking": "در حال بررسی…",
+    "allCorrect": "همه چیز درسته! {{answer}}",
+    "mistakeFound": "یه اشتباه هست — این باید اتفاق می‌افتاد:",
+    "notYetFinished": "تا اینجا درسته — قدم بعدی اینه:"
+  },
+  "history": {
+    "title": "تاریخچه",
+    "empty": "هنوز مسئله‌ای حل نشده است.",
+    "loadError": "تاریخچه بارگذاری نشد."
+  },
+  "problemTypes": {
+    "linear_equation": "معادله خطی",
+    "quadratic_equation": "معادله درجه دو",
+    "expression": "عبارت",
+    "arithmetic": "محاسبات",
+    "arithmetic_equation": "تساوی عددی",
+    "derivative": "مشتق",
+    "integral": "انتگرال",
+    "trig_expression": "ساده‌سازی مثلثاتی"
+  },
+  "errors": {
+    "couldNotUnderstand": "متوجه این مسئله نشدیم. لطفاً معادله را بررسی کنید.",
+    "unsupportedType": "این نوع مسئله هنوز پشتیبانی نمی‌شود.",
+    "verificationFailed": "در حل این مسئله مشکلی پیش آمد. دوباره تلاش کنید.",
+    "engineUnavailable": "موتور ریاضی در دسترس نیست. دوباره تلاش کنید.",
+    "internal": "مشکلی پیش آمد. دوباره تلاش کنید.",
+    "network": "ارتباط با سرور برقرار نشد. اتصال خود را بررسی کنید.",
+    "rateLimited": "درخواست‌های زیادی ارسال شده، کمی صبر کنید.",
+    "quotaExceeded": "حل‌های رایگانت تموم شد. برای ادامه، پرمیوم رو فعال کن.",
+    "purchaseInvalid": "این خرید تأیید نشد.",
+    "generic": "مشکلی پیش آمد. دوباره تلاش کنید."
+  },
+  "language": {
+    "label": "زبان",
+    "english": "English",
+    "persian": "فارسی"
+  },
+  "billing": {
+    "freeSolvesBadge": "{{remaining}}/{{limit}} رایگان",
+    "premiumActive": "پرمیوم",
+    "paywallTitle": "حل‌های رایگانت تموم شد",
+    "paywallBody": "برای حل نامحدود مسائل، پرمیوم رو فعال کن.",
+    "upgradeButton": "فعال‌سازی پرمیوم — {{price}}",
+    "upgradeButtonNoPrice": "فعال‌سازی پرمیوم",
+    "purchasing": "در حال پردازش…",
+    "androidOnly": "خرید پرمیوم فعلاً فقط در اندروید ممکنه.",
+    "bazaarNotInstalled": "برای خرید پرمیوم، اپلیکیشن بازار رو نصب کن.",
+    "purchaseSuccess": "پرمیوم فعال شد — ممنون از حمایتت!"
+  }
+}

@@ -1,0 +1,17 @@
+diff --git a/node_modules/@reactvision/react-viro/dist/components/Material/ViroMaterials.js b/node_modules/@reactvision/react-viro/dist/components/Material/ViroMaterials.js
+index ecf4a28..1b59e12 100644
+--- a/node_modules/@reactvision/react-viro/dist/components/Material/ViroMaterials.js
++++ b/node_modules/@reactvision/react-viro/dist/components/Material/ViroMaterials.js
+@@ -17,7 +17,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
+ exports.ViroMaterials = void 0;
+ const react_native_1 = require("react-native");
+ // @ts-ignore
+-const AssetRegistry_1 = require("react-native/Libraries/Image/AssetRegistry");
++// RN 0.87 moved this from Libraries/Image/AssetRegistry to
++// src/private/assets/AssetRegistry (named export, not the old
++// module.exports shape) — patched via patch-package, see
++// patches/@reactvision+react-viro+2.58.1.patch.
++const AssetRegistry_1 = require("react-native/src/private/assets/AssetRegistry").AssetRegistry;
+ // @ts-ignore
+ const resolveAssetSource_1 = __importDefault(require("react-native/Libraries/Image/resolveAssetSource"));
+ var MaterialManager = react_native_1.NativeModules.VRTMaterialManager ||

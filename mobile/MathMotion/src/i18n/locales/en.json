@@ -1,0 +1,149 @@
+{
+  "common": {
+    "appName": "MathMotion",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "loading": "Loading…",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "daysAgo": "{{count}} days ago"
+  },
+  "home": {
+    "greeting": "What are we solving today?",
+    "scanTitle": "Scan Problem",
+    "scanSubtitle": "Point your camera at it",
+    "typeTitle": "Type Problem",
+    "typeSubtitle": "Enter an equation with the keyboard",
+    "recentTitle": "Recent Problems",
+    "seeAll": "See all",
+    "recentEmpty": "Solved problems will show up here.",
+    "recentLoadError": "Couldn't load recent problems."
+  },
+  "scan": {
+    "title": "Scan Problem",
+    "instruction": "Line up the equation inside the frame",
+    "permissionTitle": "Camera access needed",
+    "permissionBody": "MathMotion needs your camera to scan a problem written on paper.",
+    "permissionDeniedBody": "Camera access was denied. Enable it from your device Settings to scan a problem.",
+    "grantPermission": "Allow Camera",
+    "recognizedTitle": "Tap a problem to solve it",
+    "tapToSolve": "Tap to solve"
+  },
+  "arSolution": {
+    "pointCamera": "Point your camera at the paper"
+  },
+  "problemInput": {
+    "title": "Type Problem",
+    "placeholder": "e.g. 2x + 5 = 17",
+    "clear": "Clear",
+    "solve": "Solve",
+    "solving": "Solving…",
+    "checkEquation": "Please check the detected equation.",
+    "checkMySteps": "Check my steps",
+    "quizMe": "Quiz me",
+    "startingQuiz": "Starting…"
+  },
+  "solution": {
+    "title": "Solution",
+    "verified": "Verified",
+    "notVerified": "Not verified",
+    "finalAnswer": "Final Answer",
+    "solutionComplete": "Solution Complete",
+    "stepOf": "Step {{current}} of {{total}}",
+    "previous": "Previous",
+    "next": "Next",
+    "play": "Play",
+    "pause": "Pause",
+    "replay": "Replay",
+    "done": "Done",
+    "practiceSimilar": "Practice similar",
+    "generatingPractice": "Generating…",
+    "share": "Share",
+    "sharing": "Sharing…",
+    "shareError": "Couldn't share the solution. Please try again.",
+    "operations": {
+      "expand": "Expand",
+      "subtract": "Subtract",
+      "add": "Add",
+      "divide": "Divide",
+      "multiply": "Multiply",
+      "move_term": "Move term",
+      "factor": "Factor",
+      "zero_product_property": "Zero product property",
+      "apply_quadratic_formula": "Quadratic formula",
+      "compute_discriminant": "Discriminant",
+      "compute_roots": "Compute roots",
+      "sum_rule": "Sum rule",
+      "combine": "Combine terms",
+      "constant_rule": "Constant rule",
+      "add_constant": "Add constant of integration",
+      "power_rule": "Power rule",
+      "trig_rule": "Trig rule",
+      "apply_derivative_rules": "Apply derivative rules",
+      "simplify": "Simplify"
+    }
+  },
+  "quiz": {
+    "title": "Quiz",
+    "promptFirst": "What should we do first?",
+    "promptNext": "What should we do next?",
+    "correct": "✓ Correct!",
+    "continue": "Continue",
+    "finish": "See the final answer",
+    "complete": "Solved it yourself — nicely done!"
+  },
+  "checkSteps": {
+    "title": "Check My Steps",
+    "problemLabel": "Problem",
+    "placeholder": "Type your steps, one per line\ne.g.\n2x = 12\nx = 6",
+    "checkButton": "Check",
+    "checking": "Checking…",
+    "allCorrect": "All correct! {{answer}}",
+    "mistakeFound": "There's a mistake — here's what should happen instead:",
+    "notYetFinished": "Correct so far — here's the next step:"
+  },
+  "history": {
+    "title": "History",
+    "empty": "No problems solved yet.",
+    "loadError": "Couldn't load history."
+  },
+  "problemTypes": {
+    "linear_equation": "Linear Equation",
+    "quadratic_equation": "Quadratic Equation",
+    "expression": "Expression",
+    "arithmetic": "Arithmetic",
+    "arithmetic_equation": "Arithmetic Equation",
+    "derivative": "Derivative",
+    "integral": "Integral",
+    "trig_expression": "Trigonometric Simplification"
+  },
+  "errors": {
+    "couldNotUnderstand": "We couldn't understand this problem. Please check your equation.",
+    "unsupportedType": "This type of problem isn't supported yet.",
+    "verificationFailed": "Something went wrong solving this problem. Please try again.",
+    "engineUnavailable": "The math engine is unavailable. Please try again.",
+    "internal": "Something went wrong. Please try again.",
+    "network": "Couldn't reach the server. Check your connection.",
+    "rateLimited": "Too many requests, please slow down.",
+    "quotaExceeded": "You've used all your free solves. Upgrade to Premium to continue.",
+    "purchaseInvalid": "This purchase couldn't be verified.",
+    "generic": "Something went wrong. Please try again."
+  },
+  "language": {
+    "label": "Language",
+    "english": "English",
+    "persian": "فارسی"
+  },
+  "billing": {
+    "freeSolvesBadge": "{{remaining}}/{{limit}} free",
+    "premiumActive": "Premium",
+    "paywallTitle": "You've used all your free solves",
+    "paywallBody": "Upgrade to Premium for unlimited problem solving.",
+    "upgradeButton": "Upgrade to Premium — {{price}}",
+    "upgradeButtonNoPrice": "Upgrade to Premium",
+    "purchasing": "Processing…",
+    "androidOnly": "Premium purchases are only available on Android for now.",
+    "bazaarNotInstalled": "Install the Cafe Bazaar app to purchase Premium.",
+    "purchaseSuccess": "Premium unlocked — thank you!"
+  }
+}
