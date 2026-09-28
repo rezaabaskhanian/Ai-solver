@@ -65,13 +65,17 @@
 - [ ] اجرای `pytest` (math-engine)، `go test ./...` (go-api)، `tsc --noEmit`، `eslint`، `jest`
       (موبایل) — هیچ‌کدوم این چند پاس اجرا نشدن (تصمیم قبلی: تست/اجرا دست خود کاربره).
 
-### راه‌اندازی پراکسی Xray (بخش ۱.۵ بالا)
-- [ ] یه VPS خارج از ایران تهیه کن، Xray-core نصب کن، کلید Reality بساز، لینک `vless://` تولید
-      کن (این بخش کاملاً دستیه، کدی براش نوشته نشده).
-- [ ] `docker compose -f backend/docker-compose.prod.yaml up --build` با env های لازم
-      (`ANTHROPIC_API_KEY`, `PROXY_ADMIN_TOKEN`, `DB_PASSWORD`, ...).
-- [ ] تست `POST /admin/proxy` با لینک واقعی (مثال curl در `xray-proxy-setup.md`).
-- [ ] یه فراخوانی واقعی Scan Problem رو از اپ تست کن تا مطمئن بشی از پشت تونل رد می‌شه.
+### دیپلوی روی سرور aramina (کنار LingoFlow) — وضعیت ۲۰۲۶-۰۹-۲۸
+راهنمای کامل: [`backend/DEPLOY.md`](backend/DEPLOY.md). کد روی سرور در `~/Ai-solver`.
+- [x] build روی سرور (با آینه‌ی Docker آروان `DOCKER_REGISTRY=docker.arvancloud.ir` و `goproxy.cn`)
+- [x] `up -d`؛ ۴ migration اعمال شد؛ `/health` و `POST /api/v1/problems/solve` از مسیر Traefik جواب دادند
+- [x] مصرف: کل MathMotion حدود ۲۳۰ مگ RAM (سرور ۱ vCPU و ۲ گیگ، مشترک با LingoFlow و wallpaper)
+- [ ] **منتظر ثبت دامنه‌ی `mathmotion.ir` در ایرنیک** → بعد در آروان: nameserverها + A رکوردهای
+      `api` و `admin` با پروکسی روشن، origin روی **HTTP**، ریدایرکت به HTTPS
+- [ ] پنل ادمین در `https://admin.mathmotion.ir`: وصل کردن Xray با **همان لینک vless لینگوفلو**
+- [ ] ست کردن provider و کلید AI از پنل (OpenRouter برای vision مطمئن‌تر از DeepSeek است)
+- [ ] `docker builder prune -f` (دیسک سرور ۷۱٪ پر بود)
+- [ ] build نسخه‌ی release اپ (به `https://api.mathmotion.ir` وصل می‌شود) و تست Scan Problem روی گوشی
 
 ### تست دستی روی دستگاه واقعی (Android)
 - [ ] Scan → Recognize → AR Solution
