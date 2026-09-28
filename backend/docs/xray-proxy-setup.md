@@ -73,7 +73,16 @@ curl -X POST https://<your-host>/admin/proxy \
 { "connected": false, "error": "..." }
 ```
 
-یه لینک بدشکل (نه `vless://`، بدون `security=reality`، بدون `sni`/`pbk`) به‌جای این، یه `422`
+لینک‌های پشتیبانی‌شده: `security` یکی از `reality` / `tls` / `none`، و `type` یکی از `tcp` / `ws` /
+`grpc` / `httpupgrade` / `xhttp` — یعنی هم Reality روی سرور اختصاصی، هم لینک‌های معمول
+VLESS+TLS پشت CDN (مثل لینک LingoFlow). برای `tls` اگه `sni` نباشه، از `host` و بعد آدرس سرور
+استفاده می‌شه.
+
+تست اتصال به‌ترتیب `ipinfo.io`، `api.ipify.org` و `api.myip.com` رو امتحان می‌کنه، چون این
+سرویس‌ها به‌ازای هر IP محدودیت نرخ دارن (مثلاً `429` از ipinfo وقتی پروژه‌های دیگه‌ی همون سرور
+سهمیه رو مصرف کرده باشن).
+
+یه لینک بدشکل (نه `vless://`، `security`/`type` پشتیبانی‌نشده، یا reality بدون `sni`/`pbk`) به‌جای این، یه `422`
 با `{"error": "invalid_input", "message": "..."}` برمی‌گردونه — یعنی خودِ درخواست رد شده، حتی
 تلاشی برای نوشتن کانفیگ هم نشده.
 

@@ -7,15 +7,22 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"mathmotion/go-api/internal/pkg/outboundhttp"
 )
 
-// connectivityTestURL matches the ops runbook's own step 7 check: if this
-// returns the operator's new server's IP, traffic is genuinely leaving
-// through the tunnel, not just parsing into valid config.
-const connectivityTestURL = "https://ipinfo.io/json"
+// connectivityTestURLs are IP-echo services tried in order: if one returns
+// the Xray server's IP, traffic is genuinely leaving through the tunnel,
+// not just parsing into valid config. More than one because these services
+// rate-limit per IP (ipinfo.io answers 429 once other projects on the same
+// server or exit IP have used up its free quota).
+var connectivityTestURLs = []string{
+	"https://ipinfo.io/json",
+	"https://api.ipify.org?format=json",
+	"https://api.myip.com",
+}
 
 // Service backs POST /admin/proxy: writes an operator-submitted vless
 // link as the Xray sidecar's config and confirms the resulting tunnel
@@ -28,10 +35,10 @@ type Service struct {
 	// to notice the rewritten config and restart xray before the
 	// connectivity test request goes out.
 	reloadWait time.Duration
-	// testURL defaults to connectivityTestURL; overridable (same-package
+	// testURLs defaults to connectivityTestURLs; overridable (same-package
 	// tests only, via a struct literal) so tests can point it at an
 	// httptest.Server instead of the real internet.
-	testURL string
+	testURLs []string
 }
 
 func New(configPath, proxyURL string) Service {
@@ -39,7 +46,7 @@ func New(configPath, proxyURL string) Service {
 		configPath: configPath,
 		proxyURL:   proxyURL,
 		reloadWait: 5 * time.Second,
-		testURL:    connectivityTestURL,
+		testURLs:   connectivityTestURLs,
 	}
 }
 
@@ -111,26 +118,39 @@ func (s Service) checkConnectivity(ctx context.Context) ConnectResult {
 		return ConnectResult{Connected: false, Error: fmt.Sprintf("building proxied http client: %v", err)}
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, s.testURL, nil)
+	var errs []string
+	for _, testURL := range s.testURLs {
+		result, err := checkOne(ctx, client, testURL)
+		if err == nil {
+			return result
+		}
+		errs = append(errs, err.Error())
+		if ctx.Err() != nil {
+			break
+		}
+	}
+	return ConnectResult{Connected: false, Error: strings.Join(errs, "; ")}
+}
+
+func checkOne(ctx context.Context, client *http.Client, testURL string) (ConnectResult, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, testURL, nil)
 	if err != nil {
-		return ConnectResult{Connected: false, Error: fmt.Sprintf("building connectivity test request: %v", err)}
+		return ConnectResult{}, fmt.Errorf("building connectivity test request: %w", err)
 	}
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return ConnectResult{Connected: false, Error: err.Error()}
+		return ConnectResult{}, err
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(io.LimitReader(resp.Body, 64<<10))
 	if err != nil {
-		return ConnectResult{Connected: false, Error: err.Error()}
+		return ConnectResult{}, err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return ConnectResult{
-			Connected: false,
-			Error:     fmt.Sprintf("unexpected status %d from connectivity check: %s", resp.StatusCode, string(body)),
-		}
+		return ConnectResult{}, fmt.Errorf("unexpected status %d from %s: %s",
+			resp.StatusCode, req.URL.Host, strings.TrimSpace(string(body)))
 	}
 
 	var info struct {
@@ -138,9 +158,9 @@ func (s Service) checkConnectivity(ctx context.Context) ConnectResult {
 		Country string `json:"country"`
 		Org     string `json:"org"`
 	}
-	if err := json.Unmarshal(body, &info); err != nil {
-		return ConnectResult{Connected: false, Error: "could not parse connectivity check response"}
+	if err := json.Unmarshal(body, &info); err != nil || info.IP == "" {
+		return ConnectResult{}, fmt.Errorf("could not parse connectivity check response from %s", req.URL.Host)
 	}
 
-	return ConnectResult{Connected: true, IP: info.IP, Country: info.Country, Org: info.Org}
+	return ConnectResult{Connected: true, IP: info.IP, Country: info.Country, Org: info.Org}, nil
 }

@@ -16,7 +16,26 @@ func newTestService(t *testing.T, testURL string) Service {
 		configPath: configPath,
 		proxyURL:   "", // dial the httptest.Server directly, no real SOCKS5 hop needed for this test
 		reloadWait: 0,
-		testURL:    testURL,
+		testURLs:   []string{testURL},
+	}
+}
+
+func TestService_Status_FallsBackWhenFirstCheckIsRateLimited(t *testing.T) {
+	limited := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusTooManyRequests)
+	}))
+	defer limited.Close()
+	ok := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`{"ip":"203.0.113.10"}`))
+	}))
+	defer ok.Close()
+
+	svc := newTestService(t, limited.URL)
+	svc.testURLs = []string{limited.URL, ok.URL}
+
+	result := svc.Status(context.Background())
+	if !result.Connected || result.IP != "203.0.113.10" {
+		t.Fatalf("expected the second check to succeed, got %+v", result)
 	}
 }
 

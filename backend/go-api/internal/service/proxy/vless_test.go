@@ -17,6 +17,8 @@ func TestParseVlessLink_Valid(t *testing.T) {
 		Address:     "203.0.113.10",
 		Port:        443,
 		Flow:        "xtls-rprx-vision",
+		Security:    "reality",
+		Network:     "tcp",
 		ServerName:  "www.microsoft.com",
 		Fingerprint: "chrome",
 		PublicKey:   "examplepublickey",
@@ -27,16 +29,55 @@ func TestParseVlessLink_Valid(t *testing.T) {
 	}
 }
 
+func TestParseVlessLink_TLSOverWebSocket(t *testing.T) {
+	link := "vless://11111111-2222-3333-4444-555555555555@cdn.example.com:8443" +
+		"?encryption=none&security=tls&sni=cdn.example.com&fp=chrome&alpn=h2%2Chttp%2F1.1" +
+		"&type=ws&host=cdn.example.com&path=%2Fws%3Fed%3D2048#cdn"
+
+	parsed, err := ParseVlessLink(link)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	want := ParsedVless{
+		UUID:        "11111111-2222-3333-4444-555555555555",
+		Address:     "cdn.example.com",
+		Port:        8443,
+		Security:    "tls",
+		Network:     "ws",
+		ServerName:  "cdn.example.com",
+		Fingerprint: "chrome",
+		ALPN:        "h2,http/1.1",
+		Host:        "cdn.example.com",
+		Path:        "/ws?ed=2048",
+	}
+	if parsed != want {
+		t.Fatalf("got %+v, want %+v", parsed, want)
+	}
+}
+
+func TestParseVlessLink_TLSDefaultsSNIToHost(t *testing.T) {
+	parsed, err := ParseVlessLink("vless://uuid@1.2.3.4:443?security=tls&type=ws&host=front.example.com")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if parsed.ServerName != "front.example.com" {
+		t.Fatalf("expected sni to fall back to host, got %q", parsed.ServerName)
+	}
+}
+
 func TestParseVlessLink_Errors(t *testing.T) {
 	cases := map[string]string{
-		"wrong scheme":      "vmess://uuid@host:443?security=reality&sni=a&pbk=b",
-		"missing uuid":      "vless://@host:443?security=reality&sni=a&pbk=b",
-		"missing host":      "vless://uuid@:443?security=reality&sni=a&pbk=b",
-		"missing port":      "vless://uuid@host?security=reality&sni=a&pbk=b",
-		"invalid port":      "vless://uuid@host:notaport?security=reality&sni=a&pbk=b",
-		"non-reality security": "vless://uuid@host:443?security=tls&sni=a&pbk=b",
-		"missing sni":       "vless://uuid@host:443?security=reality&pbk=b",
-		"missing pbk":       "vless://uuid@host:443?security=reality&sni=a",
+		"wrong scheme":        "vmess://uuid@host:443?security=reality&sni=a&pbk=b",
+		"missing uuid":        "vless://@host:443?security=reality&sni=a&pbk=b",
+		"missing host":        "vless://uuid@:443?security=reality&sni=a&pbk=b",
+		"missing port":        "vless://uuid@host?security=reality&sni=a&pbk=b",
+		"invalid port":        "vless://uuid@host:notaport?security=reality&sni=a&pbk=b",
+		"unknown security":    "vless://uuid@host:443?security=xtls&sni=a&pbk=b",
+		"unsupported network": "vless://uuid@host:443?security=tls&type=kcp",
+		"tcp http header":     "vless://uuid@host:443?security=none&type=tcp&headerType=http",
+		"missing sni":         "vless://uuid@host:443?security=reality&pbk=b",
+		"missing pbk":         "vless://uuid@host:443?security=reality&sni=a",
 	}
 
 	for name, link := range cases {

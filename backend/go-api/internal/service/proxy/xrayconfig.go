@@ -1,11 +1,13 @@
 package proxy
 
-// This is the client-side mirror of the ops runbook's server config
-// (step 4): a local SOCKS5 inbound -- what internal/pkg/outboundhttp's
-// AI_OUTBOUND_PROXY dials into -- forwarding everything through a single
-// VLESS+Reality outbound to the operator's own Xray server. Modeled as
-// typed structs (not a generic map[string]any) so a typo in a field name
-// fails to compile instead of silently producing JSON Xray ignores.
+import "strings"
+
+// This is the client-side Xray config: a local SOCKS5 inbound -- what
+// internal/pkg/outboundhttp's AI_OUTBOUND_PROXY dials into -- forwarding
+// everything through a single VLESS outbound (Reality or TLS, over any of
+// the supported transports). Modeled as typed structs (not a generic
+// map[string]any) so a typo in a field name fails to compile instead of
+// silently producing JSON Xray ignores.
 
 const socksInboundPort = 1080
 
@@ -54,9 +56,14 @@ type xrayUser struct {
 }
 
 type xrayStreamSettings struct {
-	Network         string              `json:"network"`
-	Security        string              `json:"security"`
-	RealitySettings xrayRealitySettings `json:"realitySettings"`
+	Network             string                `json:"network"`
+	Security            string                `json:"security"`
+	RealitySettings     *xrayRealitySettings  `json:"realitySettings,omitempty"`
+	TLSSettings         *xrayTLSSettings      `json:"tlsSettings,omitempty"`
+	WSSettings          *xrayHostPathSettings `json:"wsSettings,omitempty"`
+	HTTPUpgradeSettings *xrayHostPathSettings `json:"httpupgradeSettings,omitempty"`
+	XHTTPSettings       *xrayXHTTPSettings    `json:"xhttpSettings,omitempty"`
+	GRPCSettings        *xrayGRPCSettings     `json:"grpcSettings,omitempty"`
 }
 
 type xrayRealitySettings struct {
@@ -66,21 +73,37 @@ type xrayRealitySettings struct {
 	ShortID     string `json:"shortId"`
 }
 
-// defaultFingerprint matches the ops runbook's own suggested value
-// (step 5's example link uses "fp=chrome") -- a real TLS ClientHello
-// fingerprint is required for Reality to look like ordinary browser
-// traffic, so this is the fallback when a link omits "fp" rather than
-// leaving the field empty.
+type xrayTLSSettings struct {
+	ServerName    string   `json:"serverName,omitempty"`
+	Fingerprint   string   `json:"fingerprint,omitempty"`
+	ALPN          []string `json:"alpn,omitempty"`
+	AllowInsecure bool     `json:"allowInsecure,omitempty"`
+}
+
+type xrayHostPathSettings struct {
+	Host string `json:"host,omitempty"`
+	Path string `json:"path,omitempty"`
+}
+
+type xrayXHTTPSettings struct {
+	Host string `json:"host,omitempty"`
+	Path string `json:"path,omitempty"`
+	Mode string `json:"mode,omitempty"`
+}
+
+type xrayGRPCSettings struct {
+	ServiceName string `json:"serviceName"`
+	MultiMode   bool   `json:"multiMode,omitempty"`
+}
+
+// defaultFingerprint is the fallback when a link omits "fp": a real
+// browser TLS ClientHello fingerprint is required for Reality to look like
+// ordinary traffic, and is harmless for plain TLS too.
 const defaultFingerprint = "chrome"
 
 // buildXrayClientConfig renders the Xray sidecar's full config.json from
 // an already-validated ParsedVless.
 func buildXrayClientConfig(v ParsedVless) xrayClientConfig {
-	fingerprint := v.Fingerprint
-	if fingerprint == "" {
-		fingerprint = defaultFingerprint
-	}
-
 	return xrayClientConfig{
 		Log: xrayLog{LogLevel: "warning"},
 		Inbounds: []xrayInbound{
@@ -106,17 +129,60 @@ func buildXrayClientConfig(v ParsedVless) xrayClientConfig {
 						},
 					},
 				},
-				StreamSettings: &xrayStreamSettings{
-					Network:  "tcp",
-					Security: "reality",
-					RealitySettings: xrayRealitySettings{
-						ServerName:  v.ServerName,
-						Fingerprint: fingerprint,
-						PublicKey:   v.PublicKey,
-						ShortID:     v.ShortID,
-					},
-				},
+				StreamSettings: buildStreamSettings(v),
 			},
 		},
 	}
+}
+
+func buildStreamSettings(v ParsedVless) *xrayStreamSettings {
+	fingerprint := v.Fingerprint
+	if fingerprint == "" {
+		fingerprint = defaultFingerprint
+	}
+
+	s := &xrayStreamSettings{Network: v.Network, Security: v.Security}
+
+	switch v.Security {
+	case "reality":
+		s.RealitySettings = &xrayRealitySettings{
+			ServerName:  v.ServerName,
+			Fingerprint: fingerprint,
+			PublicKey:   v.PublicKey,
+			ShortID:     v.ShortID,
+		}
+	case "tls":
+		s.TLSSettings = &xrayTLSSettings{
+			ServerName:    v.ServerName,
+			Fingerprint:   fingerprint,
+			ALPN:          splitALPN(v.ALPN),
+			AllowInsecure: v.AllowInsecure,
+		}
+	}
+
+	switch v.Network {
+	case "ws":
+		s.WSSettings = &xrayHostPathSettings{Host: v.Host, Path: v.Path}
+	case "httpupgrade":
+		s.HTTPUpgradeSettings = &xrayHostPathSettings{Host: v.Host, Path: v.Path}
+	case "xhttp":
+		s.XHTTPSettings = &xrayXHTTPSettings{Host: v.Host, Path: v.Path, Mode: v.Mode}
+	case "grpc":
+		s.GRPCSettings = &xrayGRPCSettings{ServiceName: v.ServiceName, MultiMode: v.Mode == "multi"}
+	}
+
+	return s
+}
+
+func splitALPN(alpn string) []string {
+	if alpn == "" {
+		return nil
+	}
+	var out []string
+	for _, p := range strings.Split(alpn, ",") {
+		if p = strings.TrimSpace(p); p != "" {
+			out = append(out, p)
+		}
+	}
+	return out
 }

@@ -8,6 +8,8 @@ func TestBuildXrayClientConfig(t *testing.T) {
 		Address:     "203.0.113.10",
 		Port:        443,
 		Flow:        "xtls-rprx-vision",
+		Security:    "reality",
+		Network:     "tcp",
 		ServerName:  "www.microsoft.com",
 		Fingerprint: "chrome",
 		PublicKey:   "examplepublickey",
@@ -49,11 +51,44 @@ func TestBuildXrayClientConfig(t *testing.T) {
 	}
 }
 
+func TestBuildXrayClientConfig_TLSOverWebSocket(t *testing.T) {
+	v := ParsedVless{
+		UUID:       "uuid",
+		Address:    "cdn.example.com",
+		Port:       8443,
+		Security:   "tls",
+		Network:    "ws",
+		ServerName: "cdn.example.com",
+		ALPN:       "h2, http/1.1",
+		Host:       "cdn.example.com",
+		Path:       "/ws",
+	}
+
+	s := buildXrayClientConfig(v).Outbounds[0].StreamSettings
+
+	if s.Network != "ws" || s.Security != "tls" {
+		t.Fatalf("unexpected network/security: %+v", s)
+	}
+	if s.RealitySettings != nil {
+		t.Fatalf("tls config must not carry reality settings: %+v", s.RealitySettings)
+	}
+	if s.TLSSettings == nil || s.TLSSettings.ServerName != "cdn.example.com" ||
+		s.TLSSettings.Fingerprint != defaultFingerprint ||
+		len(s.TLSSettings.ALPN) != 2 || s.TLSSettings.ALPN[1] != "http/1.1" {
+		t.Fatalf("unexpected tls settings: %+v", s.TLSSettings)
+	}
+	if s.WSSettings == nil || s.WSSettings.Host != v.Host || s.WSSettings.Path != v.Path {
+		t.Fatalf("unexpected ws settings: %+v", s.WSSettings)
+	}
+}
+
 func TestBuildXrayClientConfig_DefaultsFingerprintWhenMissing(t *testing.T) {
 	v := ParsedVless{
 		UUID:       "uuid",
 		Address:    "host",
 		Port:       443,
+		Security:   "reality",
+		Network:    "tcp",
 		ServerName: "example.com",
 		PublicKey:  "pbk",
 		// Fingerprint intentionally left empty.
