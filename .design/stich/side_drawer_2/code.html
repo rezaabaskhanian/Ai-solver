@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="fa"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Vazirmatn:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100%;margin:0;padding:0;font-family:'Vazirmatn','Plus Jakarta Sans',sans-serif;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "on-secondary-fixed": "#131f00",
+          "on-surface": "#141b2b",
+          "on-tertiary-fixed": "#00210a",
+          "surface-container": "#e9edff",
+          "error": "#ba1a1a",
+          "secondary": "#4d661c",
+          "surface-container-highest": "#dce2f7",
+          "secondary-fixed-dim": "#b3d17a",
+          "surface-container-low": "#f1f3ff",
+          "on-error": "#ffffff",
+          "on-tertiary-fixed-variant": "#005323",
+          "on-secondary-fixed-variant": "#364e03",
+          "primary-fixed-dim": "#98da27",
+          "tertiary": "#006d30",
+          "tertiary-container": "#85e797",
+          "outline-variant": "#c2cab0",
+          "primary-container": "#a3e635",
+          "secondary-fixed": "#ceee93",
+          "on-surface-variant": "#424936",
+          "surface-container-lowest": "#ffffff",
+          "on-error-container": "#93000a",
+          "on-primary-container": "#416400",
+          "surface": "#f9f9ff",
+          "outline": "#727a64",
+          "on-primary-fixed": "#121f00",
+          "surface-dim": "#d3daef",
+          "on-tertiary": "#ffffff",
+          "on-primary-fixed-variant": "#334f00",
+          "on-secondary-container": "#536d22",
+          "on-secondary": "#ffffff",
+          "on-tertiary-container": "#00682e",
+          "tertiary-fixed": "#95f8a7",
+          "error-container": "#ffdad6",
+          "inverse-primary": "#98da27",
+          "surface-variant": "#dce2f7",
+          "inverse-surface": "#293040",
+          "tertiary-fixed-dim": "#79db8d",
+          "surface-container-high": "#e1e8fd",
+          "on-background": "#141b2b",
+          "background": "#f9f9ff",
+          "surface-bright": "#f9f9ff",
+          "inverse-on-surface": "#edf0ff",
+          "secondary-container": "#ceee93",
+          "surface-tint": "#446900",
+          "primary": "#446900",
+          "on-primary": "#ffffff",
+          "primary-fixed": "#b2f746",
+          "lime-brand": "#a3e635",
+          "lime-light": "#ecfccb",
+          "lime-dark": "#1a2e05"
+        },
+        "borderRadius": {
+          "DEFAULT": "1rem",
+          "lg": "2rem",
+          "xl": "3rem",
+          "full": "9999px"
+        },
+        "spacing": {
+          "gutter-tablet": "1.5rem",
+          "space-xs": "0.25rem",
+          "margin-desktop": "3rem",
+          "margin-tablet": "2rem",
+          "gutter-desktop": "2rem",
+          "margin": "1.25rem",
+          "space-xl": "2.25rem",
+          "space-md": "1rem",
+          "space-sm": "0.5rem",
+          "space-lg": "1.5rem",
+          "gutter": "1rem"
+        },
+        "fontFamily": {
+          "body-md": ["Plus Jakarta Sans"],
+          "label-sm": ["Plus Jakarta Sans"],
+          "headline-xl-mobile": ["Plus Jakarta Sans"],
+          "headline-lg": ["Plus Jakarta Sans"],
+          "title-sm": ["Plus Jakarta Sans"],
+          "body-lg": ["Plus Jakarta Sans"],
+          "label-md": ["Plus Jakarta Sans"],
+          "body-sm": ["Plus Jakarta Sans"],
+          "label-lg": ["Plus Jakarta Sans"],
+          "headline-md": ["Plus Jakarta Sans"],
+          "headline-xl": ["Plus Jakarta Sans"],
+          "headline-lg-mobile": ["Plus Jakarta Sans"]
+        },
+        "fontSize": {
+          "body-md": ["15px", { lineHeight: "22px", fontWeight: "400" }],
+          "label-sm": ["11px", { lineHeight: "14px", fontWeight: "500" }],
+          "headline-xl-mobile": ["30px", { lineHeight: "38px", fontWeight: "700" }],
+          "headline-lg": ["28px", { lineHeight: "36px", fontWeight: "700" }],
+          "title-sm": ["16px", { lineHeight: "24px", fontWeight: "600" }],
+          "body-lg": ["17px", { lineHeight: "26px", fontWeight: "400" }],
+          "label-md": ["13px", { lineHeight: "18px", fontWeight: "600" }],
+          "body-sm": ["13px", { lineHeight: "18px", fontWeight: "400" }],
+          "label-lg": ["15px", { lineHeight: "20px", fontWeight: "600" }],
+          "headline-md": ["20px", { lineHeight: "28px", fontWeight: "600" }],
+          "headline-xl": ["40px", { lineHeight: "48px", fontWeight: "700" }],
+          "headline-lg-mobile": ["22px", { lineHeight: "30px", fontWeight: "600" }]
+        }
+      }
+    }
+  }
+</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style></head><body class="bg-surface text-on-surface antialiased flex flex-col min-h-screen selection:bg-primary-container selection:text-on-primary-container"><header class="fixed top-0 w-full z-50 bg-surface/85 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(163,230,53,0.08)]"><div class="h-16 px-4 flex items-center justify-between gap-space-xs max-w-[412px] mx-auto"><div class="flex items-center gap-space-xs"><button aria-label="بازگشت" class="w-11 h-11 flex items-center justify-center text-on-surface hover:text-primary rounded-full hover:bg-lime-light transition-colors" onclick="history.back()"><span class="material-symbols-outlined text-[24px]">arrow_forward</span></button><div class="w-9 h-9 rounded-2xl bg-primary-container flex items-center justify-center shadow-sm"><span class="material-symbols-outlined text-on-primary-container text-[20px]" style="font-variation-settings: 'FILL' 1;">auto_awesome</span></div><h1 class="font-headline-md text-headline-md text-on-surface font-bold">Camera Solver</h1></div><div class="flex items-center gap-space-xs"><div class="w-9 h-9 rounded-full bg-primary flex items-center justify-center shadow-sm text-on-primary"><span class="material-symbols-outlined text-[20px]">person</span></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-safe bg-surface max-w-[412px] mx-auto px-3"><div class="flex flex-col w-full relative min-w-0 pb-6">
+<!-- Subtle Dimmed Canvas Backdrop representing the active workspace underneath -->
+<div aria-hidden="true" class="fixed inset-0 bg-inverse-surface/35 backdrop-blur-[2px] z-40 transition-opacity duration-300 pointer-events-none"></div>
+<!-- Slide-out Drawer Panel (Floating Elevation Level 3 container in RTL) -->
+<div class="relative z-50 flex flex-col w-full bg-surface-container-lowest shadow-2xl rounded-3xl border border-outline-variant/30 overflow-hidden mt-2">
+<!-- Drawer Header Bar with Close Indicator -->
+<div class="flex items-center justify-between px-4 py-3 bg-[#f3f7ee] border-b border-outline-variant/20">
+<div class="flex items-center gap-2">
+<span class="flex h-2.5 w-2.5 rounded-full bg-[#a3e635] shadow-[0_0_8px_rgba(163,230,53,0.8)] animate-pulse"></span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">منوی دسترسی سریع</span>
+</div>
+<button aria-label="بستن منو" class="w-9 h-9 flex items-center justify-center rounded-full bg-surface-container-lowest shadow-sm text-on-surface hover:bg-lime-brand hover:text-lime-dark transition-colors active:scale-95" onclick="history.back()">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<!-- 1. Top User Profile Card -->
+<div class="p-4 bg-gradient-to-b from-[#f3f7ee]/80 to-surface-container-lowest">
+<div class="flex items-center gap-3 bg-surface-container-lowest p-3.5 rounded-2xl border border-outline-variant/25 shadow-sm">
+<!-- Avatar with Grade Ribbon -->
+<div class="relative shrink-0">
+<div class="w-14 h-14 rounded-2xl overflow-hidden bg-secondary-fixed flex items-center justify-center ring-2 ring-lime-brand/40 shadow-sm">
+<img class="w-full h-full object-cover" data-alt="High quality artistic studio portrait illustration of a friendly Persian high school boy student with glasses, smiling warmly, rendered in modern clean pastel pedagogic 3D style, indigo and mint theme" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbpliWdmsgntQIOJipVQHawPRgejmFRyJralK8k7rXdUsyORtmmsXKyQyY3AI9fE-n6wHztqNgPuFbKl2jtrtNtJ6x_BhCrYe2y3ivRadFaicwDFe2vbxG75Ie1ZAX-HKbiBUZHHD6GID9QKwZAnq3SRfpPxIwJiKkw2q9WOQp2cByeLy9NsEjbzQTfHOdPV6GbVbIvyd1M_uwL_r88U56ppttixWJ6TzNMeX_nz3-Gfr2_oSH1Kda"/>
+</div>
+<div class="absolute -bottom-1 -right-1 bg-primary text-on-primary text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+            نهم
+          </div>
+</div>
+<!-- Name & Educational Status -->
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between gap-1">
+<h2 class="font-headline-sm text-headline-md font-bold text-on-surface truncate">آرین رضایی</h2>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">
+              نسخه پایه
+            </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5 truncate">دانش‌آموز پایه نهم • متوسطه اول</p>
+</div>
+</div>
+<!-- Daily Quota Visual Metric in Vibrant Lime -->
+<div class="mt-3 bg-[#f7faef] p-3 rounded-2xl border border-lime-brand/30 flex flex-col gap-2">
+<div class="flex items-center justify-between font-label-md text-label-md">
+<span class="text-on-surface flex items-center gap-1.5 font-medium">
+<span class="material-symbols-outlined text-primary text-[19px]" style="font-variation-settings: 'FILL' 1;">bolt</span>
+            سهمیه هوش مصنوعی امروز
+          </span>
+<span class="text-primary font-bold tracking-tight bg-lime-light text-lime-dark px-2.5 py-0.5 rounded-full text-xs">۳ از ۵ باقی‌مانده</span>
+</div>
+<!-- Segmented Quota Bar with Lime Glow -->
+<div class="w-full bg-surface-container-highest/60 h-2.5 rounded-full overflow-hidden flex flex-row-reverse p-0.5 gap-1">
+<div class="h-full flex-1 bg-lime-brand rounded-full shadow-sm"></div>
+<div class="h-full flex-1 bg-lime-brand rounded-full shadow-sm"></div>
+<div class="h-full flex-1 bg-lime-brand rounded-full shadow-sm"></div>
+<div class="h-full flex-1 bg-outline-variant/30 rounded-full"></div>
+<div class="h-full flex-1 bg-outline-variant/30 rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- 2. Premium Upgrade Golden/Lime Card (Fresh lime + dark modern styling) -->
+<div class="px-4 pb-2">
+<div class="relative overflow-hidden rounded-2xl bg-gradient-to-l from-[#172605] via-[#243d04] to-[#3a5806] p-4 text-white shadow-lg shadow-lime-900/10">
+<!-- Ambient decorative glow -->
+<div class="absolute -left-4 -bottom-6 w-28 h-28 rounded-full bg-lime-brand/20 blur-2xl pointer-events-none"></div>
+<div class="relative flex items-center justify-between gap-3">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-full bg-lime-brand flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-lime-dark text-[18px]" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+</div>
+<span class="font-headline-sm text-title-sm font-bold text-white">ارتقا به مَث‌موشن پرو</span>
+</div>
+<p class="font-body-sm text-body-sm text-[#dce7cb] leading-relaxed">حل نامحدود گام‌به‌گام و آزمون‌ساز هوشمند</p>
+</div>
+<button class="shrink-0 h-9 px-4 rounded-full bg-lime-brand text-lime-dark font-label-md text-label-md font-bold shadow hover:bg-primary-fixed active:scale-95 transition-all flex items-center gap-1">
+<span>فعال‌سازی</span>
+<span class="material-symbols-outlined text-[16px]">arrow_back</span>
+</button>
+</div>
+</div>
+</div>
+<!-- 3. Primary Navigation Section -->
+<nav class="flex flex-col px-4 pt-2 pb-1 gap-1">
+<span class="font-label-sm text-label-sm text-outline px-2 pt-1 font-semibold uppercase tracking-wider">یادگیری و تمرین</span>
+<!-- Nav Item: Home (Active State with soft lime pill styling) -->
+<a class="flex items-center justify-between min-h-[48px] px-3.5 rounded-full bg-[#eef8db] text-primary font-headline-sm text-title-sm font-bold border border-lime-brand/40 shadow-sm transition-all" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-primary text-[22px]" style="font-variation-settings: 'FILL' 1;">home</span>
+<span>صفحه اصلی</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-primary shadow-[0_0_6px_rgba(68,105,0,0.6)]"></span>
+</a>
+<!-- Nav Item: Topics -->
+<a class="flex items-center justify-between min-h-[46px] px-3.5 rounded-full hover:bg-[#f4f7ee] text-on-surface font-body-lg text-body-md transition-colors group" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary text-[22px] transition-colors">menu_book</span>
+<span class="group-hover:text-primary font-medium transition-colors">مباحث درسی</span>
+</div>
+<span class="px-2.5 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">۹ سرفصل</span>
+</a>
+<!-- Nav Item: History -->
+<a class="flex items-center justify-between min-h-[46px] px-3.5 rounded-full hover:bg-[#f4f7ee] text-on-surface font-body-lg text-body-md transition-colors group" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary text-[22px] transition-colors">history_edu</span>
+<span class="group-hover:text-primary font-medium transition-colors">تاریخچه و سوابق حل</span>
+</div>
+<span class="px-2.5 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">۱۲ مسئله</span>
+</a>
+<!-- Nav Item: Daily Quiz -->
+<a class="flex items-center justify-between min-h-[46px] px-3.5 rounded-full hover:bg-[#f4f7ee] text-on-surface font-body-lg text-body-md transition-colors group" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-primary text-[22px]" style="font-variation-settings: 'FILL' 1;">psychology</span>
+<span class="group-hover:text-primary font-medium transition-colors">کوییز و تمرین روزانه</span>
+</div>
+<span class="px-2.5 py-0.5 rounded-full bg-lime-brand/30 text-lime-dark font-label-sm text-label-sm font-bold border border-lime-brand/50">جدید</span>
+</a>
+<!-- Nav Item: Auto Error Checker -->
+<a class="flex items-center justify-between min-h-[46px] px-3.5 rounded-full hover:bg-[#f4f7ee] text-on-surface font-body-lg text-body-md transition-colors group" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary text-[22px] transition-colors">fact_check</span>
+<span class="group-hover:text-primary font-medium transition-colors">بررسی حل من (خطایاب خودکار)</span>
+</div>
+<span class="material-symbols-outlined text-outline-variant text-[18px]">chevron_left</span>
+</a>
+</nav>
+<!-- 4. Settings & Preferences Section -->
+<div class="flex flex-col px-4 pt-2 pb-1 gap-1 border-t border-outline-variant/20 mt-1">
+<span class="font-label-sm text-label-sm text-outline px-2 pt-1 font-semibold uppercase tracking-wider">تنظیمات و سفارشی‌سازی</span>
+<!-- Setting: Math Keyboard -->
+<button class="w-full flex items-center justify-between min-h-[44px] px-3.5 rounded-full hover:bg-[#f4f7ee] text-on-surface font-body-md text-body-md transition-colors text-right">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">keyboard</span>
+<span>کیبورد ریاضی و چیدمان فرمول</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline bg-surface-container-high px-2 py-0.5 rounded-full">استاندارد LTR</span>
+</button>
+<!-- Setting: Night / Dark Mode Toggle Interactive -->
+<div class="flex items-center justify-between min-h-[44px] px-3.5 rounded-full text-on-surface font-body-md text-body-md">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">dark_mode</span>
+<span>حالت مطالعه شب</span>
+</div>
+<!-- Pill Switch Toggle with Lime Active -->
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" id="darkModeToggle" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-surface rtl:peer-checked:after:-translate-x-full peer-checked:after:bg-lime-dark after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-none after:rounded-full after:h-5 after:w-5 after:shadow-sm after:transition-all peer-checked:bg-lime-brand"></div>
+</label>
+</div>
+<!-- Setting: Calendar / Language -->
+<button class="w-full flex items-center justify-between min-h-[44px] px-3.5 rounded-full hover:bg-[#f4f7ee] text-on-surface font-body-md text-body-md transition-colors text-right">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">translate</span>
+<span>زبان و تقویم درسی</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline bg-surface-container-high px-2 py-0.5 rounded-full">فارسی (شمسی)</span>
+</button>
+</div>
+<!-- 5. Pedagogical Delight Card: Today's Formula Tip (Mint & Lime Touch) -->
+<div class="mx-4 my-2 p-3.5 rounded-2xl bg-[#f5f9ed] border border-lime-brand/35 flex items-start gap-3">
+<div class="w-9 h-9 rounded-full bg-lime-brand flex items-center justify-center shrink-0 text-lime-dark shadow-sm">
+<span class="material-symbols-outlined text-[19px]" style="font-variation-settings: 'FILL' 1;">lightbulb</span>
+</div>
+<div class="flex-1 min-w-0">
+<span class="font-label-md text-label-md text-on-surface font-bold block">نکته سریع اتحادها</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5 leading-relaxed">
+          در اتحاد مربع دوجمله‌ای همیشه علامت جمله وسط به علامت بین دو جمله بستگی دارد:
+        </p>
+<div class="mt-2 px-3 py-1 bg-surface-container-lowest border border-lime-brand/40 rounded-full text-left font-math-inline text-math-inline text-primary font-bold tracking-wide inline-block shadow-xs" dir="ltr">
+          (a - b)² = a² - 2ab + b²
+        </div>
+</div>
+</div>
+<!-- 6. Footer / App Meta & Support -->
+<div class="px-4 pt-2 pb-4 bg-surface-container-lowest border-t border-outline-variant/15 flex flex-col gap-2">
+<div class="flex items-center justify-between text-on-surface-variant">
+<a class="flex items-center gap-1.5 font-label-md text-label-md hover:text-primary transition-colors py-1" href="#">
+<span class="material-symbols-outlined text-primary text-[18px]">help_center</span>
+<span class="font-medium">راهنما و پشتیبانی هوشمند</span>
+</a>
+<a class="flex items-center gap-1.5 font-label-md text-label-md hover:text-primary transition-colors py-1" href="#">
+<span class="material-symbols-outlined text-primary text-[18px]">school</span>
+<span class="font-medium">قوانین آموزشی</span>
+</a>
+</div>
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-sm text-label-sm text-outline">مَث‌موشن (MathMotion) نسخه ۲.۴.۰</span>
+<div class="flex items-center gap-1 text-primary font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span>همگام با کتب درسی ۱۴۰۳</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+  // Simple micro-interaction for the night mode toggle
+  const toggle = document.getElementById('darkModeToggle');
+  if (toggle) {
+    toggle.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    });
+  }
+</script></main></body></html>

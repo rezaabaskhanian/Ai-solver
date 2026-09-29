@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useLanguageStore } from '../../store/useLanguageStore';
-import { colors, radius, spacing } from '../../theme';
+import { makeStyles, radius, spacing, useColors } from '../../theme';
 import { AppText } from '../common/AppText';
 
 const OPTIONS: Array<{ code: 'en' | 'fa'; labelKey: string }> = [
@@ -12,6 +12,8 @@ const OPTIONS: Array<{ code: 'en' | 'fa'; labelKey: string }> = [
 ];
 
 export function LanguageSwitch() {
+  const colors = useColors();
+  const styles = useStyles();
   const { t } = useTranslation();
   const language = useLanguageStore(state => state.language);
   const setLanguage = useLanguageStore(state => state.setLanguage);
@@ -26,7 +28,7 @@ export function LanguageSwitch() {
             onPress={() => setLanguage(option.code)}
             style={[styles.pill, active && styles.pillActive]}
           >
-            <AppText size="xs" weight="medium" color={active ? colors.textInverse : colors.textSecondary}>
+            <AppText size="xs" weight="medium" color={active ? colors.onPrimary : colors.textSecondary}>
               {t(option.labelKey)}
             </AppText>
           </Pressable>
@@ -36,7 +38,7 @@ export function LanguageSwitch() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(colors => StyleSheet.create({
   row: {
     flexDirection: 'row',
     backgroundColor: colors.surfaceMuted,
@@ -52,4 +54,4 @@ const styles = StyleSheet.create({
   pillActive: {
     backgroundColor: colors.primary,
   },
-});
+}));

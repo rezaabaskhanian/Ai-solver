@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 
-import { colors, spacing } from '../../theme';
+import { spacing, useColors } from '../../theme';
 import { AppButton } from '../common/AppButton';
 import { AppText } from '../common/AppText';
 
@@ -31,6 +31,7 @@ export function StepControls({
   onTogglePlay,
   onReplay,
 }: StepControlsProps) {
+  const colors = useColors();
   const { t } = useTranslation();
 
   return (

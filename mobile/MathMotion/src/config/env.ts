@@ -11,7 +11,13 @@ const DEV_API_HOST = Platform.select({ android: '10.0.2.2', default: 'localhost'
 // behind Arvan + Traefik); debug builds keep hitting the local go-api.
 const PROD_API_BASE_URL = 'https://api.mathmotion.ir';
 
-export const API_BASE_URL = __DEV__ ? `http://${DEV_API_HOST}:8080` : PROD_API_BASE_URL;
+// Flip to true to point a debug build (Metro, emulator) at production
+// instead of a local go-api -- e.g. to test Scan end-to-end without
+// running the backend locally. Keep false in commits.
+const USE_PROD_API_IN_DEV = true;
+
+export const API_BASE_URL =
+  __DEV__ && !USE_PROD_API_IN_DEV ? `http://${DEV_API_HOST}:8080` : PROD_API_BASE_URL;
 
 export const REQUEST_TIMEOUT_MS = 15000;
 

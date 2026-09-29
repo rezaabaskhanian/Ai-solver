@@ -3,38 +3,79 @@
  * @format
  */
 
-import { NavigationContainer } from '@react-navigation/native';
-import React, { useEffect } from 'react';
-import { StatusBar, StyleSheet, useColorScheme } from 'react-native';
+import { DarkTheme, DefaultTheme, NavigationContainer, type Theme } from '@react-navigation/native';
+import React, { useEffect, useMemo } from 'react';
+import { StatusBar, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import './src/i18n';
 import { AppDrawer } from './src/navigation/AppDrawer';
+import { OnboardingScreen } from './src/screens/Onboarding/OnboardingScreen';
 import { useEntitlementStore } from './src/store/useEntitlementStore';
 import { useLanguageStore } from './src/store/useLanguageStore';
+import { useOnboardingStore } from './src/store/useOnboardingStore';
+import { useThemeStore } from './src/store/useThemeStore';
+import { fontFamily, useColors } from './src/theme';
 
 function App() {
-  const isDarkMode = useColorScheme() === 'dark';
-  const hasHydrated = useLanguageStore(state => state.hasHydrated);
+  const colors = useColors();
+  const languageHydrated = useLanguageStore(state => state.hasHydrated);
+  const themeHydrated = useThemeStore(state => state.hasHydrated);
+  const onboardingHydrated = useOnboardingStore(state => state.hasHydrated);
+  const onboardingSeen = useOnboardingStore(state => state.seen);
+  const isDarkMode = colors.scheme === 'dark';
+
+  // Navigation's own backgrounds (screen transitions, drawer scrim) and
+  // header font follow the app theme too, so a theme switch leaves no
+  // white flashes or system-font titles.
+  const navigationTheme = useMemo<Theme>(() => {
+    const baseTheme = isDarkMode ? DarkTheme : DefaultTheme;
+    return {
+      ...baseTheme,
+      colors: {
+        ...baseTheme.colors,
+        primary: colors.primaryText,
+        background: colors.background,
+        card: colors.surface,
+        text: colors.textPrimary,
+        border: colors.border,
+      },
+      fonts: {
+        regular: { fontFamily: fontFamily.fa.regular, fontWeight: 'normal' },
+        medium: { fontFamily: fontFamily.fa.medium, fontWeight: 'normal' },
+        bold: { fontFamily: fontFamily.fa.bold, fontWeight: 'normal' },
+        heavy: { fontFamily: fontFamily.fa.bold, fontWeight: 'normal' },
+      },
+    };
+  }, [colors, isDarkMode]);
 
   useEffect(() => {
     useEntitlementStore.getState().refresh();
   }, []);
 
-  // Wait for the persisted language preference to load before rendering
-  // any translated text, so the UI doesn't flash in the wrong language.
-  if (!hasHydrated) {
+  // Wait for the persisted language, theme and onboarding flags to load
+  // before rendering, so the UI doesn't flash in the wrong language or
+  // colors, or show the intro to someone who already dismissed it.
+  if (!languageHydrated || !themeHydrated || !onboardingHydrated) {
     return null;
   }
 
   return (
     <GestureHandlerRootView style={styles.flexOne}>
       <SafeAreaProvider>
-        <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-        <NavigationContainer>
-          <AppDrawer />
-        </NavigationContainer>
+        <StatusBar
+          barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+          backgroundColor={colors.surface}
+        />
+        {onboardingSeen ? (
+          <NavigationContainer theme={navigationTheme}>
+            <AppDrawer />
+          </NavigationContainer>
+        ) : (
+          // First launch only; its Start button flips `seen`.
+          <OnboardingScreen />
+        )}
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

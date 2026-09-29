@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="fa"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+<meta content="mobile_tab" name="shell-type"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Vazirmatn:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<style>
+    @layer base {
+      html, body {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        font-family: 'Vazirmatn', 'Plus Jakarta Sans', sans-serif;
+        background-color: #f7faf7;
+      }
+      body {
+        overscroll-behavior: none;
+      }
+      .pb-safe {
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+      .pt-safe {
+        padding-top: env(safe-area-inset-top, 0px);
+      }
+    }
+    ::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#446900",
+            "primary-container": "#a3e635",
+            "on-primary": "#ffffff",
+            "on-primary-container": "#203600",
+            "secondary": "#4d661c",
+            "secondary-container": "#d9f99d",
+            "on-secondary-container": "#2e4200",
+            "tertiary": "#006d30",
+            "tertiary-container": "#85e797",
+            "surface": "#f7faf7",
+            "surface-bright": "#ffffff",
+            "surface-container-lowest": "#ffffff",
+            "surface-container-low": "#f2f7f1",
+            "surface-container": "#e8f2e7",
+            "surface-container-high": "#dfecde",
+            "on-surface": "#141b2b",
+            "on-surface-variant": "#4d5b4d",
+            "outline": "#788775",
+            "outline-variant": "#d4ded2",
+            "lime-accent": "#a3e635",
+            "lime-light": "#ecfccb"
+          },
+          borderRadius: {
+            "DEFAULT": "1rem",
+            "xl": "1.25rem",
+            "2xl": "1.75rem",
+            "3xl": "2.25rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            sans: ['Vazirmatn', 'Plus Jakarta Sans', 'sans-serif'],
+            math: ['Plus Jakarta Sans', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-[#f7faf7] text-on-surface antialiased flex flex-col min-h-screen selection:bg-lime-accent selection:text-black">
+<!-- Mobile iOS Top Status / Header -->
+<header class="fixed top-0 w-full z-40 bg-[#f7faf7]/85 backdrop-blur-xl pt-safe">
+<div class="h-16 px-5 flex items-center justify-between max-w-[420px] mx-auto">
+<!-- Left side (RTL User Greeting) -->
+<div class="flex items-center gap-2.5">
+<div class="relative">
+<img alt="پروفایل کاربر" class="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBeP1re92V2hnb06N52zU7Cm-za7tJ6ehrc2DNM2x_gQ86264pI3qa1B8wxmEyoJItRnQZYrEM8bUdbDBcmwupLX-ghHSqzBa3Be5KyUmpeK-9PAiPblDp8-ZERPlwc0hwaE9Df91wyCbZbFAvo-EDhu4qqKY6Quccas5UPEJmw5CE61yHq6K1-l988OOZVycch850ZLfmwtKjmTCG7T2XYjHKJiGB4lYnLBI4SexMf3yDK74CZt9VH"/>
+<span class="absolute bottom-0 right-0 w-3 h-3 bg-lime-500 border-2 border-white rounded-full"></span>
+</div>
+<div class="flex items-center gap-1 cursor-pointer">
+<span class="text-sm font-bold text-on-surface">سلام، کارن!</span>
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">expand_more</span>
+</div>
+</div>
+<!-- Right side actions -->
+<div class="flex items-center gap-2">
+<button aria-label="امتیاز هوش مصنوعی" class="w-10 h-10 rounded-full bg-lime-accent text-on-primary-container flex items-center justify-center shadow-sm active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</button>
+<button aria-label="منو" class="w-10 h-10 rounded-full bg-white text-on-surface flex items-center justify-center border border-outline-variant/60 shadow-sm active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[20px]">sort</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Scrollable Content -->
+<main class="flex-1 flex flex-col w-full max-w-[420px] mx-auto pt-20 pb-28 px-5 gap-6">
+<!-- Big Greeting Title -->
+<div class="flex flex-col gap-1 mt-1">
+<h1 class="text-[26px] leading-[36px] font-extrabold text-[#111c10] tracking-tight">
+        امروز برای حل مسئله<br/>کمک می‌خوای؟
+      </h1>
+</div>
+<!-- Quick Pill Action Bar (Input / Ask Question + Floating Action Icons) -->
+<div class="flex items-center gap-2 w-full">
+<button class="flex-1 h-12 bg-white rounded-full px-4 flex items-center justify-between border border-outline-variant/60 shadow-sm text-on-surface-variant active:scale-[0.99] transition-transform text-right">
+<span class="text-[13.5px] font-medium text-stone-500">پرسش از هوش مصنوعی...</span>
+<span class="material-symbols-outlined text-[19px] text-stone-400">search</span>
+</button>
+<!-- Keyboard math entry icon -->
+<button class="w-12 h-12 rounded-full bg-white border border-outline-variant/60 shadow-sm flex items-center justify-center text-stone-700 active:scale-95 transition-transform" title="ورود فرمول ریاضی">
+<span class="material-symbols-outlined text-[20px]">keyboard</span>
+</button>
+<!-- Camera Scan Pill Icon -->
+<button class="w-12 h-12 rounded-full bg-white border border-outline-variant/60 shadow-sm flex items-center justify-center text-stone-700 active:scale-95 transition-transform" title="اسکن با دوربین">
+<span class="material-symbols-outlined text-[20px]">photo_camera</span>
+</button>
+<!-- Audio / Mic entry -->
+<button class="w-12 h-12 rounded-full bg-white border border-outline-variant/60 shadow-sm flex items-center justify-center text-stone-700 active:scale-95 transition-transform" title="پرسش صوتی">
+<span class="material-symbols-outlined text-[20px]">mic</span>
+</button>
+</div>
+<!-- Hero Promotional Banner: Unlock Study Pro -->
+<section class="w-full bg-[#a3e635] text-[#122003] rounded-3xl p-5 shadow-[0_10px_25px_-5px_rgba(163,230,53,0.38)] flex flex-col justify-between gap-4 relative overflow-hidden">
+<!-- Decorative background glow / wave -->
+<div class="absolute -top-10 -left-10 w-36 h-36 bg-white/20 rounded-full blur-2xl pointer-events-none"></div>
+<div class="flex items-start gap-3 relative z-10">
+<div class="w-11 h-11 rounded-2xl bg-[#203600]/10 flex items-center justify-center flex-shrink-0 text-[#192b02]">
+<span class="material-symbols-outlined text-[26px]" style="font-variation-settings: 'FILL' 1;">military_tech</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<h2 class="text-[17px] font-extrabold tracking-tight">ارتقا به مَث‌موشن پرو</h2>
+<span class="text-[10px] bg-[#1d3102] text-[#a3e635] px-2 py-0.5 rounded-full font-bold">ویژه</span>
+</div>
+<p class="text-[12.5px] leading-relaxed text-[#2c4505] mt-1 font-medium">
+            دسترسی نامحدود به راهکارهای گام‌به‌گام هوش مصنوعی، رفع اشکال زنده و حل بدون خطا
+          </p>
+</div>
+</div>
+<!-- Action Button inside Banner -->
+<button class="w-full py-3 bg-white text-[#192b02] text-sm font-bold rounded-full shadow-sm hover:bg-white/95 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 z-10" type="button">
+<span class="text-base font-extrabold">+</span>
+<span>ارتقا به پرو (Pro)</span>
+</button>
+</section>
+<!-- Daily Quota Floating Card (Soft Mint) -->
+<section class="w-full bg-white rounded-2xl p-4 border border-[#e1ede0] shadow-sm flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-[#ecfccb] text-[#3c5e00] flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">bolt</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-stone-800">سهمیه رایگان امروز</span>
+<span class="text-[11px] text-stone-400">۳ از ۵ حل باقی‌مانده</span>
+</div>
+</div>
+<!-- Mini Progress Pill -->
+<div class="w-28 bg-[#eef5ed] h-2.5 rounded-full overflow-hidden p-0.5 flex">
+<div class="bg-[#84cc16] h-full rounded-full w-3/5"></div>
+</div>
+</section>
+<!-- Subject & Tool Cards (3 Column Rounded Pill-Cards like the Reference) -->
+<section class="grid grid-cols-3 gap-2.5 w-full">
+<!-- Card 1: Math Solver -->
+<button class="bg-white hover:bg-stone-50 border border-outline-variant/50 rounded-2xl p-3.5 flex flex-col items-center justify-center gap-2 shadow-sm active:scale-95 transition-all text-center group">
+<div class="w-12 h-12 rounded-full bg-stone-100 group-hover:bg-[#ecfccb] transition-colors flex items-center justify-center text-stone-700 group-hover:text-[#3f6500]">
+<span class="material-symbols-outlined text-[22px]">center_focus_strong</span>
+</div>
+<span class="text-[12px] font-bold text-stone-800 leading-tight">حل‌کننده ریاضی</span>
+</button>
+<!-- Card 2: Give Answer (Active Highlighted pill tone from reference) -->
+<button class="bg-[#dcfce7] border border-[#bbf7d0] rounded-2xl p-3.5 flex flex-col items-center justify-center gap-2 shadow-sm active:scale-95 transition-all text-center">
+<div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-emerald-800 shadow-xs">
+<span class="material-symbols-outlined text-[22px]">forum</span>
+</div>
+<span class="text-[12px] font-extrabold text-emerald-950 leading-tight">پاسخ تشریحی</span>
+</button>
+<!-- Card 3: Textbooks -->
+<button class="bg-white hover:bg-stone-50 border border-outline-variant/50 rounded-2xl p-3.5 flex flex-col items-center justify-center gap-2 shadow-sm active:scale-95 transition-all text-center group">
+<div class="w-12 h-12 rounded-full bg-stone-100 group-hover:bg-[#ecfccb] transition-colors flex items-center justify-center text-stone-700 group-hover:text-[#3f6500]">
+<span class="material-symbols-outlined text-[22px]">menu_book</span>
+</div>
+<span class="text-[12px] font-bold text-stone-800 leading-tight">کتب درسی</span>
+</button>
+</section>
+<!-- Quick Formula Pills (Interactive equation chips) -->
+<section class="flex flex-col gap-2.5">
+<div class="flex items-center justify-between">
+<span class="text-[13px] font-bold text-stone-800">فرمول‌های آماده تمرین</span>
+<span class="text-[11px] font-medium text-stone-400">تپ سریع</span>
+</div>
+<div class="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+<button class="flex-shrink-0 bg-white border border-outline-variant/60 px-3.5 py-2 rounded-full shadow-2xs text-[13px] font-math font-semibold text-stone-800 hover:border-lime-500 active:scale-95 transition-all" dir="ltr">
+          2x + 5 = 17
+        </button>
+<button class="flex-shrink-0 bg-white border border-outline-variant/60 px-3.5 py-2 rounded-full shadow-2xs text-[13px] font-math font-semibold text-stone-800 hover:border-lime-500 active:scale-95 transition-all" dir="ltr">
+          x² - 4x + 4 = 0
+        </button>
+<button class="flex-shrink-0 bg-white border border-outline-variant/60 px-3.5 py-2 rounded-full shadow-2xs text-[13px] font-math font-semibold text-stone-800 hover:border-lime-500 active:scale-95 transition-all" dir="ltr">
+          lim (sin x / x)
+        </button>
+</div>
+</section>
+<!-- Today's Tasks / Recent Solves Section (List layout styled like reference) -->
+<section class="flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<h3 class="text-sm font-extrabold text-stone-900">تمرین‌های امروز و حل‌های اخیر</h3>
+<a class="text-xs font-bold text-[#446900] hover:underline" href="#">مشاهده همه</a>
+</div>
+<div class="flex flex-col gap-2.5">
+<!-- Item 1: Video Lesson or Solved item -->
+<div class="bg-white rounded-2xl p-3.5 border border-outline-variant/50 shadow-sm flex items-center justify-between hover:border-lime-400 transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-[#ecfccb] text-[#3f6500] flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">smart_display</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-stone-900">ویدیو آموزشی: معادلات درجه ۲</span>
+<span class="text-[11px] text-stone-400">یادگیری با مثال‌های کلیدی</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-[18px] text-stone-400 rtl:rotate-180">call_made</span>
+</div>
+<!-- Item 2: AI Study Tips / Equation Item -->
+<div class="bg-white rounded-2xl p-3.5 border border-outline-variant/50 shadow-sm flex items-center justify-between hover:border-lime-400 transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-[#f0fdf4] text-emerald-700 flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-stone-900 font-math" dir="ltr">x² - 5x + 6 = 0</span>
+<span class="text-[11px] text-[#446900] font-semibold font-math" dir="ltr">جواب: x = 2, 3</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-[18px] text-stone-400 rtl:rotate-180">call_made</span>
+</div>
+<!-- Item 3: Linear Equation -->
+<div class="bg-white rounded-2xl p-3.5 border border-outline-variant/50 shadow-sm flex items-center justify-between hover:border-lime-400 transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-[#f0fdf4] text-emerald-700 flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-stone-900 font-math" dir="ltr">3x - 7 = 14</span>
+<span class="text-[11px] text-[#446900] font-semibold font-math" dir="ltr">جواب: x = 7</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-[18px] text-stone-400 rtl:rotate-180">call_made</span>
+</div>
+</div>
+</section>
+</main>
+<!-- Floating Pill Navigation Dock (Matched exactly to the reference image) -->
+<div class="fixed bottom-5 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none pb-safe">
+<nav class="pointer-events-auto bg-[#e8eee7]/90 backdrop-blur-xl border border-white/60 p-1.5 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.08)] flex items-center gap-1">
+<!-- Home (Active dark rounded pill indicator) -->
+<a class="flex items-center gap-1.5 bg-[#172115] text-white px-4 py-2 rounded-full shadow-sm transition-all" href="#">
+<span class="material-symbols-outlined text-[19px]">home</span>
+<span class="text-xs font-bold">خانه</span>
+</a>
+<!-- Chat / AI Assistant -->
+<a class="w-10 h-10 rounded-full flex items-center justify-center text-stone-700 hover:text-black transition-colors" href="#" title="گفت‌وگو">
+<span class="material-symbols-outlined text-[20px]">chat_bubble_outline</span>
+</a>
+<!-- Books / Syllabus -->
+<a class="w-10 h-10 rounded-full flex items-center justify-center text-stone-700 hover:text-black transition-colors" href="#" title="کتاب‌ها">
+<span class="material-symbols-outlined text-[20px]">menu_book</span>
+</a>
+<!-- Settings / Profile -->
+<a class="w-10 h-10 rounded-full flex items-center justify-center text-stone-700 hover:text-black transition-colors" href="#" title="تنظیمات">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+</a>
+</nav>
+</div>
+</body></html>

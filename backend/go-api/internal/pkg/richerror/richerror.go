@@ -17,6 +17,9 @@ const (
 	KindNotFound
 	KindUnexpected
 	KindPaymentRequired
+	// A per-day cap (e.g. Premium scans) that paying won't lift — retry
+	// after the daily reset.
+	KindTooManyRequests
 )
 
 type RichError struct {

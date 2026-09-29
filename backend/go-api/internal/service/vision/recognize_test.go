@@ -5,15 +5,16 @@ import (
 	"testing"
 
 	"mathmotion/go-api/internal/pkg/richerror"
+	"mathmotion/go-api/internal/service/quota"
 )
 
 func TestRecognizeEquation_Success(t *testing.T) {
 	srv := newFakeAnthropicServer(t, "2x + 5 = 17")
 	defer srv.Close()
 
-	repo := &fakeRepo{countProblems: 0}
+	q := &fakeQuota{}
 	client := newAnthropicTestClient(srv.URL)
-	svc := New(repo, client, 5)
+	svc := New(client, q)
 
 	problems, err := svc.RecognizeEquations(context.Background(), "user-1", false, "ZmFrZQ==", "image/jpeg")
 	if err != nil {
@@ -22,15 +23,18 @@ func TestRecognizeEquation_Success(t *testing.T) {
 	if len(problems) != 1 || problems[0] != "2x + 5 = 17" {
 		t.Fatalf("problems = %v, want [%q]", problems, "2x + 5 = 17")
 	}
+	if len(q.recorded) != 1 || q.recorded[0] != quota.KindScan {
+		t.Fatalf("recorded = %v, want [scan]", q.recorded)
+	}
 }
 
 func TestRecognizeEquation_QuotaExceededBlocksNonPremiumUser(t *testing.T) {
 	// No fake Anthropic server is started at all: if the quota check
 	// didn't short-circuit first, this would fail with a connection
 	// error instead of the expected quota error.
-	repo := &fakeRepo{countProblems: 5}
+	q := &fakeQuota{allowErr: richerror.New("test").WithKind(richerror.KindPaymentRequired)}
 	client := newAnthropicTestClient("http://127.0.0.1:0")
-	svc := New(repo, client, 5)
+	svc := New(client, q)
 
 	_, err := svc.RecognizeEquations(context.Background(), "user-1", false, "ZmFrZQ==", "image/jpeg")
 	if err == nil {
@@ -46,17 +50,18 @@ func TestRecognizeEquation_QuotaExceededBlocksNonPremiumUser(t *testing.T) {
 	}
 }
 
-func TestRecognizeEquation_PremiumUserBypassesQuota(t *testing.T) {
-	srv := newFakeAnthropicServer(t, "x = 6")
-	defer srv.Close()
-
-	repo := &fakeRepo{countProblems: 999}
-	client := newAnthropicTestClient(srv.URL)
-	svc := New(repo, client, 5)
+func TestRecognizeEquation_PremiumScanCapReturnsTooManyRequests(t *testing.T) {
+	q := &fakeQuota{allowErr: richerror.New("test").WithKind(richerror.KindTooManyRequests)}
+	client := newAnthropicTestClient("http://127.0.0.1:0")
+	svc := New(client, q)
 
 	_, err := svc.RecognizeEquations(context.Background(), "user-1", true, "ZmFrZQ==", "image/jpeg")
-	if err != nil {
-		t.Fatalf("RecognizeEquation returned error for a premium user: %v", err)
+	richErr, ok := err.(richerror.RichError)
+	if !ok || richErr.Kind() != richerror.KindTooManyRequests {
+		t.Fatalf("err = %v, want KindTooManyRequests", err)
+	}
+	if len(q.recorded) != 0 {
+		t.Fatalf("a rejected scan must not be recorded, got %v", q.recorded)
 	}
 }
 
@@ -64,9 +69,9 @@ func TestRecognizeEquation_NotRecognizedMapsToInvalidKind(t *testing.T) {
 	srv := newFakeAnthropicServer(t, "NONE")
 	defer srv.Close()
 
-	repo := &fakeRepo{}
+	q := &fakeQuota{}
 	client := newAnthropicTestClient(srv.URL)
-	svc := New(repo, client, 5)
+	svc := New(client, q)
 
 	_, err := svc.RecognizeEquations(context.Background(), "user-1", false, "ZmFrZQ==", "image/jpeg")
 	if err == nil {

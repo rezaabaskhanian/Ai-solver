@@ -17,6 +17,10 @@ describe('tokenizeExpression', () => {
     expect(tokenizeExpression('x^2')).toEqual(['x', '^', '2']);
   });
 
+  it('keeps commas in point notation', () => {
+    expect(tokenizeExpression('A(1, -2)')).toEqual(['A', '(', '1', ',', '-', '2', ')']);
+  });
+
   it('falls back to the whole string when nothing matches', () => {
     expect(tokenizeExpression('∫')).toEqual(['∫']);
   });

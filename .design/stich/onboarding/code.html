@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="fa"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+<title>MathMotion - دستیار هوشمند مطالعه و حل ریاضی</title>
+<!-- Tailwind CSS v3 with forms and container queries plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Custom Configuration -->
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              lime: '#a8f044',
+              'lime-hover': '#96dd38',
+              surface: '#F6FAF3',
+              dark: '#141c0f',
+              muted: '#6a7865',
+              border: '#e4eee0'
+            }
+          },
+          fontFamily: {
+            vazir: ['Vazirmatn', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif']
+          },
+          boxShadow: {
+            'glow': '0 12px 30px -4px rgba(168, 240, 68, 0.45)',
+            'card': '0 20px 40px -15px rgba(22, 38, 14, 0.12)'
+          }
+        }
+      }
+    }
+  </script>
+<!-- Google Fonts: Vazirmatn -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&amp;family=Playfair+Display:ital,wght@1,600&amp;display=swap" rel="stylesheet"/>
+<style data-purpose="custom-layout">
+    body {
+      font-family: 'Vazirmatn', system-ui, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    
+    /* Background subtle grid pattern mimicking reference */
+    .bg-math-grid {
+      background-size: 28px 28px;
+      background-image: 
+        linear-gradient(to right, rgba(168, 240, 68, 0.09) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(168, 240, 68, 0.09) 1px, transparent 1px);
+    }
+
+    /* English serif font for top stylized brand */
+    .font-serif-logo {
+      font-family: 'Playfair Display', Georgia, serif;
+    }
+  </style>
+</head>
+<body class="bg-stone-100 flex items-center justify-center min-h-screen p-0 sm:p-4 text-stone-900 antialiased selection:bg-brand-lime selection:text-black">
+<!-- BEGIN: PhoneShellContainer -->
+<!-- Container replicates modern iPhone dimensions & aesthetics matching the reference mockup -->
+<main class="relative w-full max-w-[412px] h-[874px] max-h-screen sm:max-h-[890px] bg-white sm:rounded-[48px] overflow-hidden shadow-2xl flex flex-col justify-between border-[6px] border-neutral-900/5 sm:border-neutral-800">
+<!-- BEGIN: TopBarAndGridBackground -->
+<div class="relative w-full overflow-hidden shrink-0 pt-3 bg-gradient-to-b from-[#eaf7e8] via-[#f7fcf5] to-white">
+<!-- Ambient Grid Overlay -->
+<div class="absolute inset-0 bg-math-grid pointer-events-none opacity-80"></div>
+<!-- iOS Status Bar Elements -->
+<div class="relative z-20 flex items-center justify-between px-7 pt-2 text-[14px] font-semibold text-neutral-800 select-none">
+<span class="tracking-tight text-xs font-semibold dir-ltr text-center">9:41</span>
+<!-- Camera Island / Notch Pill -->
+<div class="w-24 h-4 bg-black/5 rounded-full absolute left-1/2 -translate-x-1/2 top-2 hidden sm:block"></div>
+<!-- Status Icons -->
+<div class="flex items-center gap-1.5 dir-ltr">
+<!-- Cell Signal -->
+<svg class="w-3.5 h-3.5" fill="currentColor" viewbox="0 0 24 24">
+<path d="M2 17h3v4H2v-4zm6-5h3v9H8v-9zm6-5h3v14h-3V7zm6-5h3v19h-3V2z"></path>
+</svg>
+<!-- Wifi -->
+<svg class="w-3.5 h-3.5" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98C20.93 5.9 16.69 4 12 4zm0 3.5c3.78 0 7.21 1.5 9.73 3.97L12 19.34 2.27 11.47C4.79 9 8.22 7.5 12 7.5z"></path>
+</svg>
+<!-- Battery -->
+<div class="w-5 h-2.5 border border-current rounded-sm p-0.5 flex items-center">
+<div class="w-full h-full bg-current rounded-2xs"></div>
+</div>
+</div>
+</div>
+<!-- App Header Title -->
+<header class="relative z-10 flex flex-col items-center justify-center pt-5 pb-1">
+<div class="flex items-center gap-2">
+<span class="font-serif-logo text-xl sm:text-2xl text-stone-800 tracking-tight font-bold">MathMotion</span>
+<span class="inline-flex items-center justify-center text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-lime text-black border border-lime-400">
+            مَث‌موشن
+          </span>
+</div>
+<p class="text-[11px] text-stone-500 font-medium tracking-wide mt-0.5">یادگیری تعاملی ریاضیات کنکور و دانشگاه</p>
+</header>
+<!-- BEGIN: HeroCollageSection -->
+<!-- Visual Collage: Floating Cards with 3 Students and sparkling icon overlay -->
+<section aria-label="تصاویر همراهان یادگیری" class="relative mt-4 mb-2 flex items-center justify-center h-[260px] w-full px-4">
+<!-- Left Side Floating Card -->
+<article class="absolute right-[8%] sm:right-[11%] top-6 w-[100px] h-[135px] rounded-3xl overflow-hidden shadow-card border-2 border-white -rotate-6 z-10 transition-transform duration-300 hover:rotate-0">
+<img alt="دانشجوی ریاضی در حال مرور نکات" class="w-full h-full object-cover object-center filter brightness-[0.98]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCS0xhhzsYouoXEE2bFkp6FiBtrYD2t40z-outz2IaKe162WKySWMrzN_1ExIkYTfIeJuIp_zpvi_MuoelC3vkNttBtuCUwB4-H13BZw2dO61XSMZt5osxo0LsYGuQ9XSlihB_X7E2X4fSIjfP98OgbTH-gv6g6ji-l4IAeTb_E6E0d00hCIC0FIdjpM9_5kmvNofxxqJLYw1DHnHwx-bAVap9qDjecncVF6IZFHNd3uLxhqDqpdGhm"/>
+</article>
+<!-- Right Side Floating Card -->
+<article class="absolute left-[8%] sm:left-[11%] top-6 w-[100px] h-[135px] rounded-3xl overflow-hidden shadow-card border-2 border-white rotate-6 z-10 transition-transform duration-300 hover:rotate-0">
+<img alt="دانش‌آموز موفق آزمون ریاضی" class="w-full h-full object-cover object-center filter brightness-[0.98]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8_YJMhLaCKC9KDjZ2VMyIaLpLefrPrZPqNaN4K1i3BSjQ6ZmTN7yIGnQqdJRHIAhsa3UkIQSVKWabRzPWpJuDVptge7kIGYggwp3Easrw7QEbqpRThsarYiy_l3akeTqlr3uWErT9ehDGtqXs9uBXukaKlJbNLHchAMQG200FdGB2SQzzCxLL6Axf-K-9Ca6cuNHoT9UAOO5zawUHZ4yU8UQSmQsU9N51SfSLeQVTn1365z8bj8y1"/>
+</article>
+<!-- Center Prominent Card -->
+<article class="relative z-20 w-[142px] h-[180px] rounded-[32px] overflow-hidden shadow-2xl border-[3.5px] border-white ring-8 ring-brand-lime/20">
+<img alt="مدرس و مربی حل مسئله ریاضی هوش مصنوعی" class="w-full h-full object-cover object-top" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTkews3Rkyi1N0QwWMc8jCF20ivJPQPg3O55wPYTuc3_V7nT8iQCrsKIyk-YTuAJybUF4uy4hg4ic9fPtoK3dy-3iaE9-x212XMbkltKWSVzvM9dZY20YZkiFwTc073ZXHSG6p_Bkq27WEMVuhfbVCyq3o9tePIIrDTQ0iNWE0EsGkgANAJAR88hHv24MiJuQmK4SH8VzdaWRpkCgBUK0G9ZHyBnX3Gjurw0pDR9PHGQuPGEAOZz-Y"/>
+</article>
+<!-- Glowing Lime Sparkle Badge Anchor (Mimicking the reference icon) -->
+<div class="absolute -bottom-1 z-30 flex items-center justify-center">
+<div class="w-14 h-14 bg-brand-lime rounded-2xl flex items-center justify-center shadow-glow border-2 border-white transform transition hover:scale-105 active:scale-95 cursor-pointer">
+<!-- Sparkles / AI Magic Icon -->
+<svg class="w-7 h-7 text-neutral-900" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" viewbox="0 0 24 24">
+<path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"></path>
+<path d="M5 3v4"></path>
+<path d="M3 5h4"></path>
+<path d="M19 17v4"></path>
+<path d="M17 19h4"></path>
+</svg>
+</div>
+</div>
+</section>
+<!-- END: HeroCollageSection -->
+</div>
+<!-- END: TopBarAndGridBackground -->
+<!-- BEGIN: MainContentInfo -->
+<!-- Text copy matching the tone and hierarchy of the study companion screen -->
+<section class="flex-1 flex flex-col justify-center items-center text-center px-7 py-3">
+<!-- Mini Decorative Pill Indicator -->
+<div class="w-7 h-1 bg-stone-300 rounded-full mb-6"></div>
+<!-- Main Persian Headline -->
+<h1 class="text-[27px] sm:text-[29px] leading-[1.32] font-black text-stone-900 tracking-tight max-w-[320px]">
+        دستیار هوشمند و شخصی
+        <span class="relative inline-block text-emerald-800">
+          ریاضیِ شما
+          <svg class="absolute -bottom-1 right-0 w-full h-2 text-brand-lime" fill="none" preserveaspectratio="none" viewbox="0 0 100 12">
+<path d="M2 9C30 3 70 3 98 8" stroke="currentColor" stroke-linecap="round" stroke-width="4"></path>
+</svg>
+</span>
+</h1>
+<!-- Detailed Subtitle -->
+<p class="text-[13.5px] leading-relaxed text-stone-600 mt-4 max-w-[325px] font-normal">
+        حل گام‌به‌گام دشوارترین معادلات، تحلیل هوشمند نقاط ضعف و ایجاد کوییزهای تمرینی هدفمند برای موفقیت قطعی.
+      </p>
+<!-- Key micro-features pills -->
+<div class="flex items-center justify-center gap-2 mt-4 text-[11px] font-medium text-stone-500">
+<span class="inline-flex items-center gap-1 bg-stone-100/90 px-2.5 py-1 rounded-full border border-stone-200/60">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          اسکن سریع دست‌نویس
+        </span>
+<span class="inline-flex items-center gap-1 bg-stone-100/90 px-2.5 py-1 rounded-full border border-stone-200/60">
+<span class="w-1.5 h-1.5 rounded-full bg-brand-lime"></span>
+          توضیح صوتی فارسی
+        </span>
+</div>
+</section>
+<!-- END: MainContentInfo -->
+<!-- BEGIN: BottomActionSection -->
+<footer class="w-full px-6 pb-6 pt-2 shrink-0 bg-gradient-to-t from-white via-white to-transparent">
+<!-- Primary Pill Action Button: Get Started -->
+<button class="w-full py-4 px-6 rounded-full bg-brand-lime hover:bg-brand-lime-hover active:scale-[0.985] text-stone-950 font-bold text-base shadow-sm transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer border border-lime-400" data-purpose="primary-action-btn" type="button">
+<span>شروع یادگیری هوشمند</span>
+<svg class="w-4 h-4 transform rotate-180" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" viewbox="0 0 24 24">
+<path d="M5 12h14"></path>
+<path d="m12 5 7 7-7 7"></path>
+</svg>
+</button>
+<!-- Secondary Pill Button: Sign In -->
+<button class="w-full mt-3 py-3.5 px-6 rounded-full bg-stone-50 hover:bg-stone-100 active:scale-[0.985] text-stone-800 font-semibold text-[14.5px] border border-stone-200/90 transition-all duration-200 flex items-center justify-center cursor-pointer" data-purpose="secondary-action-btn" type="button">
+<span>ورود به حساب کاربری</span>
+</button>
+<!-- Terms & Privacy Footnote -->
+<p class="text-[10px] text-stone-400 text-center mt-3">
+        با ثبت‌نام، <a class="underline hover:text-stone-600" href="#">شرایط استفاده</a> و <a class="underline hover:text-stone-600" href="#">حریم خصوصی</a> مَث‌موشن را می‌پذیرید.
+      </p>
+<!-- iOS Home Indicator Bar -->
+<div class="w-32 h-1 bg-stone-800 rounded-full mx-auto mt-4 mb-1"></div>
+</footer>
+<!-- END: BottomActionSection -->
+</main>
+<!-- END: PhoneShellContainer -->
+</body></html>

@@ -2,7 +2,7 @@ import React from 'react';
 import { RefreshControl, ScrollView, StyleSheet, View, type ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { colors, spacing } from '../../theme';
+import { makeStyles, spacing } from '../../theme';
 
 interface ScreenContainerProps {
   children: React.ReactNode;
@@ -19,11 +19,15 @@ export function ScreenContainer({
   onRefresh,
   refreshing = false,
 }: ScreenContainerProps) {
+  const styles = useStyles();
   if (scroll) {
     return (
       <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
         <ScrollView
           contentContainerStyle={[styles.content, contentStyle]}
+          // Taps on buttons (e.g. ProblemInput's math keypad) work while
+          // the keyboard is open instead of only dismissing it.
+          keyboardShouldPersistTaps="handled"
           refreshControl={
             onRefresh ? <RefreshControl refreshing={refreshing} onRefresh={onRefresh} /> : undefined
           }
@@ -41,7 +45,7 @@ export function ScreenContainer({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(colors => StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: colors.background,
@@ -53,4 +57,4 @@ const styles = StyleSheet.create({
   flexOne: {
     flex: 1,
   },
-});
+}));

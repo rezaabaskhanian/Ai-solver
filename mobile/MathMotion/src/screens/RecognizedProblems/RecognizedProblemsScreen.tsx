@@ -1,18 +1,20 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Image, StyleSheet, View } from 'react-native';
 
 import { PaywallCard } from '../../components/Billing/PaywallCard';
 import { MathExpression } from '../../components/MathExpression/MathExpression';
 import { AppText } from '../../components/common/AppText';
 import { Card } from '../../components/common/Card';
+import { Icon } from '../../components/common/Icon';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
+import { useIsRTL } from '../../hooks/useIsRTL';
 import type { RootStackParamList } from '../../navigation/types';
 import { toApiError, translationKeyForApiError } from '../../services/api/apiError';
 import { solveProblem } from '../../services/api/problems';
 import { useEntitlementStore } from '../../store/useEntitlementStore';
-import { colors, spacing } from '../../theme';
+import { makeStyles, radius, spacing, useColors } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RecognizedProblems'>;
 
@@ -21,6 +23,9 @@ type Props = NativeStackScreenProps<RootStackParamList, 'RecognizedProblems'>;
 // want solved — the same solveProblem() ProblemInputScreen already
 // uses, so everything downstream (ArSolution) is unchanged.
 export function RecognizedProblemsScreen({ route, navigation }: Props) {
+  const colors = useColors();
+  const styles = useStyles();
+  const isRTL = useIsRTL();
   const { t } = useTranslation();
   const { photoUri, problems } = route.params;
   const [solvingIndex, setSolvingIndex] = useState<number | null>(null);
@@ -50,9 +55,16 @@ export function RecognizedProblemsScreen({ route, navigation }: Props) {
 
   return (
     <ScreenContainer scroll>
-      <AppText size="sm" color={colors.textSecondary}>
-        {t('scan.recognizedTitle')}
-      </AppText>
+      <View style={[styles.header, isRTL && styles.rowRTL]}>
+        {/* The camera gives a bare path; Image needs a file:// URI. */}
+        <Image source={{ uri: `file://${photoUri}` }} style={styles.thumb} />
+        <View style={styles.flexOne}>
+          <AppText weight="bold">{t('scan.recognizedCount', { count: problems.length })}</AppText>
+          <AppText size="sm" color={colors.textSecondary}>
+            {t('scan.recognizedTitle')}
+          </AppText>
+        </View>
+      </View>
 
       {quotaExhausted ? (
         <PaywallCard />
@@ -62,15 +74,23 @@ export function RecognizedProblemsScreen({ route, navigation }: Props) {
             <Card
               key={`${problem}-${index}`}
               onPress={solvingIndex === null ? () => handleSelect(problem, index) : undefined}
-              style={styles.row}
+              style={[styles.row, isRTL && styles.rowRTL]}
             >
-              <MathExpression expression={problem} size="md" />
-              {solvingIndex === index ? (
-                <ActivityIndicator color={colors.primary} />
-              ) : (
-                <AppText size="sm" color={colors.textSecondary}>
+              <View style={styles.number}>
+                <AppText weight="bold" color={colors.primaryText}>
+                  {index + 1}
+                </AppText>
+              </View>
+              <View style={styles.flexOne}>
+                <MathExpression expression={problem} size="md" emphasize />
+                <AppText size="xs" color={colors.textSecondary}>
                   {t('scan.tapToSolve')}
                 </AppText>
+              </View>
+              {solvingIndex === index ? (
+                <ActivityIndicator color={colors.primaryText} />
+              ) : (
+                <Icon name="chevron-right" color={colors.textSecondary} directional />
               )}
             </Card>
           ))}
@@ -86,11 +106,41 @@ export function RecognizedProblemsScreen({ route, navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  list: {
+const useStyles = makeStyles(colors => StyleSheet.create({
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.md,
   },
-  row: {
+  // Soft RTL (see src/i18n/index.ts): rows are mirrored per component.
+  rowRTL: {
+    flexDirection: 'row-reverse',
+  },
+  thumb: {
+    width: 72,
+    height: 72,
+    borderRadius: radius.md,
+    backgroundColor: colors.surfaceMuted,
+  },
+  flexOne: {
+    flex: 1,
+    gap: 2,
+  },
+  list: {
     gap: spacing.sm,
   },
-});
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    padding: spacing.md,
+  },
+  number: {
+    width: 36,
+    height: 36,
+    borderRadius: radius.pill,
+    backgroundColor: colors.primaryMuted,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+}));

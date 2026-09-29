@@ -70,9 +70,13 @@
 - [x] build روی سرور (با آینه‌ی Docker آروان `DOCKER_REGISTRY=docker.arvancloud.ir` و `goproxy.cn`)
 - [x] `up -d`؛ ۴ migration اعمال شد؛ `/health` و `POST /api/v1/problems/solve` از مسیر Traefik جواب دادند
 - [x] مصرف: کل MathMotion حدود ۲۳۰ مگ RAM (سرور ۱ vCPU و ۲ گیگ، مشترک با LingoFlow و wallpaper)
-- [ ] **منتظر ثبت دامنه‌ی `mathmotion.ir` در ایرنیک** → بعد در آروان: nameserverها + A رکوردهای
-      `api` و `admin` با پروکسی روشن، origin روی **HTTP**، ریدایرکت به HTTPS
-- [ ] پنل ادمین در `https://admin.mathmotion.ir`: وصل کردن Xray با **همان لینک vless لینگوفلو**
+- [x] دامنه‌ی `mathmotion.ir` ثبت شد؛ `api` و `admin` از آروان کار می‌کنند
+- [x] پنل ادمین در `https://admin.mathmotion.ir`: Xray با **همان لینک vless لینگوفلو** وصل شد
+      (لینک لینگوفلو `security=tls` است، نه Reality — پارسر برای tls + ws/grpc/httpupgrade/xhttp
+      گسترش یافت؛ تست اتصال هم حالا از ipinfo → ipify → myip fallback می‌کند چون ipinfo روی IP
+      مشترک سرور 429 می‌داد)
+- [ ] build بعدی `mathmotion-api` با Dockerfile جدید (cache mount کامپایلر Go) — از آن به بعد
+      prune با `--filter 'type!=exec.cachemount'`
 - [ ] ست کردن provider و کلید AI از پنل (OpenRouter برای vision مطمئن‌تر از DeepSeek است)
 - [ ] `docker builder prune -f` (دیسک سرور ۷۱٪ پر بود)
 - [ ] build نسخه‌ی release اپ (به `https://api.mathmotion.ir` وصل می‌شود) و تست Scan Problem روی گوشی

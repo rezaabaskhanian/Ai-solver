@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { colors, radius, spacing } from '../../theme';
+import { radius, spacing, useColors, type AppColors } from '../../theme';
 import { AppText } from './AppText';
 
 type Tone = 'success' | 'danger' | 'neutral' | 'primary';
@@ -12,7 +12,8 @@ interface BadgeProps {
 }
 
 export function Badge({ label, tone = 'neutral' }: BadgeProps) {
-  const palette = toneColors[tone];
+  const colors = useColors();
+  const palette = toneColors(colors)[tone];
   return (
     <View style={[styles.badge, { backgroundColor: palette.background }]}>
       <AppText size="xs" weight="medium" color={palette.text}>
@@ -22,12 +23,12 @@ export function Badge({ label, tone = 'neutral' }: BadgeProps) {
   );
 }
 
-const toneColors: Record<Tone, { background: string; text: string }> = {
+const toneColors = (colors: AppColors): Record<Tone, { background: string; text: string }> => ({
   success: { background: colors.successMuted, text: colors.success },
   danger: { background: colors.dangerMuted, text: colors.danger },
-  primary: { background: colors.primaryMuted, text: colors.primary },
+  primary: { background: colors.primaryMuted, text: colors.primaryText },
   neutral: { background: colors.surfaceMuted, text: colors.textSecondary },
-};
+});
 
 const styles = StyleSheet.create({
   badge: {

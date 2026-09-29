@@ -10,9 +10,12 @@ import { ScreenContainer } from '../../components/common/ScreenContainer';
 import { TOPICS, type Topic } from '../../content/topics';
 import { useIsRTL } from '../../hooks/useIsRTL';
 import type { RootStackParamList } from '../../navigation/types';
-import { colors, radius, spacing } from '../../theme';
+import { makeStyles, radius, spacing, useColors } from '../../theme';
+import { Icon } from '../../components/common/Icon';
 
 export function TopicsScreen() {
+  const colors = useColors();
+  const styles = useStyles();
   const { t } = useTranslation();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const isRTL = useIsRTL();
@@ -32,7 +35,7 @@ export function TopicsScreen() {
             style={[styles.card, isRTL && styles.cardRTL]}
           >
             <View style={styles.iconWrap}>
-              <AppText size="lg">{item.icon}</AppText>
+              <Icon name={item.icon} color={colors.primaryText} />
             </View>
             <View style={styles.text}>
               <AppText weight="bold">{t(`topics.${item.id}.title`)}</AppText>
@@ -40,6 +43,7 @@ export function TopicsScreen() {
                 {t(`topics.${item.id}.summary`)}
               </AppText>
             </View>
+            <Icon name="chevron-right" color={colors.textSecondary} directional />
           </Card>
         )}
       />
@@ -47,14 +51,14 @@ export function TopicsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(colors => StyleSheet.create({
   noPadding: {
     padding: 0,
     flex: 1,
   },
   content: {
-    padding: spacing.lg,
-    gap: spacing.md,
+    padding: spacing.md,
+    gap: spacing.sm,
   },
   card: {
     flexDirection: 'row',
@@ -67,10 +71,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row-reverse',
   },
   iconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: radius.md,
-    backgroundColor: colors.surfaceMuted,
+    width: 48,
+    height: 48,
+    borderRadius: radius.pill,
+    backgroundColor: colors.primaryMuted,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -78,4 +82,4 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 2,
   },
-});
+}));

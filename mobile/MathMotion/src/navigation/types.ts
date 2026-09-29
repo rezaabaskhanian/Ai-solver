@@ -1,6 +1,7 @@
 import type { NavigatorScreenParams } from '@react-navigation/native';
 
 import type { TopicId } from '../content/topics';
+import type { ExamConfig, ExamQuestion } from '../services/exam/buildExam';
 import type { SolveResult } from '../types/problem';
 
 // The Solution screen receives an already-fetched SolveResult: the Solve
@@ -32,6 +33,16 @@ export type RootStackParamList = {
   // «مباحث درسی»: the topic list, and one topic's intro + examples.
   Topics: undefined;
   Topic: { topicId: TopicId };
+  // «آمادگی برای امتحان»: pick grade + chapters, take a generated
+  // multiple-choice exam, see the score. Questions travel in params so
+  // the result screen shows exactly what was asked.
+  ExamSetup: undefined;
+  Exam: { config: ExamConfig };
+  ExamResult: { config: ExamConfig; questions: ExamQuestion[]; answers: (number | null)[] };
+  // «راهنمای استفاده»: typing syntax, scan tips and feature overview.
+  Guide: undefined;
+  // Appearance: light/dark mode, accent color and text color.
+  Settings: undefined;
 };
 
 // The side drawer wraps the whole stack as a single "Main" screen, so

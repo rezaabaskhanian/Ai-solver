@@ -2,7 +2,7 @@ import { useNavigation, useRoute, type RouteProp } from '@react-navigation/nativ
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { PaywallCard } from '../../components/Billing/PaywallCard';
 import { EquationInput } from '../../components/ProblemInput/EquationInput';
@@ -10,14 +10,22 @@ import { ParsePreviewBanner } from '../../components/ProblemInput/ParsePreviewBa
 import { AppButton } from '../../components/common/AppButton';
 import { AppText } from '../../components/common/AppText';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
+import { useIsRTL } from '../../hooks/useIsRTL';
 import { useParsePreview } from '../../hooks/useParsePreview';
 import type { RootStackParamList } from '../../navigation/types';
 import { toApiError, translationKeyForApiError } from '../../services/api/apiError';
 import { solveProblem } from '../../services/api/problems';
 import { useEntitlementStore } from '../../store/useEntitlementStore';
-import { colors, spacing } from '../../theme';
+import { makeStyles, radius, spacing, useColors } from '../../theme';
+import { Icon } from '../../components/common/Icon';
 
+// Laid out after the Stitch "type_problem" design: detected-type pill +
+// clear button, the input card and keypad (EquationInput), then Solve and
+// the two learning modes, and a short note on how answers are checked.
 export function ProblemInputScreen() {
+  const colors = useColors();
+  const styles = useStyles();
+  const isRTL = useIsRTL();
   const { t } = useTranslation();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { params } = useRoute<RouteProp<RootStackParamList, 'ProblemInput'>>();
@@ -93,11 +101,21 @@ export function ProblemInputScreen() {
   };
 
   return (
-    <ScreenContainer>
-      <View style={styles.field}>
-        <EquationInput value={input} onChangeText={setInput} autoFocus={!params?.initialProblem} />
+    <ScreenContainer scroll>
+      <View style={[styles.row, isRTL && styles.rowRTL]}>
         <ParsePreviewBanner result={preview.result} error={preview.error} loading={preview.loading} />
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('problemInput.clear')}
+          onPress={handleClear}
+          disabled={!input}
+          style={({ pressed }) => [styles.clear, pressed && styles.pressed, !input && styles.disabled]}
+        >
+          <Icon name="delete-outline" />
+        </Pressable>
       </View>
+
+      <EquationInput value={input} onChangeText={setInput} autoFocus={!params?.initialProblem} />
 
       {solveErrorKey && (
         <AppText size="sm" color={colors.danger}>
@@ -114,55 +132,111 @@ export function ProblemInputScreen() {
         <PaywallCard />
       ) : (
         <View style={styles.actionsColumn}>
-          <View style={styles.actions}>
+          <AppButton
+            label={solving ? t('problemInput.solving') : t('problemInput.solve')}
+            icon="psychology"
+            iconEnd="arrow-forward"
+            variant="primary"
+            onPress={handleSolve}
+            disabled={!input.trim()}
+            loading={solving}
+            style={styles.solve}
+          />
+          <View style={[styles.row, isRTL && styles.rowRTL]}>
             <AppButton
-              label={t('problemInput.clear')}
+              label={quizzing ? t('problemInput.startingQuiz') : t('problemInput.quizMe')}
+              icon="school"
               variant="secondary"
-              onPress={handleClear}
-              disabled={!input}
-              style={styles.button}
+              onPress={handleQuizMe}
+              disabled={!input.trim()}
+              loading={quizzing}
+              style={[styles.button, styles.quizButton]}
             />
             <AppButton
-              label={solving ? t('problemInput.solving') : t('problemInput.solve')}
-              variant="primary"
-              onPress={handleSolve}
+              label={t('problemInput.checkMySteps')}
+              icon="fact-check"
+              variant="secondary"
+              onPress={() => navigation.navigate('CheckSteps', { problem: input.trim() })}
               disabled={!input.trim()}
-              loading={solving}
               style={styles.button}
             />
           </View>
-          <AppButton
-            label={t('problemInput.checkMySteps')}
-            variant="ghost"
-            onPress={() => navigation.navigate('CheckSteps', { problem: input.trim() })}
-            disabled={!input.trim()}
-          />
-          <AppButton
-            label={quizzing ? t('problemInput.startingQuiz') : t('problemInput.quizMe')}
-            variant="ghost"
-            onPress={handleQuizMe}
-            disabled={!input.trim()}
-            loading={quizzing}
-          />
         </View>
       )}
+
+      <View style={[styles.note, isRTL && styles.rowRTL]}>
+        <View style={styles.noteIcon}>
+          <Icon name="verified-user" color={colors.success} />
+        </View>
+        <View style={styles.flexOne}>
+          <AppText size="sm" weight="bold">
+            {t('problemInput.noteTitle')}
+          </AppText>
+          <AppText size="xs" color={colors.textSecondary}>
+            {t('problemInput.noteBody')}
+          </AppText>
+        </View>
+      </View>
     </ScreenContainer>
   );
 }
 
-const styles = StyleSheet.create({
-  field: {
+const useStyles = makeStyles(colors => StyleSheet.create({
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.sm,
+  },
+  // Soft RTL (see src/i18n/index.ts): rows are mirrored per component.
+  rowRTL: {
+    flexDirection: 'row-reverse',
+  },
+  flexOne: {
+    flex: 1,
+  },
+  clear: {
+    width: 52,
+    height: 52,
+    borderRadius: radius.md,
+    backgroundColor: colors.surfaceMuted,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pressed: {
+    opacity: 0.7,
+  },
+  disabled: {
+    opacity: 0.4,
   },
   actionsColumn: {
     gap: spacing.sm,
-    marginTop: 'auto',
   },
-  actions: {
-    flexDirection: 'row',
-    gap: spacing.md,
+  solve: {
+    minHeight: 56,
+    borderRadius: radius.lg,
   },
   button: {
     flex: 1,
+    borderWidth: 0,
+    backgroundColor: colors.surfaceMuted,
   },
-});
+  quizButton: {
+    backgroundColor: colors.primaryMuted,
+  },
+  note: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    backgroundColor: colors.surfaceMuted,
+  },
+  noteIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.md,
+    backgroundColor: colors.successMuted,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+}));

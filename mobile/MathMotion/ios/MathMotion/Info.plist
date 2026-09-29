@@ -33,6 +33,10 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>MathMotion uses the camera to scan the math problem you wrote on paper.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>MathMotion reads a photo you pick of a math problem to solve it.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
 	<key>RCTNewArchEnabled</key>
@@ -42,6 +46,7 @@
 		<string>Vazirmatn-Bold.ttf</string>
 		<string>Vazirmatn-Medium.ttf</string>
 		<string>Vazirmatn-Regular.ttf</string>
+		<string>MaterialIcons.ttf</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>

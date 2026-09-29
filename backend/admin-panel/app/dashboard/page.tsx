@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { clearToken, getToken } from "@/lib/api";
 import AIPanel from "./AIPanel";
 import ProxyPanel from "./ProxyPanel";
+import QuotaPanel from "./QuotaPanel";
 
-type Tab = "ai" | "proxy";
+type Tab = "ai" | "quota" | "proxy";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -46,6 +47,9 @@ export default function DashboardPage() {
           <button className={`sidebar-link ${tab === "ai" ? "active" : ""}`} onClick={() => setTab("ai")}>
             هوش مصنوعی
           </button>
+          <button className={`sidebar-link ${tab === "quota" ? "active" : ""}`} onClick={() => setTab("quota")}>
+            سهمیه و محدودیت‌ها
+          </button>
           <button className={`sidebar-link ${tab === "proxy" ? "active" : ""}`} onClick={() => setTab("proxy")}>
             پراکسی Xray
           </button>
@@ -60,6 +64,7 @@ export default function DashboardPage() {
 
       <main className="container">
         {tab === "ai" && <AIPanel notify={notify} />}
+        {tab === "quota" && <QuotaPanel notify={notify} />}
         {tab === "proxy" && <ProxyPanel notify={notify} />}
       </main>
 

@@ -13,7 +13,7 @@ func TestGeneratePractice_Success(t *testing.T) {
 	}))
 	defer engineSrv.Close()
 
-	svc := New(&fakeRepo{}, NewMathEngineClient(engineSrv.URL), 5)
+	svc := New(&fakeRepo{}, NewMathEngineClient(engineSrv.URL), &fakeQuota{})
 
 	result, err := svc.GeneratePractice(context.Background(), "linear_equation")
 	if err != nil {
@@ -34,7 +34,7 @@ func TestGeneratePractice_NotGatedByQuota(t *testing.T) {
 	defer engineSrv.Close()
 
 	repo := &fakeRepo{countProblems: 999}
-	svc := New(repo, NewMathEngineClient(engineSrv.URL), 5)
+	svc := New(repo, NewMathEngineClient(engineSrv.URL), &fakeQuota{})
 
 	_, err := svc.GeneratePractice(context.Background(), "quadratic_equation")
 	if err != nil {

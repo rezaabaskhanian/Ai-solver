@@ -33,3 +33,19 @@ jest.mock('@cafebazaar/react-native-poolakey', () => ({
   ItemNotFoundError: class ItemNotFoundError extends Error {},
   BazaarNotFoundError: class BazaarNotFoundError extends Error {},
 }));
+
+// Icon fonts and the photo picker are native modules too; in tests an
+// icon renders as its name and the picker reports "cancelled".
+jest.mock('@react-native-vector-icons/material-icons/static', () => {
+  const { createElement } = require('react');
+  const { Text } = require('react-native');
+  return {
+    __esModule: true,
+    MaterialIcons: ({ name }) => createElement(Text, null, name),
+  };
+});
+
+jest.mock('react-native-image-picker', () => ({
+  launchImageLibrary: jest.fn(() => Promise.resolve({ didCancel: true })),
+  launchCamera: jest.fn(() => Promise.resolve({ didCancel: true })),
+}));

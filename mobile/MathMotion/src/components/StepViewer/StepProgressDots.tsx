@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { colors, spacing } from '../../theme';
+import { makeStyles, spacing } from '../../theme';
 
 interface StepProgressDotsProps {
   total: number;
@@ -9,6 +9,7 @@ interface StepProgressDotsProps {
 }
 
 export function StepProgressDots({ total, currentIndex }: StepProgressDotsProps) {
+  const styles = useStyles();
   return (
     <View style={styles.row}>
       {Array.from({ length: total }).map((_, index) => (
@@ -21,7 +22,7 @@ export function StepProgressDots({ total, currentIndex }: StepProgressDotsProps)
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(colors => StyleSheet.create({
   row: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -38,4 +39,4 @@ const styles = StyleSheet.create({
   dotInactive: {
     backgroundColor: colors.border,
   },
-});
+}));

@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { colors, fontSize } from '../../theme';
+import { fontSize, useColors } from '../../theme';
 import { AppText } from '../common/AppText';
 import { tokenizeExpression } from './tokenize';
 
@@ -17,6 +17,7 @@ interface MathExpressionProps {
 // universal mathematical convention, not something localization should
 // touch (and the Math Engine only ever produces ASCII/Latin output).
 export function MathExpression({ expression, size = 'lg', emphasize = false }: MathExpressionProps) {
+  const colors = useColors();
   const tokens = tokenizeExpression(expression);
 
   return (

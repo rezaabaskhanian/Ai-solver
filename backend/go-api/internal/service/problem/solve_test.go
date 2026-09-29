@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"mathmotion/go-api/internal/pkg/richerror"
+	"mathmotion/go-api/internal/service/quota"
 )
 
 func engineSolveHandler(status int, body map[string]any) http.HandlerFunc {
@@ -36,7 +37,7 @@ func TestSolve_SuccessPersistsAndReturnsResult(t *testing.T) {
 	defer engineSrv.Close()
 
 	repo := &fakeRepo{saveProblemID: "problem-123"}
-	svc := New(repo, NewMathEngineClient(engineSrv.URL), 5)
+	svc := New(repo, NewMathEngineClient(engineSrv.URL), &fakeQuota{})
 
 	result, err := svc.Solve(context.Background(), "user-1", true, "2x + 5 = 17")
 	if err != nil {
@@ -70,7 +71,7 @@ func TestSolve_UnsupportedProblemTypeDoesNotPersist(t *testing.T) {
 	defer engineSrv.Close()
 
 	repo := &fakeRepo{}
-	svc := New(repo, NewMathEngineClient(engineSrv.URL), 5)
+	svc := New(repo, NewMathEngineClient(engineSrv.URL), &fakeQuota{})
 
 	_, err := svc.Solve(context.Background(), "user-1", true, "x^3 = 8")
 	if err == nil {
@@ -97,7 +98,7 @@ func TestSolve_VerificationFailedIsTranslated(t *testing.T) {
 	defer engineSrv.Close()
 
 	repo := &fakeRepo{}
-	svc := New(repo, NewMathEngineClient(engineSrv.URL), 5)
+	svc := New(repo, NewMathEngineClient(engineSrv.URL), &fakeQuota{})
 
 	_, err := svc.Solve(context.Background(), "user-1", true, "2x + 5 = 17")
 	richErr := err.(richerror.RichError)
@@ -117,7 +118,7 @@ func TestSolve_RepositoryErrorIsWrappedAsUnexpected(t *testing.T) {
 	defer engineSrv.Close()
 
 	repo := &fakeRepo{saveErr: errors.New("connection reset")}
-	svc := New(repo, NewMathEngineClient(engineSrv.URL), 5)
+	svc := New(repo, NewMathEngineClient(engineSrv.URL), &fakeQuota{})
 
 	_, err := svc.Solve(context.Background(), "user-1", true, "2x + 5 = 17")
 	if err == nil {
@@ -137,8 +138,9 @@ func TestSolve_QuotaExceededBlocksNonPremiumUser(t *testing.T) {
 	// No engine server is started at all: if the quota check didn't
 	// short-circuit before calling the engine, this test would fail
 	// with a connection error instead of the expected quota error.
-	repo := &fakeRepo{countProblems: 5}
-	svc := New(repo, NewMathEngineClient("http://127.0.0.1:0"), 5)
+	repo := &fakeRepo{}
+	q := &fakeQuota{allowErr: richerror.New("test").WithKind(richerror.KindPaymentRequired)}
+	svc := New(repo, NewMathEngineClient("http://127.0.0.1:0"), q)
 
 	_, err := svc.Solve(context.Background(), "user-1", false, "2x + 5 = 17")
 	if err == nil {
@@ -157,21 +159,25 @@ func TestSolve_QuotaExceededBlocksNonPremiumUser(t *testing.T) {
 	}
 }
 
-func TestSolve_PremiumUserBypassesQuota(t *testing.T) {
+func TestSolve_RecordsUsageOnSuccess(t *testing.T) {
 	engineSrv := httptest.NewServer(engineSolveHandler(http.StatusOK, map[string]any{
 		"problem": "2x + 5 = 17", "answer": "x = 6", "verified": true,
 		"type": "linear_equation", "steps": []map[string]any{},
 	}))
 	defer engineSrv.Close()
 
-	repo := &fakeRepo{countProblems: 999}
-	svc := New(repo, NewMathEngineClient(engineSrv.URL), 5)
+	repo := &fakeRepo{}
+	q := &fakeQuota{}
+	svc := New(repo, NewMathEngineClient(engineSrv.URL), q)
 
 	_, err := svc.Solve(context.Background(), "user-1", true, "2x + 5 = 17")
 	if err != nil {
-		t.Fatalf("Solve returned error for a premium user: %v", err)
+		t.Fatalf("Solve returned error: %v", err)
 	}
 	if !repo.saveCalled {
-		t.Fatal("expected SaveProblemAndSolution to be called for a premium user")
+		t.Fatal("expected SaveProblemAndSolution to be called")
+	}
+	if len(q.recorded) != 1 || q.recorded[0] != quota.KindSolve {
+		t.Fatalf("recorded = %v, want [solve]", q.recorded)
 	}
 }

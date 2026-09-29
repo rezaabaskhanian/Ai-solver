@@ -1,0 +1,219 @@
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Pressable, StyleSheet, View } from 'react-native';
+
+import { AppButton } from '../../components/common/AppButton';
+import { AppText } from '../../components/common/AppText';
+import { Card } from '../../components/common/Card';
+import { ScreenContainer } from '../../components/common/ScreenContainer';
+import { EXAM_SYLLABUS, findGrade, type GradeId } from '../../content/examSyllabus';
+import { useIsRTL } from '../../hooks/useIsRTL';
+import type { RootStackParamList } from '../../navigation/types';
+import { makeStyles, radius, spacing, useColors } from '../../theme';
+import { Icon } from '../../components/common/Icon';
+
+type Props = NativeStackScreenProps<RootStackParamList, 'ExamSetup'>;
+
+const QUESTION_COUNTS = [5, 10, 15, 20];
+
+// «آمادگی برای امتحان»: the student picks a grade and exactly the chapters
+// their exam covers ("only these for grade 6"), then how many questions.
+export function ExamSetupScreen({ navigation }: Props) {
+  const colors = useColors();
+  const styles = useStyles();
+  const { t } = useTranslation();
+  const isRTL = useIsRTL();
+
+  const [grade, setGrade] = useState<GradeId>(6);
+  const [chapterIds, setChapterIds] = useState<string[]>([]);
+  const [count, setCount] = useState(10);
+
+  const chapters = findGrade(grade)?.chapters ?? [];
+  const available = chapters.filter(ch => ch.skills.length > 0).map(ch => ch.id);
+  const allSelected = available.length > 0 && available.every(id => chapterIds.includes(id));
+  const rowStyle = [styles.row, isRTL && styles.rowRTL];
+
+  const changeGrade = (next: GradeId) => {
+    setGrade(next);
+    setChapterIds([]);
+  };
+
+  const toggleChapter = (id: string) => {
+    setChapterIds(prev => (prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]));
+  };
+
+  return (
+    <ScreenContainer scroll>
+      <AppText color={colors.textSecondary}>{t('exam.intro')}</AppText>
+
+      <Card style={styles.section}>
+        <AppText weight="bold" size="lg">
+          {t('exam.gradeTitle')}
+        </AppText>
+        <View style={rowStyle}>
+          {EXAM_SYLLABUS.map(g => (
+            <Chip
+              key={g.grade}
+              label={t('exam.grade', { grade: g.grade })}
+              active={g.grade === grade}
+              onPress={() => changeGrade(g.grade)}
+            />
+          ))}
+        </View>
+      </Card>
+
+      <Card style={styles.section}>
+        <View style={[rowStyle, styles.spaceBetween]}>
+          <AppText weight="bold" size="lg">
+            {t('exam.chaptersTitle')}
+          </AppText>
+          <Pressable
+            accessibilityRole="button"
+            hitSlop={spacing.sm}
+            onPress={() => setChapterIds(allSelected ? [] : available)}
+          >
+            <AppText size="sm" color={colors.primaryText}>
+              {allSelected ? t('exam.selectNone') : t('exam.selectAll')}
+            </AppText>
+          </Pressable>
+        </View>
+        <AppText size="sm" color={colors.textSecondary}>
+          {t('exam.chaptersHint')}
+        </AppText>
+
+        {chapters.map((chapter, index) => {
+          const enabled = chapter.skills.length > 0;
+          const checked = chapterIds.includes(chapter.id);
+          return (
+            <Pressable
+              key={chapter.id}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked, disabled: !enabled }}
+              disabled={!enabled}
+              onPress={() => toggleChapter(chapter.id)}
+              style={[rowStyle, styles.chapter, checked && styles.chapterChecked, !enabled && styles.disabled]}
+            >
+              <View style={[styles.checkbox, checked && styles.checkboxChecked]}>
+                {checked && (
+                  <Icon name="check" size={18} color={colors.onPrimary} />
+                )}
+              </View>
+              <AppText style={styles.flexOne} weight={checked ? 'medium' : 'regular'}>
+                {t('exam.chapterNumber', { n: index + 1 })} {t(`exam.chapters.${chapter.id}`)}
+              </AppText>
+              {!enabled && (
+                <AppText size="xs" color={colors.textSecondary}>
+                  {t('exam.comingSoon')}
+                </AppText>
+              )}
+            </Pressable>
+          );
+        })}
+      </Card>
+
+      <Card style={styles.section}>
+        <AppText weight="bold" size="lg">
+          {t('exam.countTitle')}
+        </AppText>
+        <View style={rowStyle}>
+          {QUESTION_COUNTS.map(n => (
+            <Chip
+              key={n}
+              label={t('exam.countOption', { count: n })}
+              active={n === count}
+              onPress={() => setCount(n)}
+            />
+          ))}
+        </View>
+      </Card>
+
+      <AppButton
+        label={chapterIds.length ? t('exam.start') : t('exam.pickChapters')}
+        icon="play-arrow"
+        disabled={chapterIds.length === 0}
+        onPress={() => navigation.navigate('Exam', { config: { grade, chapterIds, count } })}
+      />
+    </ScreenContainer>
+  );
+}
+
+function Chip({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
+  const colors = useColors();
+  const styles = useStyles();
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected: active }}
+      onPress={onPress}
+      style={[styles.chip, active && styles.chipActive]}
+    >
+      <AppText size="sm" weight="medium" color={active ? colors.onPrimary : colors.textPrimary}>
+        {label}
+      </AppText>
+    </Pressable>
+  );
+}
+
+const useStyles = makeStyles(colors => StyleSheet.create({
+  section: {
+    gap: spacing.sm,
+  },
+  row: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  // Soft RTL (see src/i18n/index.ts): rows are mirrored per component.
+  rowRTL: {
+    flexDirection: 'row-reverse',
+  },
+  spaceBetween: {
+    justifyContent: 'space-between',
+  },
+  flexOne: {
+    flex: 1,
+  },
+  chip: {
+    minHeight: 44,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+  },
+  chipActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  chapter: {
+    flexWrap: 'nowrap',
+    minHeight: 48,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  chapterChecked: {
+    backgroundColor: colors.primaryMuted,
+    borderColor: colors.primary,
+  },
+  disabled: {
+    opacity: 0.5,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: radius.sm,
+    borderWidth: 2,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkboxChecked: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+}));

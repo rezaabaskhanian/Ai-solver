@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 
 import type { SolutionStep } from '../../types/problem';
-import { colors, radius, spacing } from '../../theme';
+import { makeStyles, radius, spacing, useColors } from '../../theme';
 import { AppText } from '../common/AppText';
 
 // Operations that read as "apply this arithmetic to both sides" get the
@@ -44,19 +44,21 @@ interface OperationBadgeProps {
 }
 
 export function OperationBadge({ step }: OperationBadgeProps) {
+  const colors = useColors();
+  const styles = useStyles();
   const { t } = useTranslation();
   const label = operationDisplayLabel(step, t);
 
   return (
     <View style={styles.badge}>
-      <AppText weight="medium" size="sm" color={colors.primary}>
+      <AppText weight="medium" size="sm" color={colors.primaryText}>
         {label}
       </AppText>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(colors => StyleSheet.create({
   badge: {
     alignSelf: 'center',
     backgroundColor: colors.primaryMuted,
@@ -64,4 +66,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
   },
-});
+}));

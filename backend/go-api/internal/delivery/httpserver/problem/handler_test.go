@@ -14,6 +14,7 @@ import (
 	domain "mathmotion/go-api/internal/domain/problem"
 	problemservice "mathmotion/go-api/internal/service/problem"
 	"mathmotion/go-api/internal/service/problem/dto"
+	"mathmotion/go-api/internal/service/quota"
 )
 
 type fakeRepo struct {
@@ -38,6 +39,16 @@ func (f *fakeRepo) CountProblems(ctx context.Context, userID string) (int, error
 	return 0, nil
 }
 
+// noQuota lets every request through (quota logic is tested in
+// internal/service/quota).
+type noQuota struct{}
+
+func (noQuota) Allow(context.Context, string, bool, quota.Kind) error { return nil }
+func (noQuota) Record(context.Context, string, quota.Kind) error      { return nil }
+func (noQuota) Status(context.Context, string, bool) (quota.Status, error) {
+	return quota.Status{}, nil
+}
+
 func newEngineServer(status int, body map[string]any) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -47,7 +58,7 @@ func newEngineServer(status int, body map[string]any) *httptest.Server {
 }
 
 func TestParse_InvalidJSONBodyReturns400(t *testing.T) {
-	h := New(problemservice.New(&fakeRepo{}, problemservice.NewMathEngineClient("http://unused"), 5))
+	h := New(problemservice.New(&fakeRepo{}, problemservice.NewMathEngineClient("http://unused"), noQuota{}))
 
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{"input":`))
@@ -69,7 +80,7 @@ func TestParse_HappyPathReturns200(t *testing.T) {
 	})
 	defer engineSrv.Close()
 
-	h := New(problemservice.New(&fakeRepo{}, problemservice.NewMathEngineClient(engineSrv.URL), 5))
+	h := New(problemservice.New(&fakeRepo{}, problemservice.NewMathEngineClient(engineSrv.URL), noQuota{}))
 
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{"input":"2x + 5 = 17"}`))
@@ -99,7 +110,7 @@ func TestParse_EngineErrorReturns422(t *testing.T) {
 	})
 	defer engineSrv.Close()
 
-	h := New(problemservice.New(&fakeRepo{}, problemservice.NewMathEngineClient(engineSrv.URL), 5))
+	h := New(problemservice.New(&fakeRepo{}, problemservice.NewMathEngineClient(engineSrv.URL), noQuota{}))
 
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{"input":"???"}`))
@@ -117,7 +128,7 @@ func TestParse_EngineErrorReturns422(t *testing.T) {
 
 func TestHistory_DefaultsLimitAndOffsetWhenInvalid(t *testing.T) {
 	repo := &fakeRepo{listItems: []dto.HistoryItem{{ProblemID: "p1"}}}
-	h := New(problemservice.New(repo, problemservice.NewMathEngineClient("http://unused"), 5))
+	h := New(problemservice.New(repo, problemservice.NewMathEngineClient("http://unused"), noQuota{}))
 
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodGet, "/?"+url.Values{"limit": {"not-a-number"}}.Encode(), nil)

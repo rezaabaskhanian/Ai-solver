@@ -1,7 +1,7 @@
 import React from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
-import { colors, spacing } from '../../theme';
+import { spacing, useColors } from '../../theme';
 import { AppButton } from './AppButton';
 import { AppText } from './AppText';
 
@@ -16,10 +16,11 @@ interface StatusNoticeProps {
 // (Home's recent problems, History) so the three states stay visually
 // consistent without each screen re-implementing them.
 export function StatusNotice({ message, loading = false, onRetry, retryLabel }: StatusNoticeProps) {
+  const colors = useColors();
   return (
     <View style={styles.container}>
       {loading ? (
-        <ActivityIndicator color={colors.primary} />
+        <ActivityIndicator color={colors.primaryText} />
       ) : (
         <AppText color={colors.textSecondary} align="center">
           {message}

@@ -67,9 +67,11 @@ df -h /
 cd ~/Ai-solver && git pull
 cd backend
 docker compose -f docker-compose.prod.yaml build <سرویسی که عوض شده>
-docker compose -f docker-compose.prod.yaml up -d
-docker builder prune -f
+docker compose -f docker-compose.prod.yaml up -d <همان سرویس>
+docker builder prune -f --filter 'type!=exec.cachemount'
 ```
+فیلتر `type!=exec.cachemount` کش کامپایلر Go (`--mount=type=cache` در `go-api/Dockerfile`) را نگه
+می‌دارد؛ بدون آن build بعدی `mathmotion-api` دوباره همه‌ی وابستگی‌ها را از صفر کامپایل می‌کند (~۶ دقیقه).
 
 ## مصرف منابع
 ```bash

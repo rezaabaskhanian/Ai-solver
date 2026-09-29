@@ -6,14 +6,16 @@ import { StyleSheet, View } from 'react-native';
 import { QuizChoice } from '../../components/Quiz/QuizChoice';
 import { buildQuizChoices } from '../../components/Quiz/quizChoices';
 import { FinalAnswerCard } from '../../components/Solution/FinalAnswerCard';
+import { ProblemCard } from '../../components/Solution/ProblemCard';
 import { StepProgressDots } from '../../components/StepViewer/StepProgressDots';
 import { AppButton } from '../../components/common/AppButton';
 import { AppText } from '../../components/common/AppText';
+import { Icon } from '../../components/common/Icon';
 import { Card } from '../../components/common/Card';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 import { MathExpression } from '../../components/MathExpression/MathExpression';
 import type { RootStackParamList } from '../../navigation/types';
-import { colors, spacing } from '../../theme';
+import { radius, spacing, useColors } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Quiz'>;
 
@@ -24,6 +26,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Quiz'>;
 // option on the same question, rather than being shown the right answer
 // outright.
 export function QuizScreen({ route, navigation }: Props) {
+  const colors = useColors();
   const { t } = useTranslation();
   const { problem, result } = route.params;
 
@@ -62,18 +65,18 @@ export function QuizScreen({ route, navigation }: Props) {
 
   return (
     <ScreenContainer scroll>
-      <AppText size="sm" color={colors.textSecondary}>
-        {t('quiz.title')}
-      </AppText>
-      <MathExpression expression={problem} size="lg" />
+      <ProblemCard problem={problem} type={result.type} />
 
       {finished ? (
         <View style={styles.completeBlock}>
-          <AppText weight="bold" size="lg" align="center">
-            {t('quiz.complete')}
-          </AppText>
+          <View style={styles.center}>
+            <Icon name="emoji-events" size={48} color={colors.warning} />
+            <AppText weight="bold" size="lg" align="center">
+              {t('quiz.complete')}
+            </AppText>
+          </View>
           <FinalAnswerCard answer={result.answer} verified={result.verified} />
-          <AppButton label={t('solution.done')} variant="primary" onPress={() => navigation.popToTop()} />
+          <AppButton label={t('solution.done')} variant="primary" icon="home" onPress={() => navigation.popToTop()} />
         </View>
       ) : (
         <>
@@ -104,9 +107,12 @@ export function QuizScreen({ route, navigation }: Props) {
             </View>
 
             {answeredCorrectly && (
-              <AppText color={colors.success} weight="medium" style={styles.feedback}>
-                {t('quiz.correct')}
-              </AppText>
+              <View style={[styles.feedback, { backgroundColor: colors.successMuted }]}>
+                <Icon name="check-circle" color={colors.success} />
+                <AppText color={colors.success} weight="medium">
+                  {t('quiz.correct')}
+                </AppText>
+              </View>
             )}
           </Card>
 
@@ -135,6 +141,16 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   feedback: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
     marginTop: spacing.md,
+    padding: spacing.sm,
+    borderRadius: radius.md,
+  },
+  center: {
+    alignItems: 'center',
+    gap: spacing.sm,
   },
 });

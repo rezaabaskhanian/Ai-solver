@@ -25,6 +25,14 @@ const (
 	KeyDeepSeekAPIKey   = "DEEPSEEK_API_KEY"
 	KeyDeepSeekModel    = "DEEPSEEK_MODEL"
 
+	// Usage limits (internal/service/quota). FREE_QUOTA_PERIOD is
+	// "daily" (default) or "lifetime"; the rest are non-negative integers,
+	// PREMIUM_DAILY_SCAN_LIMIT = 0 meaning no cap.
+	KeyFreeQuotaPeriod       = "FREE_QUOTA_PERIOD"
+	KeyFreeDailyLimit        = "FREE_DAILY_LIMIT"
+	KeyFreeLifetimeLimit     = "FREE_LIFETIME_LIMIT"
+	KeyPremiumDailyScanLimit = "PREMIUM_DAILY_SCAN_LIMIT"
+
 	// KeyXrayVlessLink is written by POST /admin/proxy (not by PUT
 	// /admin/settings) so the panel can pre-fill the last link it sent.
 	KeyXrayVlessLink = "XRAY_VLESS_LINK"
@@ -39,6 +47,11 @@ var EditableKeys = map[string]bool{
 	KeyOpenRouterModel:  true,
 	KeyDeepSeekAPIKey:   true,
 	KeyDeepSeekModel:    true,
+
+	KeyFreeQuotaPeriod:       true,
+	KeyFreeDailyLimit:        true,
+	KeyFreeLifetimeLimit:     true,
+	KeyPremiumDailyScanLimit: true,
 }
 
 type Repository interface {

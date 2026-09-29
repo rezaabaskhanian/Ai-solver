@@ -4,7 +4,8 @@ import { StyleSheet, View } from 'react-native';
 
 import { AppButton } from '../common/AppButton';
 import { AppText } from '../common/AppText';
-import { colors, spacing } from '../../theme';
+import { makeStyles, spacing, useColors } from '../../theme';
+import { Icon } from '../common/Icon';
 
 interface CameraPermissionNoticeProps {
   canRequestPermission: boolean;
@@ -18,13 +19,13 @@ export function CameraPermissionNotice({
   canRequestPermission,
   onRequestPermission,
 }: CameraPermissionNoticeProps) {
+  const colors = useColors();
+  const styles = useStyles();
   const { t } = useTranslation();
 
   return (
     <View style={styles.container}>
-      <AppText size="xl" align="center">
-        📷
-      </AppText>
+      <Icon name="photo-camera" size={48} color={colors.primaryText} />
       <AppText weight="bold" size="lg" align="center">
         {t('scan.permissionTitle')}
       </AppText>
@@ -38,7 +39,7 @@ export function CameraPermissionNotice({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(colors => StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -47,4 +48,4 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
     backgroundColor: colors.background,
   },
-});
+}));

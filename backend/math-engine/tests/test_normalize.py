@@ -24,3 +24,19 @@ def test_unicode_minus_sign():
 
 def test_collapses_extra_whitespace():
     assert normalize_input("  2x   +   5  ") == "2x + 5"
+
+
+def test_persian_digits_become_ascii():
+    assert normalize_input("۳x+۵=۱۰") == "3x+5=10"
+
+
+def test_arabic_indic_digits_and_decimal_separator():
+    assert normalize_input("٢٫٥x") == "2.5x"
+
+
+def test_sqrt_symbol_with_parentheses():
+    assert normalize_input("√(x+1)") == "sqrt(x+1)"
+
+
+def test_bare_sqrt_symbol():
+    assert normalize_input("√9+√x") == "sqrt(9)+sqrt(x)"

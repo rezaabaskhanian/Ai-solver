@@ -10,5 +10,7 @@ const (
 	ErrMathEngineUnavailable     = "The math engine is unavailable. Please try again."
 	ErrInternal                  = "Something went wrong. Please try again."
 	ErrQuotaExceeded             = "You've used all your free solves. Upgrade to Premium to continue."
+	ErrDailyQuotaExceeded        = "You've used today's free solves. Come back tomorrow or upgrade to Premium."
+	ErrDailyScanLimit            = "You've reached today's scan limit. You can scan again tomorrow."
 	ErrPurchaseInvalid           = "This purchase couldn't be verified."
 )

@@ -2,7 +2,7 @@ import React from 'react';
 import { Text, type TextProps, type TextStyle } from 'react-native';
 
 import { useIsRTL } from '../../hooks/useIsRTL';
-import { colors, fontFamilyFor, fontSize, type FontWeightKey } from '../../theme';
+import { fontFamilyFor, fontSize, type FontWeightKey, useColors } from '../../theme';
 
 interface AppTextProps extends TextProps {
   weight?: FontWeightKey;
@@ -14,11 +14,12 @@ interface AppTextProps extends TextProps {
 export function AppText({
   weight = 'regular',
   size = 'md',
-  color = colors.textPrimary,
+  color,
   align,
   style,
   ...rest
 }: AppTextProps) {
+  const colors = useColors();
   const isRTL = useIsRTL();
   const resolvedSize = typeof size === 'number' ? size : fontSize[size];
 
@@ -29,7 +30,7 @@ export function AppText({
         {
           fontFamily: fontFamilyFor(isRTL ? 'fa' : 'en', weight),
           fontSize: resolvedSize,
-          color,
+          color: color ?? colors.textPrimary,
           textAlign: align ?? (isRTL ? 'right' : 'left'),
           writingDirection: isRTL ? 'rtl' : 'ltr',
         },

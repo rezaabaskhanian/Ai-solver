@@ -14,20 +14,52 @@
     "scanSubtitle": "Point your camera at it",
     "typeTitle": "Type Problem",
     "typeSubtitle": "Enter an equation with the keyboard",
-    "recentTitle": "Recent Problems",
+    "recentTitle": "Recent solves",
     "seeAll": "See all",
     "recentEmpty": "Solved problems will show up here.",
-    "recentLoadError": "Couldn't load recent problems."
+    "recentLoadError": "Couldn't load recent problems.",
+    "hello": "Hi! 👋",
+    "headline": "Need help solving\na problem today?",
+    "entryPlaceholder": "Type your problem here…",
+    "proTitle": "Upgrade to MathMotion Pro",
+    "proTag": "Special",
+    "proBody": "Unlimited step-by-step solutions, no limits.",
+    "proButton": "+ Upgrade to Pro",
+    "proButtonPrice": "+ Upgrade to Pro — {{price}}",
+    "quotaTitle": "Free solves",
+    "quotaBody": "{{remaining}} of {{limit}} solves left",
+    "premiumTitle": "Premium active",
+    "premiumBody": "Unlimited solves — thanks for your support!",
+    "toolScan": "Scan",
+    "toolExam": "Exam prep",
+    "toolTopics": "Topics",
+    "practiceTitle": "Ready-to-practice problems",
+    "practiceHint": "Tap to solve",
+    "proBodyShort": "Unlimited step-by-step solutions",
+    "proActivate": "Activate",
+    "quotaTitleDaily": "Today's free solves",
+    "quotaBodyDaily": "{{remaining}} of {{limit}} left today",
+    "premiumScans": "Scans today: {{used}} of {{limit}}"
   },
   "scan": {
     "title": "Scan Problem",
-    "instruction": "Line up the equation inside the frame",
+    "instruction": "Fit the problem inside the frame and make sure there's enough light.",
     "permissionTitle": "Camera access needed",
     "permissionBody": "MathMotion needs your camera to scan a problem written on paper.",
     "permissionDeniedBody": "Camera access was denied. Enable it from your device Settings to scan a problem.",
     "grantPermission": "Allow Camera",
     "recognizedTitle": "Tap a problem to solve it",
-    "tapToSolve": "Tap to solve"
+    "tapToSolve": "Tap to solve",
+    "ready": "Ready to scan",
+    "reading": "Reading the problem…",
+    "flash": "Flashlight",
+    "capture": "Take photo",
+    "typeInstead": "Type",
+    "guide": "Guide",
+    "tipsTitle": "Tips for a better scan",
+    "tipsBody": "For faint writing, move closer. Hold the phone parallel to the page so the equation isn't skewed.",
+    "gallery": "Gallery",
+    "recognizedCount": "{{count}} problems found"
   },
   "arSolution": {
     "pointCamera": "Point your camera at the paper"
@@ -36,26 +68,41 @@
     "title": "Type Problem",
     "placeholder": "e.g. 2x + 5 = 17",
     "clear": "Clear",
-    "solve": "Solve",
+    "solve": "Solve step by step",
     "solving": "Solving…",
     "checkEquation": "Please check the detected equation.",
     "checkMySteps": "Check my steps",
     "quizMe": "Quiz me",
-    "startingQuiz": "Starting…"
+    "startingQuiz": "Starting…",
+    "examples": "Examples: tap to insert",
+    "fieldLabel": "Math input",
+    "ltrHint": "✎ Left to right",
+    "length": "Length: {{count}} characters",
+    "backspace": "Delete one character",
+    "keypadTitle": "Math keypad",
+    "detecting": "Detecting the problem type…",
+    "typeHint": "Type a problem to detect its kind",
+    "noteTitle": "Exact math engine",
+    "noteBody": "Answers are checked by substituting them back; confirmed ones get a \"Verified\" badge.",
+    "tabs": {
+      "general": "General",
+      "trig": "Trig",
+      "calculus": "Calculus"
+    }
   },
   "solution": {
     "title": "Solution",
     "verified": "Verified",
     "notVerified": "Not verified",
-    "finalAnswer": "Final Answer",
+    "finalAnswer": "Final answer",
     "solutionComplete": "Solution Complete",
     "stepOf": "Step {{current}} of {{total}}",
     "previous": "Previous",
     "next": "Next",
-    "play": "Play",
+    "play": "Autoplay",
     "pause": "Pause",
-    "replay": "Replay",
-    "done": "Done",
+    "replay": "Restart",
+    "done": "Back to home",
     "practiceSimilar": "Practice similar",
     "generatingPractice": "Generating…",
     "share": "Share",
@@ -81,6 +128,27 @@
       "trig_rule": "Trig rule",
       "apply_derivative_rules": "Apply derivative rules",
       "simplify": "Simplify"
+    },
+    "stepsTitle": "Solution steps",
+    "before": "Before:",
+    "after": "After:",
+    "why": "Why do we do this?",
+    "viewPlayer": "Step by step",
+    "viewList": "All steps",
+    "allStepsTitle": "Step-by-step explanation",
+    "verifiedHint": "The answer was substituted back into the problem and checked.",
+    "quizThis": "Quiz me on this",
+    "shareImage": "Share solution image",
+    "goals": {
+      "linear_equation": "Goal: find the value of x",
+      "quadratic_equation": "Goal: find the roots",
+      "expression": "Goal: simplify the expression",
+      "arithmetic": "Goal: work out the result",
+      "arithmetic_equation": "Goal: check whether it's true",
+      "derivative": "Goal: find the derivative",
+      "integral": "Goal: find the integral",
+      "trig_expression": "Goal: simplify the trig expression",
+      "default": "Goal: solve the problem"
     }
   },
   "quiz": {
@@ -100,12 +168,16 @@
     "checking": "Checking…",
     "allCorrect": "All correct! {{answer}}",
     "mistakeFound": "There's a mistake — here's what should happen instead:",
-    "notYetFinished": "Correct so far — here's the next step:"
+    "notYetFinished": "Correct so far — here's the next step:",
+    "caption": "Write your solution line by line and we'll check it."
   },
   "history": {
     "title": "History",
     "empty": "No problems solved yet.",
-    "loadError": "Couldn't load history."
+    "loadError": "Couldn't load history.",
+    "answerLabel": "Answer:",
+    "emptyBody": "Every problem you solve is saved here to revisit.",
+    "emptyAction": "Solve your first problem"
   },
   "problemTypes": {
     "linear_equation": "Linear Equation",
@@ -127,7 +199,9 @@
     "rateLimited": "Too many requests, please slow down.",
     "quotaExceeded": "You've used all your free solves. Upgrade to Premium to continue.",
     "purchaseInvalid": "This purchase couldn't be verified.",
-    "generic": "Something went wrong. Please try again."
+    "generic": "Something went wrong. Please try again.",
+    "dailyLimitReached": "You've reached today's scan limit. You can scan again tomorrow.",
+    "quotaExceededDaily": "You've used today's free solves. Come back tomorrow or upgrade to Premium."
   },
   "language": {
     "label": "Language",
@@ -138,20 +212,35 @@
     "freeSolvesBadge": "{{remaining}}/{{limit}} free",
     "premiumActive": "Premium",
     "paywallTitle": "You've used all your free solves",
-    "paywallBody": "Upgrade to Premium for unlimited problem solving.",
+    "paywallBody": "You'll get free solves again tomorrow — or unlock unlimited solves now with Premium.",
     "upgradeButton": "Upgrade to Premium — {{price}}",
     "upgradeButtonNoPrice": "Upgrade to Premium",
     "purchasing": "Processing…",
     "androidOnly": "Premium purchases are only available on Android for now.",
     "bazaarNotInstalled": "Install the Cafe Bazaar app to purchase Premium.",
-    "purchaseSuccess": "Premium unlocked — thank you!"
+    "purchaseSuccess": "Premium unlocked — thank you!",
+    "paywallTitleDaily": "You've used today's free solves"
   },
   "drawer": {
     "open": "Open menu",
     "tagline": "See math solved step by step",
     "home": "Home",
     "topics": "Topics",
-    "history": "Solved problems"
+    "history": "Solved problems",
+    "exam": "Exam prep",
+    "guide": "How to use",
+    "settings": "Appearance",
+    "quickMenu": "Quick menu",
+    "close": "Close menu",
+    "planFree": "Free plan",
+    "planPremium": "Premium ✓",
+    "quotaLeft": "{{remaining}} of {{limit}} left",
+    "learnSection": "Learn and practice",
+    "settingsSection": "Settings",
+    "nightMode": "Night mode",
+    "topicsCount": "{{count}} topics",
+    "new": "New",
+    "tipTitle": "Today's tip: {{topic}}"
   },
   "topics": {
     "title": "Topics",
@@ -206,5 +295,221 @@
       "summary": "Indefinite integrals term by term, plus the constant of integration.",
       "tip": "Reverse power rule: the integral of xⁿ is xⁿ⁺¹/(n+1). Don't forget + C."
     }
+  },
+  "exam": {
+    "title": "Exam prep",
+    "inProgress": "Exam",
+    "resultTitle": "Exam result",
+    "intro": "Pick your grade and tick only the chapters your exam covers — we'll test you on exactly those.",
+    "gradeTitle": "Grade",
+    "grade": "Grade {{grade}}",
+    "chaptersTitle": "Exam chapters",
+    "chaptersHint": "Select the chapters your exam covers.",
+    "chapterNumber": "Ch. {{n}}:",
+    "selectAll": "Select all",
+    "selectNone": "Clear",
+    "comingSoon": "Coming soon",
+    "countTitle": "Number of questions",
+    "countOption": "{{count}} questions",
+    "start": "Start exam",
+    "pickChapters": "Pick at least one chapter",
+    "noQuestions": "No questions for these chapters yet.",
+    "questionOf": "Question {{n}} of {{total}}",
+    "answered": "{{count}} of {{total}} answered",
+    "previous": "Previous",
+    "next": "Next",
+    "finish": "Finish exam",
+    "finishEarly": "End exam now",
+    "confirmTitle": "Finish the exam?",
+    "confirmUnanswered": "{{count}} questions are unanswered. Unanswered questions count as wrong.",
+    "keepGoing": "Keep going",
+    "percent": "{{percent}}%",
+    "scoreLine": "{{correct}} of {{total}}",
+    "verdict": {
+      "excellent": "Excellent! You're ready for the exam. 🌟",
+      "good": "Good! A bit more practice on the weaker chapters and you'll ace it.",
+      "fair": "Not bad — review the chapters marked red or orange.",
+      "weak": "You need more practice. Start with Topics, then try again."
+    },
+    "byChapter": "Result per chapter",
+    "retry": "Another exam on these chapters",
+    "otherChapters": "Pick other chapters",
+    "review": "Review questions",
+    "questionNumber": "{{n}}.",
+    "yourAnswer": "Your answer:",
+    "correctAnswer": "Correct answer:",
+    "unanswered": "Unanswered",
+    "q": {
+      "compute": "Work out the expression below.",
+      "patterns": "In the pattern {{seq}}, … what comes next?",
+      "primes": "Which of these numbers is prime?",
+      "gcd": "What is the GCD of {{a}} and {{b}}?",
+      "lcm": "What is the LCM of {{a}} and {{b}}?",
+      "unit_km_m": "How many meters is {{value}} km?",
+      "unit_m_cm": "How many centimeters is {{value}} m?",
+      "unit_cm_mm": "How many millimeters is {{value}} cm?",
+      "unit_kg_g": "How many grams is {{value}} kg?",
+      "unit_l_ml": "How many milliliters is {{value}} L?",
+      "unit_h_min": "How many minutes is {{value}} hours?",
+      "rect_area": "A rectangle is {{w}} cm long and {{h}} cm wide. What is its area in cm²?",
+      "rect_perimeter": "A rectangle is {{w}} cm long and {{h}} cm wide. What is its perimeter in cm?",
+      "find_x": "In the proportion below, what is x?",
+      "percent": "What is {{p}}% of {{n}}?",
+      "round_tenth": "Round {{value}} to one decimal place.",
+      "round_int": "Round {{value}} to the nearest whole number.",
+      "evaluate": "Evaluate the expression below when x is {{v}}.",
+      "simplify": "Simplify the expression below.",
+      "solve_x": "Solve the equation below. What is x?",
+      "mean": "What is the mean of {{list}}?",
+      "cuboid_volume": "A cuboid measures {{a}}, {{b}} and {{c}} cm. What is its volume in cm³?",
+      "polygon_angles": "What is the sum of the interior angles of a {{n}}-sided polygon, in degrees?",
+      "hypotenuse": "A right triangle has legs {{a}} and {{b}}. How long is the hypotenuse?",
+      "leg": "A right triangle has hypotenuse {{c}} and one leg {{a}}. How long is the other leg?",
+      "dice_even": "A die is rolled. What is the probability of an even number?",
+      "dice_prime": "A die is rolled. What is the probability of a prime number?",
+      "dice_mult3": "A die is rolled. What is the probability of a multiple of 3?",
+      "dice_greater": "A die is rolled. What is the probability of a number greater than {{k}}?",
+      "expand": "Expand the expression below.",
+      "slope": "What is the slope of the line through points A and B?"
+    },
+    "chapters": {
+      "g6_patterns": "Numbers and patterns",
+      "g6_fractions": "Fractions",
+      "g6_decimals": "Decimals",
+      "g6_symmetry": "Symmetry and coordinates",
+      "g6_measurement": "Measurement",
+      "g6_ratio": "Ratio and percent",
+      "g6_estimation": "Estimation",
+      "g7_strategies": "Problem-solving strategies",
+      "g7_integers": "Integers",
+      "g7_algebra": "Algebra and equations",
+      "g7_geometry": "Geometry and reasoning",
+      "g7_divisors": "Divisors and primes",
+      "g7_area": "Area and volume",
+      "g7_powers": "Powers and square roots",
+      "g7_vectors": "Vectors and coordinates",
+      "g7_statistics": "Statistics and probability",
+      "g8_rationals": "Integers and rational numbers",
+      "g8_primes": "Prime numbers",
+      "g8_polygons": "Polygons",
+      "g8_algebra": "Algebra and equations",
+      "g8_vectors": "Vectors and coordinates",
+      "g8_triangle": "Triangles",
+      "g8_powers": "Powers and square roots",
+      "g8_statistics": "Statistics and probability",
+      "g8_circle": "Circles",
+      "g9_sets": "Sets",
+      "g9_reals": "Real numbers",
+      "g9_proof": "Reasoning and proof in geometry",
+      "g9_powers": "Powers and roots",
+      "g9_algebraic": "Algebraic expressions",
+      "g9_lines": "Lines and linear equations",
+      "g9_rational": "Rational expressions",
+      "g9_volume": "Volume and surface area"
+    }
+  },
+  "guide": {
+    "title": "How to use",
+    "intro": "Learn how to type a problem, take a good photo, and use the rest of the app.",
+    "typing": {
+      "title": "Typing a problem",
+      "items": {
+        "keys": "Symbols your keyboard hides (like √ and powers) are in the key row under the field.",
+        "digits": "Persian digits (۱۲۳) work too — no need to switch keyboards.",
+        "multiply": "No × needed between a number and x: 2x means 2 times x."
+      },
+      "tryHint": "Tap an example to try it:",
+      "rows": {
+        "power": "Power: use ^; x^2 is x squared.",
+        "sqrt": "Square root: write it inside sqrt( ).",
+        "times": "Multiply and divide: * and / (or × and ÷).",
+        "fraction": "Fraction: top / bottom; wrap long ones in parentheses.",
+        "pi": "Pi: pi. Sine and cosine: sin( ) and cos( ).",
+        "derivative": "Derivative: put the expression inside d/dx( ).",
+        "integral": "Integral: write the expression between ∫ and dx."
+      }
+    },
+    "scan": {
+      "title": "Scanning with the camera",
+      "items": {
+        "light": "Use good light and keep your hand's or phone's shadow off the page.",
+        "frame": "Fit the problem inside the guide frame — not too far, not too close.",
+        "flat": "Hold the phone parallel to the page so the writing isn't skewed.",
+        "review": "If the photo has several problems you'll see a list and can fix each one before solving."
+      }
+    },
+    "solution": {
+      "title": "Reading the solution",
+      "items": {
+        "steps": "Each step shows what it was before, what was done, and the result, with an explanation.",
+        "play": "Use Previous / Next, or press Play to watch the steps automatically.",
+        "verified": "The \"Verified ✓\" badge means the final answer was substituted back and checked.",
+        "share": "Share sends the solution as an image."
+      }
+    },
+    "learn": {
+      "title": "Learning and practice",
+      "items": {
+        "check": "\"Check my steps\": write your own solution line by line; we mark the first wrong line with a hint.",
+        "quiz": "\"Learn with a quiz\": guess the next step at each stage.",
+        "practice": "\"Practice similar\": get a fresh problem of the same kind to solve yourself.",
+        "topics": "\"Topics\" in the menu: explanations, tips and examples per topic."
+      }
+    },
+    "quota": {
+      "title": "Free solves and Premium",
+      "items": {
+        "free": "You get a few free solves; the Home screen shows how many are left. Solving, scanning and checking your steps each count as one.",
+        "premium": "After that, a one-time Premium purchase gives unlimited solves."
+      }
+    }
+  },
+  "settings": {
+    "title": "Appearance",
+    "modeTitle": "Display mode",
+    "mode": {
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "accentTitle": "Main color",
+    "accentHint": "Used for buttons, badges and highlights",
+    "accent": {
+      "indigo": "Blue",
+      "lime": "Lime",
+      "blue": "Sky blue",
+      "teal": "Teal",
+      "violet": "Violet",
+      "rose": "Pink",
+      "orange": "Orange"
+    },
+    "textTitle": "Text color",
+    "textHint": "Color of the app's text",
+    "textSample": "Aa",
+    "text": {
+      "default": "Default",
+      "black": "Black",
+      "navy": "Navy",
+      "brown": "Brown",
+      "green": "Dark green"
+    },
+    "previewTitle": "Preview",
+    "previewBody": "This is sample text so you can see the colors.",
+    "previewSecondary": "Secondary text in a softer color",
+    "previewButton": "Solve",
+    "reset": "Reset to default"
+  },
+  "onboarding": {
+    "tagline": "Interactive school math, step by step",
+    "title": "Your smart, personal",
+    "titleAccent": "math assistant",
+    "body": "Step-by-step solutions with clear explanations, quizzes to practice each step, and exam prep.",
+    "features": {
+      "scan": "Scan with the camera",
+      "steps": "Step-by-step explanations",
+      "exam": "Exam prep"
+    },
+    "start": "Start learning",
+    "freeNote": "No sign-up — you get a few free solves to try it."
   }
 }

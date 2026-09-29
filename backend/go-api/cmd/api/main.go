@@ -16,10 +16,12 @@ import (
 	postgresbilling "mathmotion/go-api/internal/repository/postgres/billing"
 	postgresproblem "mathmotion/go-api/internal/repository/postgres/problem"
 	postgressettings "mathmotion/go-api/internal/repository/postgres/settings"
+	postgresusage "mathmotion/go-api/internal/repository/postgres/usage"
 	postgresuser "mathmotion/go-api/internal/repository/postgres/user"
 	billingservice "mathmotion/go-api/internal/service/billing"
 	problemservice "mathmotion/go-api/internal/service/problem"
 	proxyservice "mathmotion/go-api/internal/service/proxy"
+	quotaservice "mathmotion/go-api/internal/service/quota"
 	settingsservice "mathmotion/go-api/internal/service/settings"
 	userservice "mathmotion/go-api/internal/service/user"
 	visionservice "mathmotion/go-api/internal/service/vision"
@@ -96,12 +98,11 @@ func main() {
 		HttpServer:    config.HttpServer{Port: getEnv("PORT", "8080")},
 		RateLimit:     config.RateLimit{RPS: 5, Burst: 10},
 		Billing: config.Billing{
-			PackageName:    getEnv("BAZAAR_PACKAGE_NAME", "com.mathmotion"),
-			ProductID:      getEnv("BAZAAR_PRODUCT_ID", "mathmotion_premium_unlock"),
-			ClientID:       getEnv("BAZAAR_CLIENT_ID", ""),
-			ClientSecret:   getEnv("BAZAAR_CLIENT_SECRET", ""),
-			RefreshToken:   getEnv("BAZAAR_REFRESH_TOKEN", ""),
-			FreeSolveLimit: getEnvInt("FREE_SOLVE_LIMIT", 5),
+			PackageName:  getEnv("BAZAAR_PACKAGE_NAME", "com.mathmotion"),
+			ProductID:    getEnv("BAZAAR_PRODUCT_ID", "mathmotion_premium_unlock"),
+			ClientID:     getEnv("BAZAAR_CLIENT_ID", ""),
+			ClientSecret: getEnv("BAZAAR_CLIENT_SECRET", ""),
+			RefreshToken: getEnv("BAZAAR_REFRESH_TOKEN", ""),
 		},
 		Outbound: config.Outbound{
 			ProxyURL: getEnv("AI_OUTBOUND_PROXY", ""),
@@ -143,6 +144,7 @@ func main() {
 	problemRepo := postgresproblem.New(db.Pool)
 	billingRepo := postgresbilling.New(db.Pool)
 	settingsRepo := postgressettings.New(db.Pool)
+	usageRepo := postgresusage.New(db.Pool)
 
 	// AI provider/keys/models and the last Xray link are editable from the
 	// admin panel at runtime; anything not saved there falls back to .env.
@@ -154,7 +156,10 @@ func main() {
 
 	userSvc := userservice.New(userRepo)
 	mathEngine := problemservice.NewMathEngineClient(cfg.MathEngineURL)
-	problemSvc := problemservice.New(problemRepo, mathEngine, cfg.Billing.FreeSolveLimit)
+	// Usage limits (free daily/lifetime, Premium daily scans) are read
+	// from settingsSvc on every request — editable in the admin panel.
+	quotaSvc := quotaservice.New(usageRepo, settingsSvc)
+	problemSvc := problemservice.New(problemRepo, mathEngine, quotaSvc)
 	bazaarClient := billingservice.NewBazaarClient(cfg.Billing.ClientID, cfg.Billing.ClientSecret, cfg.Billing.RefreshToken)
 	billingSvc := billingservice.New(billingRepo, bazaarClient, cfg.Billing.PackageName, cfg.Billing.ProductID)
 
@@ -168,7 +173,7 @@ func main() {
 		log.Fatalf("building outbound http client: %v", err)
 	}
 	visionClient := visionservice.NewClient(settingsSvc, outboundClient)
-	visionSvc := visionservice.New(problemRepo, visionClient, cfg.Billing.FreeSolveLimit)
+	visionSvc := visionservice.New(visionClient, quotaSvc)
 	if !visionClient.Enabled() {
 		log.Printf("warning: no API key for AI provider %q — POST /api/v1/problems/recognize "+
 			"(camera-based Scan Problem) will fail until one is set from the admin panel or .env",
@@ -177,5 +182,5 @@ func main() {
 
 	proxySvc := proxyservice.New(cfg.Proxy.XrayConfigPath, cfg.Outbound.ProxyURL)
 
-	httpserver.New(cfg, userSvc, problemSvc, billingSvc, visionSvc, visionClient, proxySvc, settingsSvc).Server()
+	httpserver.New(cfg, userSvc, problemSvc, billingSvc, visionSvc, visionClient, proxySvc, settingsSvc, quotaSvc).Server()
 }

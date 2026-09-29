@@ -296,6 +296,22 @@ curl -s http://localhost:8080/api/v1/history -H "X-Device-Id: <همون device i
 تست end-to-end واقعی (Postgres محلی، `FREE_SOLVE_LIMIT=3`): سه حل موفق → `GET /entitlement`
 `free_solves_used:3` → حل چهارم `402 {"error":"quota_exceeded"}`.
 
+**به‌روزرسانی — سهمیه‌ی قابل‌تنظیم از پنل ادمین (`internal/service/quota`):** شمارش حالا با جدول
+`usage_events` (migration 005) است، نه `CountProblems`: هر حل، **اسکن** و «بررسی حل خودم» یک ردیف
+ثبت می‌کند. (قبلاً اسکن و check شمرده نمی‌شدند، پس کاربر رایگان می‌توانست بی‌نهایت اسکن کند و هر
+اسکن هزینه‌ی هوش مصنوعی داشت.) migration حل‌های قبلی را هم به این جدول منتقل می‌کند.
+- کاربر رایگان: هر سه نوع از یک سهمیه کم می‌کنند؛ `FREE_QUOTA_PERIOD` = `daily` (پیش‌فرض، ریست
+  ساعت ۰۰:۰۰ تهران، `FREE_DAILY_LIMIT` پیش‌فرض ۳) یا `lifetime` (`FREE_LIFETIME_LIMIT`، و اگر ست
+  نشده `FREE_SOLVE_LIMIT`، پیش‌فرض ۵).
+- کاربر Premium: حل و check نامحدود؛ فقط اسکن سقف روزانه دارد (`PREMIUM_DAILY_SCAN_LIMIT`، پیش‌فرض
+  ۳۰، ۰ = بدون سقف) → `429 {"error":"daily_limit_reached"}` (کایند جدید `KindTooManyRequests`،
+  جدا از `rate_limited` ریت‌لیمیتر).
+- هر چهار کلید در `app_settings` ذخیره می‌شوند و از تب «سهمیه و محدودیت‌ها»ی پنل ادمین (و
+  `PUT /admin/settings`) همان لحظه عوض می‌شوند؛ مقدار env فقط fallback است.
+- اسکنی که به هوش مصنوعی رسید شمرده می‌شود (حتی «چیزی پیدا نشد»)؛ خطای سرور/ارائه‌دهنده نه.
+- `GET /entitlement` علاوه بر `free_solves_used/limit`: `quota_period`، `resets_at`،
+  `premium_scans_used`، `premium_scan_limit`.
+
 ---
 
 ## ۶. وضعیت فعلی و ادامه‌ی کار

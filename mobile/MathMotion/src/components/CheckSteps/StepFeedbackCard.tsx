@@ -2,10 +2,11 @@ import React from 'react';
 import { StyleSheet } from 'react-native';
 
 import type { StepStatus } from '../../types/problem';
-import { colors, spacing } from '../../theme';
+import { spacing, useColors } from '../../theme';
 import { AppText } from '../common/AppText';
 import { Card } from '../common/Card';
 import { MathExpression } from '../MathExpression/MathExpression';
+import { Icon } from '../common/Icon';
 
 interface StepFeedbackCardProps {
   stepText: string;
@@ -16,14 +17,13 @@ interface StepFeedbackCardProps {
 // mirrors the ✓/✗ so the result reads at a glance without relying on
 // color alone.
 export function StepFeedbackCard({ stepText, status }: StepFeedbackCardProps) {
+  const colors = useColors();
   const isCorrect = status === 'correct';
 
   return (
     <Card style={[styles.card, { borderColor: isCorrect ? colors.success : colors.danger }]}>
       <MathExpression expression={stepText} size="md" />
-      <AppText size="sm" color={isCorrect ? colors.success : colors.danger}>
-        {isCorrect ? '✓' : '✗'}
-      </AppText>
+      <Icon name={isCorrect ? 'check-circle' : 'cancel'} size={22} color={isCorrect ? colors.success : colors.danger} />
     </Card>
   );
 }

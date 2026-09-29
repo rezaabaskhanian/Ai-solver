@@ -5,19 +5,23 @@ import (
 
 	"github.com/anthropics/anthropic-sdk-go/option"
 
+	"mathmotion/go-api/internal/service/quota"
 	settingskeys "mathmotion/go-api/internal/service/settings"
 )
 
-type fakeRepo struct {
-	countProblems int
-	countErr      error
+// fakeQuota stands in for internal/service/quota.
+type fakeQuota struct {
+	allowErr error
+	recorded []quota.Kind
 }
 
-func (f *fakeRepo) CountProblems(ctx context.Context, userID string) (int, error) {
-	if f.countErr != nil {
-		return 0, f.countErr
-	}
-	return f.countProblems, nil
+func (f *fakeQuota) Allow(ctx context.Context, userID string, isPremium bool, kind quota.Kind) error {
+	return f.allowErr
+}
+
+func (f *fakeQuota) Record(ctx context.Context, userID string, kind quota.Kind) error {
+	f.recorded = append(f.recorded, kind)
+	return nil
 }
 
 // fakeSettings stands in for internal/service/settings: a plain map, no

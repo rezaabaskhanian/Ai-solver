@@ -8,15 +8,20 @@ import { MathExpression } from '../../components/MathExpression/MathExpression';
 import { AppButton } from '../../components/common/AppButton';
 import { AppText } from '../../components/common/AppText';
 import { Card } from '../../components/common/Card';
+import { Icon } from '../../components/common/Icon';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 import { findTopic } from '../../content/topics';
+import { useIsRTL } from '../../hooks/useIsRTL';
 import type { RootStackParamList } from '../../navigation/types';
 import { toApiError, translationKeyForApiError } from '../../services/api/apiError';
 import { practiceProblem } from '../../services/api/problems';
-import { colors, spacing } from '../../theme';
+import { makeStyles, spacing, useColors } from '../../theme';
 
 export function TopicScreen() {
+  const colors = useColors();
+  const styles = useStyles();
   const { t } = useTranslation();
+  const isRTL = useIsRTL();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { params } = useRoute<RouteProp<RootStackParamList, 'Topic'>>();
   const topic = findTopic(params.topicId);
@@ -57,9 +62,12 @@ export function TopicScreen() {
       <View style={styles.section}>
         <AppText>{t(`topics.${topic.id}.summary`)}</AppText>
         <Card style={styles.tip}>
-          <AppText size="sm" weight="bold" color={colors.primary}>
-            {t('topics.tipLabel')}
-          </AppText>
+          <View style={[styles.row, isRTL && styles.rowRTL]}>
+            <Icon name="lightbulb-outline" size={18} color={colors.primaryText} />
+            <AppText size="sm" weight="bold" color={colors.primaryText}>
+              {t('topics.tipLabel')}
+            </AppText>
+          </View>
           <AppText size="sm">{t(`topics.${topic.id}.tip`)}</AppText>
         </Card>
       </View>
@@ -73,9 +81,12 @@ export function TopicScreen() {
           <Card
             key={example}
             onPress={() => navigation.navigate('ProblemInput', { initialProblem: example })}
-            style={styles.example}
+            style={[styles.example, styles.row, isRTL && styles.rowRTL]}
           >
-            <MathExpression expression={example} size="lg" />
+            <View style={styles.flexOne}>
+              <MathExpression expression={example} size="lg" />
+            </View>
+            <Icon name="play-circle-outline" color={colors.primaryText} />
           </Card>
         ))}
       </View>
@@ -90,6 +101,7 @@ export function TopicScreen() {
           <AppButton
             label={generatingPractice ? t('topics.generatingPractice') : t('topics.practice')}
             variant="primary"
+            icon="refresh"
             onPress={handlePractice}
             loading={generatingPractice}
           />
@@ -99,7 +111,19 @@ export function TopicScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(colors => StyleSheet.create({
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  // Soft RTL (see src/i18n/index.ts): rows are mirrored per component.
+  rowRTL: {
+    flexDirection: 'row-reverse',
+  },
+  flexOne: {
+    flex: 1,
+  },
   section: {
     gap: spacing.sm,
     marginBottom: spacing.lg,
@@ -113,4 +137,4 @@ const styles = StyleSheet.create({
   example: {
     padding: spacing.md,
   },
-});
+}));

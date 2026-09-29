@@ -25,6 +25,11 @@ describe('toApiError', () => {
     expect(apiError.code).toBe('network');
   });
 
+  it('keeps an already-converted ApiError as is', () => {
+    const original = new ApiError('network', 'Could not reach the server.');
+    expect(toApiError(original)).toBe(original);
+  });
+
   it('wraps a plain Error as an unknown ApiError', () => {
     const apiError = toApiError(new Error('boom'));
     expect(apiError.code).toBe('unknown');
@@ -43,8 +48,17 @@ describe('translationKeyForApiError', () => {
     ['network', 'errors.network'],
     ['rate_limited', 'errors.rateLimited'],
     ['quota_exceeded', 'errors.quotaExceeded'],
+    ['daily_limit_reached', 'errors.dailyLimitReached'],
   ])('maps the %s code directly to %s', (code, key) => {
     expect(translationKeyForApiError(new ApiError(code, 'irrelevant'))).toBe(key);
+  });
+
+  it('maps the daily free-quota message to the "today" wording', () => {
+    const err = new ApiError(
+      'quota_exceeded',
+      "You've used today's free solves. Come back tomorrow or upgrade to Premium.",
+    );
+    expect(translationKeyForApiError(err)).toBe('errors.quotaExceededDaily');
   });
 
   it('maps known invalid_input messages to their specific translation key', () => {

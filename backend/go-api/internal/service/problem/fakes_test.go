@@ -5,6 +5,7 @@ import (
 
 	domain "mathmotion/go-api/internal/domain/problem"
 	"mathmotion/go-api/internal/service/problem/dto"
+	"mathmotion/go-api/internal/service/quota"
 )
 
 // fakeRepo is an in-memory Repository used to exercise Service without
@@ -62,4 +63,25 @@ func (f *fakeRepo) CountProblems(ctx context.Context, userID string) (int, error
 		return 0, f.countErr
 	}
 	return f.countProblems, nil
+}
+
+// fakeQuota stands in for internal/service/quota: allowErr is what Allow
+// returns; recorded lists the kinds passed to Record.
+type fakeQuota struct {
+	allowErr error
+	recorded []quota.Kind
+	status   quota.Status
+}
+
+func (f *fakeQuota) Allow(ctx context.Context, userID string, isPremium bool, kind quota.Kind) error {
+	return f.allowErr
+}
+
+func (f *fakeQuota) Record(ctx context.Context, userID string, kind quota.Kind) error {
+	f.recorded = append(f.recorded, kind)
+	return nil
+}
+
+func (f *fakeQuota) Status(ctx context.Context, userID string, isPremium bool) (quota.Status, error) {
+	return f.status, nil
 }

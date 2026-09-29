@@ -33,7 +33,7 @@ func TestCheck_SuccessReturnsResultWithoutPersisting(t *testing.T) {
 	defer engineSrv.Close()
 
 	repo := &fakeRepo{}
-	svc := New(repo, NewMathEngineClient(engineSrv.URL), 5)
+	svc := New(repo, NewMathEngineClient(engineSrv.URL), &fakeQuota{})
 
 	result, err := svc.Check(context.Background(), "user-1", true, "2x + 5 = 17", []string{"2x = 22"})
 	if err != nil {
@@ -51,8 +51,9 @@ func TestCheck_SuccessReturnsResultWithoutPersisting(t *testing.T) {
 }
 
 func TestCheck_QuotaExceededBlocksNonPremiumUser(t *testing.T) {
-	repo := &fakeRepo{countProblems: 5}
-	svc := New(repo, NewMathEngineClient("http://127.0.0.1:0"), 5)
+	repo := &fakeRepo{}
+	q := &fakeQuota{allowErr: richerror.New("test").WithKind(richerror.KindPaymentRequired)}
+	svc := New(repo, NewMathEngineClient("http://127.0.0.1:0"), q)
 
 	_, err := svc.Check(context.Background(), "user-1", false, "2x + 5 = 17", []string{})
 	if err == nil {
@@ -75,7 +76,7 @@ func TestCheck_EngineParseErrorIsTranslated(t *testing.T) {
 	defer engineSrv.Close()
 
 	repo := &fakeRepo{}
-	svc := New(repo, NewMathEngineClient(engineSrv.URL), 5)
+	svc := New(repo, NewMathEngineClient(engineSrv.URL), &fakeQuota{})
 
 	_, err := svc.Check(context.Background(), "user-1", true, "x + y = 3", []string{})
 	richErr := err.(richerror.RichError)

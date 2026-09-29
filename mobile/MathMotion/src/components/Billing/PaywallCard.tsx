@@ -4,9 +4,10 @@ import { StyleSheet } from 'react-native';
 
 import { PREMIUM_PRODUCT_ID } from '../../config/env';
 import { usePurchasePremium } from '../../hooks/usePurchasePremium';
+import { useEntitlementStore } from '../../store/useEntitlementStore';
 import { getProductPrice, isPurchaseSupported } from '../../services/billing/poolakey';
 import { translationKeyForApiError } from '../../services/api/apiError';
-import { colors, spacing } from '../../theme';
+import { spacing, useColors } from '../../theme';
 import { AppButton } from '../common/AppButton';
 import { AppText } from '../common/AppText';
 import { Card } from '../common/Card';
@@ -15,8 +16,10 @@ import { Card } from '../common/Card';
 // quota is used up (see useEntitlementStore) — explains the benefit
 // and, on Android, triggers the real Cafe Bazaar purchase flow.
 export function PaywallCard() {
+  const colors = useColors();
   const { t } = useTranslation();
   const { purchase, purchasing, error } = usePurchasePremium();
+  const quotaPeriod = useEntitlementStore(state => state.quotaPeriod);
   const [price, setPrice] = useState<string | null>(null);
 
   useEffect(() => {
@@ -33,7 +36,7 @@ export function PaywallCard() {
   return (
     <Card style={styles.card}>
       <AppText weight="bold" size="lg" align="center">
-        {t('billing.paywallTitle')}
+        {t(quotaPeriod === 'daily' ? 'billing.paywallTitleDaily' : 'billing.paywallTitle')}
       </AppText>
       <AppText color={colors.textSecondary} align="center">
         {t('billing.paywallBody')}

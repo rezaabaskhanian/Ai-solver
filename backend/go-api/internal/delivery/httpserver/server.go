@@ -18,6 +18,7 @@ import (
 	billingservice "mathmotion/go-api/internal/service/billing"
 	problemservice "mathmotion/go-api/internal/service/problem"
 	proxyservice "mathmotion/go-api/internal/service/proxy"
+	quotaservice "mathmotion/go-api/internal/service/quota"
 	settingsservice "mathmotion/go-api/internal/service/settings"
 	userservice "mathmotion/go-api/internal/service/user"
 	visionservice "mathmotion/go-api/internal/service/vision"
@@ -43,6 +44,7 @@ func New(
 	visionClient *visionservice.Client,
 	proxySvc proxyservice.Service,
 	settingsSvc *settingsservice.Service,
+	quotaSvc quotaservice.Service,
 ) Service {
 	return Service{
 		cfg:             cfg,
@@ -50,7 +52,7 @@ func New(
 		billingHandler:  billinghandler.New(billingSvc),
 		visionHandler:   visionhandler.New(visionSvc),
 		proxyHandler:    proxyhandler.New(proxySvc, settingsSvc),
-		settingsHandler: settingshandler.New(settingsSvc, visionClient),
+		settingsHandler: settingshandler.New(settingsSvc, visionClient, quotaSvc),
 		userSvc:         userSvc,
 		rateLimiter:     middleware.NewRateLimiter(cfg.RateLimit.RPS, cfg.RateLimit.Burst),
 	}

@@ -24,7 +24,7 @@ func TestParse_Success(t *testing.T) {
 	}))
 	defer engineSrv.Close()
 
-	svc := New(&fakeRepo{}, NewMathEngineClient(engineSrv.URL), 5)
+	svc := New(&fakeRepo{}, NewMathEngineClient(engineSrv.URL), &fakeQuota{})
 
 	result, err := svc.Parse(context.Background(), "2x + 5 = 17")
 	if err != nil {
@@ -46,7 +46,7 @@ func TestParse_EngineParseErrorIsTranslated(t *testing.T) {
 	}))
 	defer engineSrv.Close()
 
-	svc := New(&fakeRepo{}, NewMathEngineClient(engineSrv.URL), 5)
+	svc := New(&fakeRepo{}, NewMathEngineClient(engineSrv.URL), &fakeQuota{})
 
 	_, err := svc.Parse(context.Background(), "x=")
 	if err == nil {
@@ -66,7 +66,7 @@ func TestParse_EngineParseErrorIsTranslated(t *testing.T) {
 }
 
 func TestParse_EngineUnreachableIsUnexpectedKind(t *testing.T) {
-	svc := New(&fakeRepo{}, NewMathEngineClient("http://127.0.0.1:0"), 5)
+	svc := New(&fakeRepo{}, NewMathEngineClient("http://127.0.0.1:0"), &fakeQuota{})
 
 	_, err := svc.Parse(context.Background(), "2x + 5 = 17")
 	if err == nil {

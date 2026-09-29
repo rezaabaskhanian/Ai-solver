@@ -10,6 +10,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 
+	"mathmotion/go-api/internal/service/quota"
 	settingskeys "mathmotion/go-api/internal/service/settings"
 )
 
@@ -20,6 +21,12 @@ func (m memStore) Get(key string) string { return m[key] }
 func (m memStore) Set(_ context.Context, key, value string) error {
 	m[key] = value
 	return nil
+}
+
+type fakeQuota struct{}
+
+func (fakeQuota) Config() quota.Config {
+	return quota.Config{FreePeriod: quota.PeriodDaily, FreeDailyLimit: 3}
 }
 
 type fakeProvider struct{}
@@ -41,7 +48,7 @@ func doRequest(t *testing.T, h Handler, method, body string, fn func(Handler, ec
 
 func TestGet_NeverReturnsFullSecret(t *testing.T) {
 	store := memStore{settingskeys.KeyOpenRouterAPIKey: "sk-or-v1-abcdefghijklmnop"}
-	rec := doRequest(t, New(store, fakeProvider{}), http.MethodGet, "", Handler.Get)
+	rec := doRequest(t, New(store, fakeProvider{}, fakeQuota{}), http.MethodGet, "", Handler.Get)
 
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status = %d, want 200", rec.Code)
@@ -66,7 +73,7 @@ func TestGet_NeverReturnsFullSecret(t *testing.T) {
 
 func TestUpdate_SavesTrimmedValue(t *testing.T) {
 	store := memStore{}
-	rec := doRequest(t, New(store, fakeProvider{}), http.MethodPut,
+	rec := doRequest(t, New(store, fakeProvider{}, fakeQuota{}), http.MethodPut,
 		`{"key":"DEEPSEEK_MODEL","value":"  deepseek-chat  "}`, Handler.Update)
 
 	if rec.Code != http.StatusOK {
@@ -79,7 +86,7 @@ func TestUpdate_SavesTrimmedValue(t *testing.T) {
 
 func TestUpdate_RejectsUnknownKey(t *testing.T) {
 	store := memStore{}
-	rec := doRequest(t, New(store, fakeProvider{}), http.MethodPut,
+	rec := doRequest(t, New(store, fakeProvider{}, fakeQuota{}), http.MethodPut,
 		`{"key":"XRAY_VLESS_LINK","value":"vless://x"}`, Handler.Update)
 
 	if rec.Code != http.StatusUnprocessableEntity {
@@ -92,7 +99,7 @@ func TestUpdate_RejectsUnknownKey(t *testing.T) {
 
 func TestUpdate_RejectsUnknownProvider(t *testing.T) {
 	store := memStore{}
-	rec := doRequest(t, New(store, fakeProvider{}), http.MethodPut,
+	rec := doRequest(t, New(store, fakeProvider{}, fakeQuota{}), http.MethodPut,
 		`{"key":"AI_PROVIDER","value":"gemini"}`, Handler.Update)
 
 	if rec.Code != http.StatusUnprocessableEntity {
@@ -102,7 +109,7 @@ func TestUpdate_RejectsUnknownProvider(t *testing.T) {
 
 func TestUpdate_NormalizesProviderCase(t *testing.T) {
 	store := memStore{}
-	rec := doRequest(t, New(store, fakeProvider{}), http.MethodPut,
+	rec := doRequest(t, New(store, fakeProvider{}, fakeQuota{}), http.MethodPut,
 		`{"key":"AI_PROVIDER","value":"DeepSeek"}`, Handler.Update)
 
 	if rec.Code != http.StatusOK {

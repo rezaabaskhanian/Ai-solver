@@ -1,3 +1,4 @@
+import type { IconName } from '../components/common/Icon';
 import type { ProblemType } from '../types/problem';
 
 // The «مباحث درسی» (topics) list in the side drawer. Titles and intro text
@@ -10,7 +11,7 @@ import type { ProblemType } from '../types/problem';
 // backend/math-engine/app/solver/parser.py and its tests accept.
 export interface Topic {
   id: TopicId;
-  icon: string;
+  icon: IconName;
   examples: string[];
   // Set only for types backend/math-engine/app/solver/practice.py can
   // generate; the topic then offers "practice a fresh one yourself".
@@ -31,51 +32,51 @@ export type TopicId =
 export const TOPICS: Topic[] = [
   {
     id: 'arithmetic',
-    icon: '🔢',
+    icon: 'calculate',
     examples: ['2*(3 + 4)', '12/4 + 3^2', '(5 - 8)*2 + 10'],
     practiceType: 'arithmetic',
   },
   {
     id: 'fractions',
-    icon: '➗',
+    icon: 'pie-chart',
     examples: ['1/2 + 1/3', '3/4 * 2/9', '5/6 - 1/4'],
   },
   {
     id: 'powers',
-    icon: '²',
+    icon: 'superscript',
     examples: ['2^3 * 2^2', 'x^2 * x^3', '(x^3)^2'],
   },
   {
     id: 'expressions',
-    icon: '✏️',
+    icon: 'edit-note',
     examples: ['2x + 3x', '3(x + 2) + 2x', '4(x - 1) - 2(x + 3)'],
     practiceType: 'expression',
   },
   {
     id: 'linear',
-    icon: '⚖️',
+    icon: 'balance',
     examples: ['2x + 5 = 17', '3(x + 2) = 15', 'x/3 + 4 = 9'],
     practiceType: 'linear_equation',
   },
   {
     id: 'quadratic',
-    icon: '📈',
+    icon: 'show-chart',
     examples: ['x^2 - 5x + 6 = 0', 'x^2 - 4 = 0', 'x^2 + x - 1 = 0'],
     practiceType: 'quadratic_equation',
   },
   {
     id: 'trig',
-    icon: '📐',
+    icon: 'change-history',
     examples: ['sin(x)^2 + cos(x)^2', 'sin(pi/6)', 'tan(x)*cos(x)'],
   },
   {
     id: 'derivative',
-    icon: '📉',
+    icon: 'trending-down',
     examples: ['d/dx(x^2 + 3x)', 'd/dx(x^3 + sin(x))', 'derivative(cos(x) + 5, x)'],
   },
   {
     id: 'integral',
-    icon: '∫',
+    icon: 'functions',
     examples: ['∫x^2 dx', 'integrate(3x^2 + 2x, x)', 'integrate(1/x + cos(x), x)'],
   },
 ];

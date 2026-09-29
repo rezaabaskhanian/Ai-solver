@@ -108,6 +108,10 @@ services:
       BAZAAR_CLIENT_SECRET: ${BAZAAR_CLIENT_SECRET:-}
       BAZAAR_REFRESH_TOKEN: ${BAZAAR_REFRESH_TOKEN:-}
       FREE_SOLVE_LIMIT: ${FREE_SOLVE_LIMIT:-5}
+      # Fallbacks only — the admin panel's «سهمیه و محدودیت‌ها» overrides these live.
+      FREE_QUOTA_PERIOD: ${FREE_QUOTA_PERIOD:-daily}
+      FREE_DAILY_LIMIT: ${FREE_DAILY_LIMIT:-3}
+      PREMIUM_DAILY_SCAN_LIMIT: ${PREMIUM_DAILY_SCAN_LIMIT:-30}
       # All AI calls leave through the xray sidecar (a no-op passthrough
       # until a vless link is set) — see internal/pkg/outboundhttp.
       AI_OUTBOUND_PROXY: socks5://mathmotion-xray:1080

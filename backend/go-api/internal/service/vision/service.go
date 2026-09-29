@@ -1,24 +1,24 @@
 package vision
 
-import "context"
+import (
+	"context"
 
-// Repository is intentionally just this one method, independent of
-// problemservice.Repository/billing.Repository even though the same
-// underlying Postgres type ends up implementing all three — each
-// service declares only the slice it needs, matching the layering used
-// across this codebase. main.go passes the same *postgresproblem.DB
-// instance used to construct problemservice here too, since it already
-// implements CountProblems.
-type Repository interface {
-	CountProblems(ctx context.Context, userID string) (int, error)
+	"mathmotion/go-api/internal/service/quota"
+)
+
+// Quota is the slice of internal/service/quota this service needs — the
+// same gate Solve/Check use, so scans count toward the free limit and,
+// for Premium users, the daily scan cap (both admin-configurable).
+type Quota interface {
+	Allow(ctx context.Context, userID string, isPremium bool, kind quota.Kind) error
+	Record(ctx context.Context, userID string, kind quota.Kind) error
 }
 
 type Service struct {
-	repo           Repository
-	client         *Client
-	freeSolveLimit int
+	client *Client
+	quota  Quota
 }
 
-func New(repo Repository, client *Client, freeSolveLimit int) Service {
-	return Service{repo: repo, client: client, freeSolveLimit: freeSolveLimit}
+func New(client *Client, q Quota) Service {
+	return Service{client: client, quota: q}
 }

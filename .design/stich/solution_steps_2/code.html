@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="fa"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+<title>حل مسئله - مَث‌موشن</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Vazirmatn:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-secondary-fixed": "#131f00",
+            "on-surface": "#141b2b",
+            "surface-container": "#eef3e2",
+            "surface-container-highest": "#e3ebd0",
+            "surface-container-low": "#f6faf0",
+            "surface-container-lowest": "#ffffff",
+            "primary": "#446900",
+            "primary-container": "#b4f447",
+            "on-primary-container": "#203600",
+            "secondary": "#576500",
+            "secondary-container": "#d6ec9f",
+            "outline": "#767e69",
+            "outline-variant": "#c5ceb6",
+            "surface": "#fbfdf6",
+            "surface-dim": "#e9eddf",
+            "on-surface-variant": "#454b3c",
+            "tertiary": "#236a4c"
+          },
+          fontFamily: {
+            sans: ['Vazirmatn', 'Plus Jakarta Sans', 'sans-serif'],
+            math: ['Plus Jakarta Sans', 'serif']
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      font-family: 'Vazirmatn', 'Plus Jakarta Sans', sans-serif;
+      overscroll-behavior: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .pb-safe { padding-bottom: env(safe-area-inset-bottom, 16px); }
+    .pt-safe { padding-top: env(safe-area-inset-top, 0px); }
+    ::-webkit-scrollbar { display: none; }
+  </style>
+</head>
+<body class="bg-[#fbfcf8] text-[#191d16] antialiased flex flex-col min-h-screen selection:bg-[#c6f662] selection:text-[#1e3400]">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-40 bg-[#fbfcf8]/90 backdrop-blur-md pt-safe border-b border-[#edf2e4]/70">
+<div class="h-14 px-4 flex items-center justify-between max-w-[420px] mx-auto w-full">
+<!-- Back Button -->
+<button aria-label="بازگشت" class="w-10 h-10 flex items-center justify-center rounded-full text-[#2c3325] hover:bg-[#eef4e2] transition-colors active:scale-95" onclick="history.back()">
+<span class="material-symbols-outlined text-[24px]">arrow_forward</span>
+</button>
+<!-- Screen Title -->
+<div class="flex flex-col items-center">
+<h1 class="font-bold text-[17px] text-[#1c2214] tracking-tight">حل مسئله (Solution)</h1>
+<span class="text-[11px] text-[#69745b] font-medium">ریاضی هشتم • معادله خطی</span>
+</div>
+<!-- Share Button -->
+<button aria-label="اشتراک‌گذاری" class="w-10 h-10 flex items-center justify-center rounded-full text-[#2c3325] hover:bg-[#eef4e2] transition-colors active:scale-95" id="topShareBtn">
+<span class="material-symbols-outlined text-[22px]">ios_share</span>
+</button>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col w-full max-w-[420px] mx-auto px-4 pt-3 pb-28 gap-4">
+<!-- Original Question Card (Lime/Mint tint, inspired by reference) -->
+<div class="relative flex items-start justify-between gap-3 p-4 rounded-[26px] bg-[#d9f99d]/35 border border-[#bef264]/70 shadow-[0_2px_12px_rgba(163,230,53,0.12)]">
+<div class="flex-1 flex flex-col items-start gap-1.5">
+<div class="flex items-center gap-1.5 text-[11px] font-semibold text-[#365314] px-2 py-0.5 rounded-full bg-white/70">
+<span class="material-symbols-outlined text-[13px] text-[#65a30d]">crop_free</span>
+<span>صورت مسئله اسکن‌شده</span>
+</div>
+<!-- Math Formula Display -->
+<div class="w-full text-center py-2 px-3 rounded-2xl bg-white/80 border border-[#d9f99d]">
+<div class="font-math text-[24px] font-extrabold text-[#1a2e05] tracking-wide" dir="ltr">
+            2x + 5 = 17
+          </div>
+<span class="text-[11.5px] text-[#4d7c0f] font-medium">پیدا کردن ریشه معادله و متغیر x</span>
+</div>
+</div>
+<!-- User Avatar / Formula Icon on Left side -->
+<div class="flex flex-col items-center gap-1.5 shrink-0 self-center">
+<div class="w-10 h-10 rounded-full bg-[#bef264] flex items-center justify-center shadow-sm border border-white">
+<span class="material-symbols-outlined text-[#284200] text-[20px]">functions</span>
+</div>
+<img alt="آواتار کاربر" class="w-8 h-8 rounded-full object-cover border-2 border-white shadow-xs" src="https://lh3.googleusercontent.com/aida-public/AB6AXuArVT_jjZ_USD9UM_eVGTn1FxRZGFG181xM330a7_yHyOTG-ud5rL0pi4x2Y7LNlzB3ccgr7GWZWnt52SKPIO0s2wmX4jI20bPaj9GlNyW5JLFAWtXlmyZ9P6kOdkCBz7f24-MNORAzaOB1byPB0TufhOTA_ymFagMLm4LtYmH9wlcFb4yfOpxpLsLGH8UP_9fY8Wq5inJIC4QyUEIWCun8Duer_e4RN6Yy7ntl-AvU-JdFfqWA2gvQ"/>
+</div>
+</div>
+<!-- AI Assistant Selector Pills -->
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between px-1">
+<span class="text-[13px] font-bold text-[#2a341f] flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[#65a30d] text-[18px]">smart_toy</span>
+          انتخاب دستیار هوش مصنوعی
+        </span>
+<span class="text-[11px] font-medium text-[#738260]">MathMotion AI</span>
+</div>
+<div class="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+<!-- Model 1 (Active - Lime style) -->
+<button class="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#bef264] text-[#1a2e05] font-semibold text-[12.5px] shadow-sm border border-[#a3e635] whitespace-nowrap active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[17px]">auto_awesome</span>
+<span>دستیار مَث‌موشن</span>
+</button>
+<!-- Model 2 -->
+<button class="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white text-[#4b553e] hover:bg-[#f2f7e8] font-medium text-[12.5px] border border-[#e2ebd3] whitespace-nowrap active:scale-95 transition-colors">
+<span class="material-symbols-outlined text-[17px] text-[#84a350]">bolt</span>
+<span>مَث‌موشن پرو</span>
+</button>
+<!-- Model 3 -->
+<button class="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white text-[#4b553e] hover:bg-[#f2f7e8] font-medium text-[12.5px] border border-[#e2ebd3] whitespace-nowrap active:scale-95 transition-colors">
+<span class="material-symbols-outlined text-[17px] text-[#84a350]">science</span>
+<span>مَث‌موشن مکس</span>
+</button>
+</div>
+</div>
+<!-- Solution / Answer Card -->
+<div class="flex flex-col rounded-[26px] bg-white border border-[#e3ebd2] p-4 shadow-[0_2px_14px_rgba(0,0,0,0.03)] gap-3.5">
+<!-- Card Title & Verified Badge -->
+<div class="flex items-center justify-between pb-2 border-b border-[#f1f5e8]">
+<div class="flex items-center gap-2 text-[#244200]">
+<span class="material-symbols-outlined text-[20px] text-[#65a30d]">lightbulb</span>
+<span class="font-bold text-[15px]">پاسخ نهایی (Answer)</span>
+</div>
+<div class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#ecfccb] text-[#365314] text-[11px] font-bold border border-[#d9f99d]">
+<span class="material-symbols-outlined text-[14px] text-[#4d7c0f]">verified</span>
+<span>اعتبارسنجی شده</span>
+</div>
+</div>
+<!-- Proved Result Highlight Box -->
+<div class="flex items-center justify-between px-4 py-3 rounded-2xl bg-[#f7fee7] border border-[#d9f99d]">
+<div class="flex items-center gap-2">
+<span class="text-[13px] font-medium text-[#4d7c0f]">ریشه معادله:</span>
+<span class="font-math font-extrabold text-[20px] text-[#1a2e05]" dir="ltr">x = 6</span>
+</div>
+<div class="w-7 h-7 rounded-full bg-[#84cc16] text-white flex items-center justify-center shadow-xs">
+<span class="material-symbols-outlined text-[18px]">check</span>
+</div>
+</div>
+<!-- Step-by-Step Explanation Section Header -->
+<div class="flex items-center gap-2 pt-1 text-[#3f5720]">
+<span class="material-symbols-outlined text-[18px] text-[#84cc16]">format_list_numbered_rtl</span>
+<span class="font-bold text-[13.5px]">توضیح گام‌به‌گام (Step-by-step Explanation)</span>
+</div>
+<!-- Step Items List (1, 2, 3, 4 style from reference) -->
+<div class="flex flex-col gap-3.5 pr-0.5">
+<!-- Step 1 -->
+<div class="flex items-start gap-3">
+<div class="w-6 h-6 rounded-full bg-[#d9f99d] text-[#284200] font-bold text-[12px] flex items-center justify-center shrink-0 mt-0.5 border border-[#bef264]">
+            ۱
+          </div>
+<div class="flex-1 flex flex-col gap-1">
+<span class="text-[13px] font-semibold text-[#1e2912]">مشاهده فرم اولیه معادله:</span>
+<div class="font-math text-[14px] font-semibold text-[#365314] bg-[#f9faf4] py-1 px-2.5 rounded-lg w-max border border-[#eaf0dc]" dir="ltr">
+              2x + 5 = 17
+            </div>
+<p class="text-[12px] text-[#606e4e] leading-relaxed">
+              معادله درجه اول شامل متغیر معلوم و نامعلوم است. متغیر x دارای ضریب ۲ بوده و عدد ثابت ۵ در سمت چپ قرار دارد.
+            </p>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="flex items-start gap-3">
+<div class="w-6 h-6 rounded-full bg-[#bef264] text-[#1a2e05] font-bold text-[12px] flex items-center justify-center shrink-0 mt-0.5 border border-[#a3e635]">
+            ۲
+          </div>
+<div class="flex-1 flex flex-col gap-1">
+<span class="text-[13px] font-semibold text-[#1e2912]">انتقال عدد ثابت به سمت راست (تفریق عدد ۵ از طرفین):</span>
+<div class="font-math text-[14px] font-semibold text-[#365314] bg-[#f9faf4] py-1 px-2.5 rounded-lg w-max border border-[#eaf0dc]" dir="ltr">
+              2x = 17 - 5
+            </div>
+<p class="text-[12px] text-[#606e4e] leading-relaxed">
+              برای خلوت‌سازی متغیر، قرینه عدد ۵ را به دو طرف معادله اضافه می‌کنیم تا توازن معادله حفظ شود.
+            </p>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="flex items-start gap-3">
+<div class="w-6 h-6 rounded-full bg-[#d9f99d] text-[#284200] font-bold text-[12px] flex items-center justify-center shrink-0 mt-0.5 border border-[#bef264]">
+            ۳
+          </div>
+<div class="flex-1 flex flex-col gap-1">
+<span class="text-[13px] font-semibold text-[#1e2912]">ساده‌سازی طرف دوم معادله:</span>
+<div class="font-math text-[14px] font-semibold text-[#365314] bg-[#f9faf4] py-1 px-2.5 rounded-lg w-max border border-[#eaf0dc]" dir="ltr">
+              2x = 12
+            </div>
+<p class="text-[12px] text-[#606e4e] leading-relaxed">
+              حاصل تفریق ۱۷ منهای ۵ برابر با ۱۲ خواهد بود.
+            </p>
+</div>
+</div>
+<!-- Step 4 -->
+<div class="flex items-start gap-3">
+<div class="w-6 h-6 rounded-full bg-[#bef264] text-[#1a2e05] font-bold text-[12px] flex items-center justify-center shrink-0 mt-0.5 border border-[#a3e635]">
+            ۴
+          </div>
+<div class="flex-1 flex flex-col gap-1">
+<span class="text-[13px] font-semibold text-[#1e2912]">تقسیم طرفین بر ضریب متغیر (عدد ۲):</span>
+<div class="font-math text-[14px] font-bold text-[#1e3400] bg-[#ecfccb] py-1 px-2.5 rounded-lg w-max border border-[#d9f99d]" dir="ltr">
+              x = 12 ÷ 2 ➔ x = 6
+            </div>
+<p class="text-[12px] text-[#606e4e] leading-relaxed">
+              مقدار مجهول x به صورت قطعی برابر با عدد ۶ به دست می‌آید.
+            </p>
+</div>
+</div>
+<!-- Step 5 (Verification) -->
+<div class="flex items-start gap-3">
+<div class="w-6 h-6 rounded-full bg-[#d9f99d] text-[#284200] font-bold text-[12px] flex items-center justify-center shrink-0 mt-0.5 border border-[#bef264]">
+            ۵
+          </div>
+<div class="flex-1 flex flex-col gap-1">
+<span class="text-[13px] font-semibold text-[#1e2912]">آزمایش صحت پاسخ با جایگذاری:</span>
+<div class="font-math text-[13px] text-[#4b553e] bg-[#f9faf4] py-1 px-2.5 rounded-lg w-max border border-[#eaf0dc]" dir="ltr">
+              2(6) + 5 = 12 + 5 = 17 ✓
+            </div>
+</div>
+</div>
+</div>
+<!-- Quick Interactive Action Buttons -->
+<div class="grid grid-cols-2 gap-2 pt-2 border-t border-[#f1f5e8]">
+<button class="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-2xl bg-[#f2f7e9] hover:bg-[#e8f2da] text-[#324519] text-[12px] font-semibold transition-colors active:scale-95">
+<span class="material-symbols-outlined text-[17px] text-[#65a30d]">model_training</span>
+<span>تمرین مشابه</span>
+</button>
+<button class="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-2xl bg-[#f2f7e9] hover:bg-[#e8f2da] text-[#324519] text-[12px] font-semibold transition-colors active:scale-95">
+<span class="material-symbols-outlined text-[17px] text-[#65a30d]">quiz</span>
+<span>آزمون این مبحث</span>
+</button>
+</div>
+</div>
+</main>
+<!-- Bottom Floating Input Bar (inspired by reference "Ask a question...") -->
+<div class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-gradient-to-t from-white via-white/95 to-transparent pt-3 pointer-events-none">
+<div class="max-w-[420px] mx-auto px-4 pb-3 pointer-events-auto">
+<div class="flex items-center gap-2 px-3.5 py-2 rounded-full bg-white border border-[#d6e3c0] shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
+<!-- AI Icon -->
+<span class="material-symbols-outlined text-[#84a350] text-[20px] shrink-0">auto_fix_high</span>
+<!-- Input Field -->
+<input class="flex-1 bg-transparent text-[13px] text-[#1c2214] placeholder-[#8a9976] outline-none border-0 focus:ring-0 p-0" placeholder="پرسش یا رفع اشکال در این گام..." type="text"/>
+<!-- Attachment Button -->
+<button aria-label="پیوست تصویر یا فرمول" class="w-8 h-8 rounded-full flex items-center justify-center text-[#738260] hover:text-[#38481e] transition-colors">
+<span class="material-symbols-outlined text-[20px]">add_a_photo</span>
+</button>
+<!-- Send Button (Circular lime-green pill) -->
+<button aria-label="ارسال سوال" class="w-9 h-9 rounded-full bg-[#bef264] hover:bg-[#a3e635] text-[#1a2e05] flex items-center justify-center shadow-sm active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-[19px] -rotate-45" style="transform: scaleX(-1);">send</span>
+</button>
+</div>
+</div>
+</div>
+<script>
+    // Share Handler
+    const shareBtn = document.getElementById("topShareBtn");
+    if (shareBtn) {
+      shareBtn.addEventListener("click", () => {
+        if (navigator.share) {
+          navigator.share({
+            title: 'حل مسئله: ۲x + ۵ = ۱۷',
+            text: 'پاسخ گام‌به‌گام و اعتبارسنجی شده معادله با دستیار هوشمند مَث‌موشن',
+            url: window.location.href,
+          }).catch(() => {});
+        } else {
+          navigator.clipboard?.writeText(window.location.href);
+          alert('لینک حل مسئله با موفقیت ذخیره شد!');
+        }
+      });
+    }
+  </script>
+</body></html>

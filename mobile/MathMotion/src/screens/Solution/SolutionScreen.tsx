@@ -1,21 +1,23 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import Share from 'react-native-share';
 import ViewShot from 'react-native-view-shot';
 
 import { FinalAnswerCard } from '../../components/Solution/FinalAnswerCard';
+import { ProblemCard } from '../../components/Solution/ProblemCard';
+import { StepList } from '../../components/Solution/StepList';
 import { AppButton } from '../../components/common/AppButton';
 import { AppText } from '../../components/common/AppText';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
-import { MathExpression } from '../../components/MathExpression/MathExpression';
 import { StepViewer } from '../../components/StepViewer/StepViewer';
+import { useIsRTL } from '../../hooks/useIsRTL';
 import type { RootStackParamList } from '../../navigation/types';
 import { toApiError, translationKeyForApiError } from '../../services/api/apiError';
 import { practiceProblem } from '../../services/api/problems';
 import type { ProblemType } from '../../types/problem';
-import { colors, spacing } from '../../theme';
+import { makeStyles, radius, spacing, useColors } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Solution'>;
 
@@ -27,11 +29,19 @@ const PRACTICE_SUPPORTED_TYPES: ProblemType[] = [
   'linear_equation', 'quadratic_equation', 'expression', 'arithmetic',
 ];
 
-// Solution UI per PRD section 39/16; step-to-step transitions are handled
-// by the Animation Engine inside StepViewer/StepCard (PRD section 14).
+// Solution UI per PRD section 39/16, laid out after the Stitch
+// "solution_steps" designs: problem card, a toggle between the animated
+// one-step player (StepViewer, design 1) and the full step timeline
+// (StepList, design 2), the final answer, then Practice / Quiz / Share.
+// Step-to-step transitions are the Animation Engine's (PRD section 14).
 export function SolutionScreen({ route, navigation }: Props) {
+  const colors = useColors();
+  const styles = useStyles();
   const { t } = useTranslation();
+  const isRTL = useIsRTL();
   const { problem, result } = route.params;
+  const [view, setView] = useState<'player' | 'list'>('player');
+  const hasSteps = result.steps.length > 0;
   const [generatingPractice, setGeneratingPractice] = useState(false);
   const [practiceErrorKey, setPracticeErrorKey] = useState<string | null>(null);
   const canPractice = PRACTICE_SUPPORTED_TYPES.includes(result.type);
@@ -82,21 +92,37 @@ export function SolutionScreen({ route, navigation }: Props) {
     <ScreenContainer scroll>
       <ViewShot ref={viewShotRef} options={{ format: 'png', quality: 0.9 }}>
         <View style={styles.shareable}>
-          <View style={styles.problemBlock}>
-            <AppText size="sm" color={colors.textSecondary}>
-              {t('solution.title')}
-            </AppText>
-            <MathExpression expression={problem} size="xl" />
-          </View>
+          <ProblemCard problem={problem} type={result.type} />
 
-          <StepViewer steps={result.steps} />
+          {hasSteps && (
+            <View style={[styles.toggle, isRTL && styles.rowRTL]}>
+              {(['player', 'list'] as const).map(option => {
+                const active = option === view;
+                return (
+                  <Pressable
+                    key={option}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: active }}
+                    onPress={() => setView(option)}
+                    style={[styles.toggleItem, active && styles.toggleItemActive]}
+                  >
+                    <AppText
+                      size="sm"
+                      weight="medium"
+                      align="center"
+                      color={active ? colors.onPrimary : colors.textSecondary}
+                    >
+                      {t(option === 'player' ? 'solution.viewPlayer' : 'solution.viewList')}
+                    </AppText>
+                  </Pressable>
+                );
+              })}
+            </View>
+          )}
 
-          <View style={styles.finalBlock}>
-            <AppText weight="bold" size="lg" align="center">
-              {t('solution.solutionComplete')}
-            </AppText>
-            <FinalAnswerCard answer={result.answer} verified={result.verified} />
-          </View>
+          {view === 'player' ? <StepViewer steps={result.steps} /> : <StepList steps={result.steps} />}
+
+          <FinalAnswerCard answer={result.answer} verified={result.verified} />
         </View>
       </ViewShot>
 
@@ -111,44 +137,62 @@ export function SolutionScreen({ route, navigation }: Props) {
         </AppText>
       )}
 
-      <View style={styles.actions}>
+      <View style={[styles.actions, isRTL && styles.rowRTL]}>
         {canPractice && (
           <AppButton
             label={generatingPractice ? t('solution.generatingPractice') : t('solution.practiceSimilar')}
-            variant="secondary"
+            icon="refresh"
+            variant="primary"
             onPress={handlePracticeSimilar}
             loading={generatingPractice}
             style={styles.button}
           />
         )}
-        <AppButton
-          label={sharing ? t('solution.sharing') : t('solution.share')}
-          variant="secondary"
-          onPress={handleShare}
-          loading={sharing}
-          style={styles.button}
-        />
+        {hasSteps && (
+          <AppButton
+            label={t('solution.quizThis')}
+            icon="quiz"
+            variant="secondary"
+            onPress={() => navigation.navigate('Quiz', { problem, result })}
+            style={styles.button}
+          />
+        )}
       </View>
-
       <AppButton
-        label={t('solution.done')}
-        variant="primary"
-        onPress={() => navigation.popToTop()}
+        label={sharing ? t('solution.sharing') : t('solution.shareImage')}
+        icon="share"
+        variant="secondary"
+        onPress={handleShare}
+        loading={sharing}
       />
+      <AppButton label={t('solution.done')} variant="ghost" onPress={() => navigation.popToTop()} />
     </ScreenContainer>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(colors => StyleSheet.create({
   shareable: {
-    gap: spacing.lg,
+    gap: spacing.md,
     backgroundColor: colors.background,
   },
-  problemBlock: {
-    gap: spacing.xs,
+  toggle: {
+    flexDirection: 'row',
+    padding: 4,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surfaceMuted,
   },
-  finalBlock: {
-    gap: spacing.md,
+  // Soft RTL (see src/i18n/index.ts): rows are mirrored per component.
+  rowRTL: {
+    flexDirection: 'row-reverse',
+  },
+  toggleItem: {
+    flex: 1,
+    minHeight: 40,
+    justifyContent: 'center',
+    borderRadius: radius.pill,
+  },
+  toggleItemActive: {
+    backgroundColor: colors.primary,
   },
   actions: {
     flexDirection: 'row',
@@ -157,4 +201,4 @@ const styles = StyleSheet.create({
   button: {
     flex: 1,
   },
-});
+}));

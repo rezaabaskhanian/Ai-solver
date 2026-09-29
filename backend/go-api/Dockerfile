@@ -14,9 +14,14 @@ ENV GOSUMDB=sum.golang.google.cn
 
 WORKDIR /src
 COPY go.mod go.sum ./
-RUN go mod download
+RUN --mount=type=cache,target=/go/pkg/mod go mod download
 COPY . .
-RUN CGO_ENABLED=0 go build -o /out/api ./cmd/api
+# Persistent module + compiler caches: on the 1-vCPU server a cold build
+# recompiles every dependency (~6 min); with these only changed packages
+# are rebuilt. Needs BuildKit (default in `docker compose build`).
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    CGO_ENABLED=0 go build -o /out/api ./cmd/api
 
 FROM ${REGISTRY}/library/alpine:latest
 RUN apk add --no-cache ca-certificates

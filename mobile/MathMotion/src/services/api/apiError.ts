@@ -16,7 +16,16 @@ export class ApiError extends Error {
 }
 
 export function toApiError(error: unknown): ApiError {
+  // Service functions (services/api/problems.ts etc.) already convert, and
+  // screens convert again -- keep the original code instead of collapsing
+  // it to 'unknown' on the second pass.
+  if (error instanceof ApiError) {
+    return error;
+  }
   if (isAxiosError(error)) {
+    if (__DEV__) {
+      console.warn('[api]', error.config?.method, error.config?.url, error.response?.status ?? error.code, error.message);
+    }
     if (error.response) {
       const body = error.response.data as { error?: string; message?: string } | undefined;
       return new ApiError(body?.error ?? 'unknown', body?.message ?? error.message);
@@ -37,6 +46,9 @@ const KNOWN_MESSAGE_TRANSLATION_KEYS: Record<string, string> = {
   "This purchase couldn't be verified.": 'errors.purchaseInvalid',
 };
 
+// backend/go-api/internal/pkg/errmesg ErrDailyQuotaExceeded, verbatim.
+const DAILY_QUOTA_MESSAGE = "You've used today's free solves. Come back tomorrow or upgrade to Premium.";
+
 export function translationKeyForApiError(err: ApiError): string {
   if (err.code === 'network') {
     return 'errors.network';
@@ -44,11 +56,17 @@ export function translationKeyForApiError(err: ApiError): string {
   if (err.code === 'rate_limited') {
     return 'errors.rateLimited';
   }
+  // A daily cap set in the admin panel (e.g. Premium scans) — resets at
+  // midnight, unlike rate_limited.
+  if (err.code === 'daily_limit_reached') {
+    return 'errors.dailyLimitReached';
+  }
   // quota_exceeded is its own distinct code (unlike invalid_input, which
   // several unrelated failures share — see the comment above), so it's
   // safe to key off the code directly here.
   if (err.code === 'quota_exceeded') {
-    return 'errors.quotaExceeded';
+    // Daily mode (admin panel) sends errmesg.ErrDailyQuotaExceeded.
+    return err.message === DAILY_QUOTA_MESSAGE ? 'errors.quotaExceededDaily' : 'errors.quotaExceeded';
   }
   // Thrown client-side by src/services/billing/poolakey.ts, never by the
   // Go API — Cafe Bazaar (and Poolakey) has no iOS equivalent.

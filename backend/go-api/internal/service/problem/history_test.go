@@ -15,7 +15,7 @@ func TestHistory_ReturnsRepositoryItems(t *testing.T) {
 		{ProblemID: "p1", Problem: "2x + 5 = 17", ProblemType: "linear_equation", Answer: "x = 6", Verified: true, CreatedAt: time.Now()},
 	}
 	repo := &fakeRepo{listItems: want}
-	svc := New(repo, NewMathEngineClient("http://unused"), 5)
+	svc := New(repo, NewMathEngineClient("http://unused"), &fakeQuota{})
 
 	got, err := svc.History(context.Background(), "user-1", 20, 0)
 	if err != nil {
@@ -28,7 +28,7 @@ func TestHistory_ReturnsRepositoryItems(t *testing.T) {
 
 func TestHistory_RepositoryErrorIsWrapped(t *testing.T) {
 	repo := &fakeRepo{listErr: errors.New("query failed")}
-	svc := New(repo, NewMathEngineClient("http://unused"), 5)
+	svc := New(repo, NewMathEngineClient("http://unused"), &fakeQuota{})
 
 	_, err := svc.History(context.Background(), "user-1", 20, 0)
 	if err == nil {

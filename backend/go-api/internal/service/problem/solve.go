@@ -2,34 +2,26 @@ package problemservice
 
 import (
 	"context"
+	"log"
 
 	domain "mathmotion/go-api/internal/domain/problem"
-	"mathmotion/go-api/internal/pkg/errmesg"
 	"mathmotion/go-api/internal/pkg/richerror"
 	"mathmotion/go-api/internal/service/problem/dto"
+	"mathmotion/go-api/internal/service/quota"
 )
 
 // Solve orchestrates the math engine call and persists problem+
 // solution for history. It never computes or verifies the answer
 // itself — PRD section 38's core architectural rule.
 //
-// isPremium gates the free-tier quota: a non-Premium device-scoped user
-// gets a lifetime cap of freeSolveLimit solves before the Math Engine
-// is even called, so a quota-exhausted request never wastes an engine
-// round trip or persists anything.
+// The usage quota (internal/service/quota — admin-configurable) is
+// checked before the Math Engine is even called, so a quota-exhausted
+// request never wastes an engine round trip or persists anything.
 func (s Service) Solve(ctx context.Context, userID string, isPremium bool, rawInput string) (dto.SolveResult, error) {
 	const op = "problemservice.Solve"
 
-	if !isPremium {
-		used, err := s.repo.CountProblems(ctx, userID)
-		if err != nil {
-			return dto.SolveResult{}, richerror.New(richerror.Op(op)).WithErr(err).
-				WithKind(richerror.KindUnexpected).WithMessage("Could not check your solve quota.")
-		}
-		if used >= s.freeSolveLimit {
-			return dto.SolveResult{}, richerror.New(richerror.Op(op)).
-				WithKind(richerror.KindPaymentRequired).WithMessage(errmesg.ErrQuotaExceeded)
-		}
+	if err := s.quota.Allow(ctx, userID, isPremium, quota.KindSolve); err != nil {
+		return dto.SolveResult{}, err
 	}
 
 	result, err := s.engine.Solve(ctx, rawInput)
@@ -59,6 +51,10 @@ func (s Service) Solve(ctx context.Context, userID string, isPremium bool, rawIn
 	if err != nil {
 		return dto.SolveResult{}, richerror.New(richerror.Op(op)).WithErr(err).
 			WithKind(richerror.KindUnexpected).WithMessage("Could not save the solution.")
+	}
+
+	if err := s.quota.Record(ctx, userID, quota.KindSolve); err != nil {
+		log.Printf("%s: recording usage: %v", op, err)
 	}
 
 	return dto.SolveResult{

@@ -1,18 +1,24 @@
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlatList, RefreshControl, StyleSheet } from 'react-native';
 
 import { HistoryItemCard } from '../../components/History/HistoryItemCard';
+import { EmptyState } from '../../components/common/EmptyState';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 import { StatusNotice } from '../../components/common/StatusNotice';
 import { useHistory } from '../../hooks/useHistory';
+import type { RootStackParamList } from '../../navigation/types';
 import type { HistoryItem } from '../../types/problem';
-import { colors, spacing } from '../../theme';
+import { spacing, useColors } from '../../theme';
 
 const PAGE_SIZE = 50;
 
 export function HistoryScreen() {
+  const colors = useColors();
   const { t } = useTranslation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { items, loading, error, reload } = useHistory(PAGE_SIZE);
 
   if (loading) {
@@ -36,10 +42,18 @@ export function HistoryScreen() {
       <FlatList<HistoryItem>
         data={items}
         keyExtractor={item => item.problem_id}
-        renderItem={({ item }) => <HistoryItemCard item={item} />}
+        renderItem={({ item }) => <HistoryItemCard item={item} compact />}
         contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={false} onRefresh={reload} tintColor={colors.primary} />}
-        ListEmptyComponent={<StatusNotice message={t('history.empty')} />}
+        refreshControl={<RefreshControl refreshing={false} onRefresh={reload} tintColor={colors.primaryText} />}
+        ListEmptyComponent={
+          <EmptyState
+            icon="history"
+            title={t('history.empty')}
+            body={t('history.emptyBody')}
+            actionLabel={t('history.emptyAction')}
+            onAction={() => navigation.navigate('ProblemInput')}
+          />
+        }
       />
     </ScreenContainer>
   );
@@ -51,8 +65,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: spacing.lg,
-    gap: spacing.md,
+    padding: spacing.md,
+    gap: spacing.sm,
     flexGrow: 1,
   },
 });

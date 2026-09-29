@@ -2,10 +2,12 @@ package settingshandler
 
 import (
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/labstack/echo/v4"
 
+	"mathmotion/go-api/internal/service/quota"
 	settingskeys "mathmotion/go-api/internal/service/settings"
 )
 
@@ -25,6 +27,8 @@ type settingsResponse struct {
 	OpenRouterModel string     `json:"openrouter_model"`
 	DeepSeekAPIKey  secretItem `json:"deepseek_api_key"`
 	DeepSeekModel   string     `json:"deepseek_model"`
+	// Usage limits in effect (saved value, else .env, else default).
+	Quota quota.Config `json:"quota"`
 }
 
 func maskSecret(v string) string {
@@ -53,6 +57,7 @@ func (h Handler) Get(c echo.Context) error {
 		OpenRouterModel: h.store.Get(settingskeys.KeyOpenRouterModel),
 		DeepSeekAPIKey:  secret(settingskeys.KeyDeepSeekAPIKey),
 		DeepSeekModel:   h.store.Get(settingskeys.KeyDeepSeekModel),
+		Quota:           h.quota.Config(),
 	})
 }
 
@@ -88,6 +93,24 @@ func (h Handler) Update(c echo.Context) error {
 			return c.JSON(http.StatusUnprocessableEntity, map[string]string{
 				"error":   "invalid_input",
 				"message": "AI_PROVIDER must be one of: anthropic, openrouter, deepseek.",
+			})
+		}
+	}
+
+	switch req.Key {
+	case settingskeys.KeyFreeQuotaPeriod:
+		value = strings.ToLower(value)
+		if value != "" && value != quota.PeriodDaily && value != quota.PeriodLifetime {
+			return c.JSON(http.StatusUnprocessableEntity, map[string]string{
+				"error":   "invalid_input",
+				"message": "FREE_QUOTA_PERIOD must be daily or lifetime.",
+			})
+		}
+	case settingskeys.KeyFreeDailyLimit, settingskeys.KeyFreeLifetimeLimit, settingskeys.KeyPremiumDailyScanLimit:
+		if n, err := strconv.Atoi(value); value != "" && (err != nil || n < 0 || n > 100000) {
+			return c.JSON(http.StatusUnprocessableEntity, map[string]string{
+				"error":   "invalid_input",
+				"message": req.Key + " must be a whole number between 0 and 100000.",
 			})
 		}
 	}

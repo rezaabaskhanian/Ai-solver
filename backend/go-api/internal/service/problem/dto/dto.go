@@ -3,7 +3,11 @@
 // packages.
 package dto
 
-import postgresproblem "mathmotion/go-api/internal/repository/postgres/problem"
+import (
+	"time"
+
+	postgresproblem "mathmotion/go-api/internal/repository/postgres/problem"
+)
 
 type ParseResult struct {
 	Problem    string  `json:"problem"`
@@ -39,9 +43,17 @@ type HistoryItem = postgresproblem.HistoryItemRow
 // mobile paywall (see internal/service/billing for how Premium gets
 // set).
 type Entitlement struct {
-	IsPremium       bool `json:"is_premium"`
-	FreeSolvesUsed  int  `json:"free_solves_used"`
-	FreeSolvesLimit int  `json:"free_solves_limit"`
+	IsPremium bool `json:"is_premium"`
+	// Free-tier usage (solves + scans + checks) in the current period.
+	FreeSolvesUsed  int `json:"free_solves_used"`
+	FreeSolvesLimit int `json:"free_solves_limit"`
+	// "daily" or "lifetime" (admin panel setting).
+	QuotaPeriod string `json:"quota_period"`
+	// Next reset (Tehran midnight); omitted for lifetime free quotas.
+	ResetsAt *time.Time `json:"resets_at,omitempty"`
+	// Premium only: scans today and the daily cap (0 = no cap).
+	PremiumScansUsed int `json:"premium_scans_used"`
+	PremiumScanLimit int `json:"premium_scan_limit"`
 }
 
 // CheckResult mirrors the math engine's POST /check response — see

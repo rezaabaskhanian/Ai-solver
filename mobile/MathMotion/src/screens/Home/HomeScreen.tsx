@@ -1,70 +1,53 @@
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 
-import { FreeSolvesBadge } from '../../components/Billing/FreeSolvesBadge';
-import { HomeActionCard } from '../../components/Home/HomeActionCard';
+import { FreeQuotaCard } from '../../components/Home/FreeQuotaCard';
+import { HomeHeader } from '../../components/Home/HomeHeader';
+import { HomeToolCards } from '../../components/Home/HomeToolCards';
 import { LanguageSwitch } from '../../components/Home/LanguageSwitch';
+import { PracticeChips } from '../../components/Home/PracticeChips';
+import { PremiumBanner } from '../../components/Home/PremiumBanner';
+import { QuickEntryBar } from '../../components/Home/QuickEntryBar';
 import { RecentProblemsList } from '../../components/Home/RecentProblemsList';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 import { AppText } from '../../components/common/AppText';
 import { LANGUAGE_SWITCH_ENABLED } from '../../config/language';
 import { useRestorePurchases } from '../../hooks/useRestorePurchases';
-import type { RootStackParamList } from '../../navigation/types';
-import { spacing } from '../../theme';
+import { fontSize, spacing } from '../../theme';
 
+// Layout from the Stitch "home_2" design: header, big question, quick
+// entry bar, Pro banner, free-quota card, tool shortcuts, practice chips
+// and recent solves. Design pieces the app doesn't have yet (profile
+// photo, AI chat, voice input, bottom tab dock) are left out.
 export function HomeScreen() {
   const { t } = useTranslation();
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   useRestorePurchases();
 
   return (
-    <ScreenContainer scroll>
-      <View style={styles.header}>
-        <AppText size="xl" weight="bold">
-          {t('home.greeting')}
-        </AppText>
-        <View style={styles.headerActions}>
-          <FreeSolvesBadge />
-          {LANGUAGE_SWITCH_ENABLED && <LanguageSwitch />}
-        </View>
-      </View>
-
-      <View style={styles.actions}>
-        <HomeActionCard
-          icon="📷"
-          title={t('home.scanTitle')}
-          subtitle={t('home.scanSubtitle')}
-          primary
-          onPress={() => navigation.navigate('Scan')}
-        />
-        <HomeActionCard
-          icon="⌨️"
-          title={t('home.typeTitle')}
-          subtitle={t('home.typeSubtitle')}
-          onPress={() => navigation.navigate('ProblemInput')}
-        />
-      </View>
-
+    <ScreenContainer scroll contentStyle={styles.content}>
+      <HomeHeader trailing={LANGUAGE_SWITCH_ENABLED ? <LanguageSwitch /> : undefined} />
+      <AppText size="xl" weight="bold" style={styles.headline}>
+        {t('home.headline')}
+      </AppText>
+      <QuickEntryBar />
+      <PremiumBanner />
+      <FreeQuotaCard />
+      <HomeToolCards />
+      <PracticeChips />
       <RecentProblemsList />
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: spacing.md,
+  content: {
+    gap: spacing.lg - 4,
+    paddingHorizontal: spacing.md + 4,
   },
-  headerActions: {
-    alignItems: 'flex-end',
-    gap: spacing.xs,
-  },
-  actions: {
-    gap: spacing.md,
+  headline: {
+    fontSize: fontSize.xl,
+    lineHeight: 38,
+    marginTop: spacing.xs,
   },
 });

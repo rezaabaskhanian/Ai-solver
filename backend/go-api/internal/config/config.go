@@ -17,12 +17,11 @@ type RateLimit struct {
 // come from Cafe Bazaar's developer panel (Pishkhan) — see
 // mobile/MathMotion/APP.md for the manual setup this depends on.
 type Billing struct {
-	PackageName    string
-	ProductID      string
-	ClientID       string
-	ClientSecret   string
-	RefreshToken   string
-	FreeSolveLimit int
+	PackageName  string
+	ProductID    string
+	ClientID     string
+	ClientSecret string
+	RefreshToken string
 }
 
 // Outbound configures how this server's outbound calls to third-party AI

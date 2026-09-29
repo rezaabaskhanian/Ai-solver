@@ -14,6 +14,17 @@ export interface SettingsResp {
   openrouter_model: string;
   deepseek_api_key: SecretItem;
   deepseek_model: string;
+  quota: QuotaConfig;
+}
+
+export type QuotaPeriod = "daily" | "lifetime";
+
+// Usage limits in effect on the server (internal/service/quota).
+export interface QuotaConfig {
+  free_quota_period: QuotaPeriod;
+  free_daily_limit: number;
+  free_lifetime_limit: number;
+  premium_daily_scan_limit: number;
 }
 
 export interface ProxyStatus {
