@@ -3,7 +3,7 @@ import {
   operationDisplayLabel,
   translatedOperationLabel,
 } from '../StepViewer/OperationBadge';
-import type { SolutionStep } from '../../types/problem';
+import type { ProblemType, SolutionStep } from '../../types/problem';
 
 const ARITHMETIC_OPERATIONS = Object.keys(ARITHMETIC_SYMBOLS);
 
@@ -13,6 +13,30 @@ const ARITHMETIC_OPERATIONS = Object.keys(ARITHMETIC_SYMBOLS);
 // on. Any 3 of these read as plausible-but-wrong next actions regardless
 // of the actual step, which is all PRD section 20's example asks for.
 const GENERIC_OPERATION_POOL = ['move_term', 'factor', 'expand', 'simplify'];
+
+// Per problem type, the moves that belong to that kind of problem (the
+// operation names backend/math-engine/app/solver/* emit), so a wrong
+// option is a real alternative ("intersection" when the step is a union)
+// rather than something from another chapter.
+export const OPERATION_POOLS: Partial<Record<ProblemType, string[]>> = {
+  derivative: ['sum_rule', 'power_rule', 'trig_rule', 'constant_rule', 'combine'],
+  integral: ['sum_rule', 'power_rule', 'trig_rule', 'constant_rule', 'log_rule', 'add_constant'],
+  limit: [
+    'substitute',
+    'indeterminate_form',
+    'factor',
+    'multiply_conjugate',
+    'cancel',
+    'keep_leading_terms',
+    'one_sided_limit',
+  ],
+  log_equation: ['domain', 'combine_logs', 'drop_logs', 'to_exponential', 'reject_root', 'move_term', 'factor'],
+  exponential_equation: ['same_base', 'equate_exponents', 'take_log', 'to_exponential', 'move_term'],
+  set_operation: ['union', 'intersection', 'difference', 'complement', 'count', 'counting_formula'],
+  vector: ['vector_from_points', 'scale', 'add', 'subtract', 'length'],
+  geometry: ['formula', 'compute', 'approximate', 'square_root'],
+  graph: ['handshake', 'havel_hakimi', 'degree_bound', 'count', 'degrees', 'min_max_degree'],
+};
 
 export interface QuizChoice {
   label: string;
@@ -42,17 +66,33 @@ function seededShuffle<T>(items: T[], seed: number): T[] {
 // Builds the 4 multiple-choice options for "what should we do to this
 // step?" (PRD section 20) — one correct (the step's actual operation) and
 // three plausible-but-wrong ones, in a stable-per-step shuffled order.
-export function buildQuizChoices(step: SolutionStep, t: (key: string, opts?: object) => string): QuizChoice[] {
+// `problemType` picks wrong options from the same kind of problem.
+export function buildQuizChoices(
+  step: SolutionStep,
+  t: (key: string, opts?: object) => string,
+  problemType?: ProblemType,
+): QuizChoice[] {
   const correctLabel = operationDisplayLabel(step, t);
   const hasArithmeticValue = Boolean(ARITHMETIC_SYMBOLS[step.operation]) && Boolean(step.value);
 
-  const distractorLabels = hasArithmeticValue
-    ? ARITHMETIC_OPERATIONS.filter(op => op !== step.operation).map(
-        op => `${ARITHMETIC_SYMBOLS[op]} ${step.value}`,
-      )
-    : GENERIC_OPERATION_POOL.filter(op => op !== step.operation)
-        .slice(0, 3)
-        .map(op => translatedOperationLabel(op, t));
+  let distractorLabels: string[];
+  if (hasArithmeticValue) {
+    distractorLabels = ARITHMETIC_OPERATIONS.filter(op => op !== step.operation).map(
+      op => `${ARITHMETIC_SYMBOLS[op]} ${step.value}`,
+    );
+  } else {
+    // The type's own moves first (varied per step), then the generic
+    // pool to top up; never a label equal to the correct one.
+    const own = seededShuffle((problemType && OPERATION_POOLS[problemType]) ?? [], step.id + 7);
+    distractorLabels = [];
+    for (const op of [...own, ...GENERIC_OPERATION_POOL]) {
+      const label = translatedOperationLabel(op, t);
+      if (op !== step.operation && label !== correctLabel && !distractorLabels.includes(label)) {
+        distractorLabels.push(label);
+      }
+    }
+    distractorLabels = distractorLabels.slice(0, 3);
+  }
 
   const choices: QuizChoice[] = [
     { label: correctLabel, correct: true },

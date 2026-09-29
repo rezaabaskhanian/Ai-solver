@@ -13,16 +13,17 @@ import { Icon, type IconName } from '../common/Icon';
 interface Tool {
   icon: IconName;
   labelKey: string;
-  screen: 'Scan' | 'ExamSetup' | 'Topics';
+  screen: 'Scan' | 'ExamSetup' | 'Topics' | 'Geometry';
   highlight?: boolean;
 }
 
-// Three square shortcuts under the quota card; the middle one is
-// highlighted like the design's active card.
+// Square shortcuts under the quota card; the exam one is highlighted
+// like the design's active card.
 const TOOLS: Tool[] = [
   { icon: 'photo-camera', labelKey: 'home.toolScan', screen: 'Scan' },
   { icon: 'assignment', labelKey: 'home.toolExam', screen: 'ExamSetup', highlight: true },
   { icon: 'menu-book', labelKey: 'home.toolTopics', screen: 'Topics' },
+  { icon: 'square-foot', labelKey: 'home.toolGeometry', screen: 'Geometry' },
 ];
 
 export function HomeToolCards() {

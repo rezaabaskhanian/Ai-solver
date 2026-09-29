@@ -21,7 +21,16 @@ describe('tokenizeExpression', () => {
     expect(tokenizeExpression('A(1, -2)')).toEqual(['A', '(', '1', ',', '-', '2', ')']);
   });
 
+  it('keeps math symbols the engine prints', () => {
+    expect(tokenizeExpression('∫2x dx')).toEqual(['∫', '2', 'x', 'dx']);
+    expect(tokenizeExpression('lim(x→∞) 1/x')).toEqual(['lim', '(', 'x', '→', '∞', ')', '1', '/', 'x']);
+  });
+
+  it('keeps a log base on the log', () => {
+    expect(tokenizeExpression('log₂(x) = 3')).toEqual(['log₂', '(', 'x', ')', '=', '3']);
+  });
+
   it('falls back to the whole string when nothing matches', () => {
-    expect(tokenizeExpression('∫')).toEqual(['∫']);
+    expect(tokenizeExpression('   ')).toEqual(['   ']);
   });
 });

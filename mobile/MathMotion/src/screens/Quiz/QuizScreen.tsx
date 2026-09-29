@@ -40,7 +40,10 @@ export function QuizScreen({ route, navigation }: Props) {
   // Stable per-step (and per-language) shuffle: recomputing on every
   // render would let the correct answer's position jump around as the
   // student clicks wrong options.
-  const choices = useMemo(() => (step ? buildQuizChoices(step, t) : []), [step, t]);
+  const choices = useMemo(
+    () => (step ? buildQuizChoices(step, t, result.type) : []),
+    [step, t, result.type],
+  );
 
   const handleSelect = (index: number) => {
     if (answeredCorrectly || wrongChoices.has(index)) {

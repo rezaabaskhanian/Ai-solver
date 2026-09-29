@@ -22,3 +22,38 @@ def verify_integral(expr: sympy.Expr, symbol: sympy.Symbol, antiderivative: symp
         return bool(sympy.simplify(sympy.diff(antiderivative, symbol) - expr) == 0)
     except Exception:
         return False
+
+
+def verify_limit(expr: sympy.Expr, symbol: sympy.Symbol, point: sympy.Expr,
+                 sides: dict[str, sympy.Expr]) -> bool:
+    """Check each one-sided limit sympy.limit gave by actually evaluating
+    the function very close to the point (or very far out, at ±∞) — an
+    independent numeric check, the limit counterpart of substituting a
+    root back into the equation.
+
+    Finite value L: f is within 1e-3 of L at the nearest sample.
+    ±∞: f has that sign at both samples and |f| keeps growing (slow
+    blow-ups like ln(x) at 0 still pass).
+    """
+    try:
+        for side, expected in sides.items():
+            if point.is_infinite:
+                sign = -1 if point == -sympy.oo else 1
+                samples = [sign * sympy.Integer(10)**k for k in (4, 8)]
+            else:
+                sign = 1 if side == "+" else -1
+                samples = [point + sign * sympy.Rational(1, 10**k) for k in (4, 8)]
+            values = [complex(sympy.N(expr.subs(symbol, s), 30)) for s in samples]
+            if any(abs(v.imag) > 1e-12 for v in values):
+                return False
+            near, nearer = values[0].real, values[1].real
+            if expected in (sympy.oo, -sympy.oo):
+                want = 1 if expected == sympy.oo else -1
+                if not (near * want > 0 and nearer * want > 0
+                        and abs(nearer) > abs(near) and abs(nearer) > 10):
+                    return False
+            elif abs(nearer - float(expected)) > 1e-3 * (1 + abs(float(expected))):
+                return False
+        return True
+    except Exception:
+        return False

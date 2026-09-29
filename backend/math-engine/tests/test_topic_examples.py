@@ -30,8 +30,12 @@ def _topics_source() -> str:
 
 def _examples() -> list[str]:
     examples = []
-    for block in re.findall(r"examples:\s*\[(.*?)\]", _topics_source(), re.S):
-        examples += re.findall(r"'((?:[^'\\]|\\.)*)'", block)
+    # The array ends at "],<newline>" — a bare "]" can be inside a vector
+    # example like '[2, 3] + [1, -4]'.
+    for block in re.findall(r"examples:\s*\[(.*?)\],\s*\n", _topics_source(), re.S):
+        # Single- or double-quoted ("A'" — a set complement — needs the latter).
+        for single, double in re.findall(r"'((?:[^'\\]|\\.)*)'|\"((?:[^\"\\]|\\.)*)\"", block):
+            examples.append(single or double)
     return examples
 
 

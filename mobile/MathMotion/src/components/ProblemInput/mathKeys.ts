@@ -2,7 +2,8 @@
 // keyboard hides (or that students don't know how to type), inserted in
 // the exact syntax the Math Engine parses (backend/math-engine/app/solver
 // /normalize.py + parser.py: "^" powers, sqrt(), sin(), "pi", "d/dx(...)",
-// "∫ ... dx").
+// "∫ ... dx", "lim(x→...)", log()/log_2()/ln(), sets {…} ∪ ∩ and
+// vectors [x, y]).
 
 export interface MathKey {
   id: string;
@@ -33,16 +34,41 @@ export const MATH_KEYS: MathKey[] = [
   { id: 'pi', label: 'π', insert: 'pi' },
   { id: 'derivative', label: 'd/dx', insert: 'd/dx()', cursor: 5, tone: 'calculus' },
   { id: 'integral', label: '∫ dx', insert: '∫ dx', cursor: 1, tone: 'calculus' },
+  // Cursor lands on the point: the student types it, then the expression
+  // after the closing parenthesis.
+  { id: 'limit', label: 'lim', insert: 'lim(x→)', cursor: 6, tone: 'calculus' },
+  { id: 'infinity', label: '∞', insert: '∞' },
+  { id: 'log', label: 'log', insert: 'log()', cursor: 4 },
+  { id: 'log2', label: 'log₂', insert: 'log_2()', cursor: 6 },
+  { id: 'ln', label: 'ln', insert: 'ln()', cursor: 3 },
+  { id: 'setBraces', label: '{ }', insert: '{}', cursor: 1 },
+  { id: 'union', label: '∪', insert: '∪', tone: 'operator' },
+  { id: 'intersection', label: '∩', insert: '∩', tone: 'operator' },
+  { id: 'complement', label: "A'", insert: "'" },
+  { id: 'emptySet', label: '∅', insert: '∅' },
+  { id: 'count', label: 'n( )', insert: 'n()', cursor: 2 },
+  { id: 'vector', label: '[ , ]', insert: '[,]', cursor: 1 },
+  { id: 'length', label: '| |', insert: '||', cursor: 1 },
+  { id: 'comma', label: ',', insert: ', ' },
 ];
 
-// The keypad's tabs (general / trig / calculus) as ordered key ids.
-export const MATH_KEY_TABS: { id: 'general' | 'trig' | 'calculus'; keys: string[] }[] = [
+// The keypad's tabs (general / trig / calculus / limits & logs / sets &
+// vectors) as ordered key ids.
+export const MATH_KEY_TABS: {
+  id: 'general' | 'trig' | 'calculus' | 'limitLog' | 'setsVectors';
+  keys: string[];
+}[] = [
   {
     id: 'general',
     keys: ['x', 'square', 'power', 'sqrt', 'parens', 'equals', 'plus', 'minus', 'times', 'divide', 'pi', 'derivative'],
   },
   { id: 'trig', keys: ['sin', 'cos', 'tan', 'pi', 'x', 'square', 'parens', 'equals', 'plus', 'minus', 'times', 'divide'] },
   { id: 'calculus', keys: ['derivative', 'integral', 'x', 'square', 'power', 'sqrt', 'parens', 'sin', 'cos', 'plus', 'minus', 'times'] },
+  { id: 'limitLog', keys: ['limit', 'infinity', 'log', 'log2', 'ln', 'x', 'power', 'sqrt', 'parens', 'equals', 'plus', 'minus', 'divide'] },
+  {
+    id: 'setsVectors',
+    keys: ['setBraces', 'union', 'intersection', 'minus', 'complement', 'emptySet', 'count', 'equals', 'comma', 'vector', 'length', 'plus', 'parens'],
+  },
 ];
 
 export function mathKeyById(id: string): MathKey | undefined {
@@ -89,4 +115,8 @@ export const EXAMPLE_PROBLEMS: string[] = [
   'sin(x)^2+cos(x)^2',
   'd/dx(x^3+2x)',
   '∫ 2x dx',
+  'lim(x→2)(x^2-4)/(x-2)',
+  'log_2(x)+log_2(x-2)=3',
+  'A={1,2,3}, B={2,3,4}, A∪B',
+  '[2, 3] + [1, -4]',
 ];

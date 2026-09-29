@@ -36,9 +36,13 @@ export type RootStackParamList = {
   // «آمادگی برای امتحان»: pick grade + chapters, take a generated
   // multiple-choice exam, see the score. Questions travel in params so
   // the result screen shows exactly what was asked.
-  ExamSetup: undefined;
+  // Optional preselection, e.g. from a textbook chapter on Topics.
+  ExamSetup: { grade?: number; chapterIds?: string[] } | undefined;
   Exam: { config: ExamConfig };
   ExamResult: { config: ExamConfig; questions: ExamQuestion[]; answers: (number | null)[] };
+  // «ماشین‌حساب هندسه»: pick a shape and measurements; solved like any
+  // typed problem.
+  Geometry: undefined;
   // «راهنمای استفاده»: typing syntax, scan tips and feature overview.
   Guide: undefined;
   // Appearance: light/dark mode, accent color and text color.

@@ -14,6 +14,9 @@ _SYMBOL_REPLACEMENTS = {
     "π": "pi",  # sympy's own constant name -- parses directly as-is
     "٫": ".",  # Persian/Arabic decimal separator
     "·": "*",
+    "،": ",",  # Persian comma, e.g. A={۱،۲،۳}
+    "→": "->",  # limits: lim(x→2)
+    "∞": "oo",  # sympy's infinity
 }
 
 # Persian (۰-۹) and Arabic-Indic (٠-٩) digits: a Persian phone keyboard
@@ -28,12 +31,19 @@ _DIGIT_TRANSLATION = str.maketrans(
 _SQRT_PAREN = re.compile(r"√\s*\(")
 _SQRT_BARE = re.compile(r"√\s*([0-9]+(?:\.[0-9]+)?|[A-Za-z])")
 
+# A log's base as the engine prints it (log₂) or as typed from a LaTeX
+# habit (log_{2}) -> the "log_2" form parser.py reads.
+_SUBSCRIPT_DIGITS = str.maketrans("₀₁₂₃₄₅₆₇₈₉", "0123456789")
+_LOG_SUBSCRIPT_BASE = re.compile(r"log([₀₁₂₃₄₅₆₇₈₉]+)")
+_LOG_BRACED_BASE = re.compile(r"log_\{\s*([0-9]+)\s*\}")
+
 
 def normalize_input(raw: str) -> str:
     """Turn typed math input into a string sympy can parse.
 
     Handles Persian/Arabic digits (۳ -> 3), unicode superscripts
-    (x² -> x^2), unicode math symbols (× ÷ − √), and stray whitespace. Guessed correction of OCR-confusable
+    (x² -> x^2), unicode math symbols (× ÷ − √ → ∞), log bases (log₂ ->
+    log_2), and stray whitespace. Guessed correction of OCR-confusable
     letters (e.g. 'S' -> '5') is *not* done here, since it should only be
     attempted after a straight parse has failed — see
     `parser._try_ocr_correction`.
@@ -42,6 +52,9 @@ def normalize_input(raw: str) -> str:
 
     for old, new in _SYMBOL_REPLACEMENTS.items():
         text = text.replace(old, new)
+
+    text = _LOG_SUBSCRIPT_BASE.sub(lambda m: "log_" + m.group(1).translate(_SUBSCRIPT_DIGITS), text)
+    text = _LOG_BRACED_BASE.sub(r"log_\1", text)
 
     text = _SQRT_PAREN.sub("sqrt(", text)
     text = _SQRT_BARE.sub(r"sqrt(\1)", text)

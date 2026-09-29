@@ -4,7 +4,8 @@
 // come from typical student mistakes first, random near-misses after.
 //
 // Math shown to the student (expression, choices) must only use what
-// MathExpression's tokenizer keeps: digits, letters, ^ + - * / = ( ) ,
+// MathExpression's tokenizer keeps: digits, letters, ^ + - * / = ( ) , and
+// single symbols such as { } [ ] ∪ ∩ ∅
 // Question sentences are i18n keys under exam.q.<textKey>; their params
 // are positive numbers only, so no minus sign ever lands in RTL text.
 
@@ -39,7 +40,19 @@ export type SkillId =
   | 'probabilityDice'
   | 'powerRules'
   | 'expandBinomial'
-  | 'slope';
+  | 'slope'
+  | 'setOps'
+  | 'vectorFromPoints'
+  | 'vectorAdd'
+  | 'solidVolume'
+  | 'setComplement'
+  | 'quadraticRoots'
+  | 'logValue'
+  | 'logEquation'
+  | 'expEquation'
+  | 'limitAlgebraic'
+  | 'limitInfinity'
+  | 'graphCounting';
 
 export interface GeneratedQuestion {
   textKey: string;
@@ -173,6 +186,29 @@ function chooseFrac(rng: Rng, correct: Frac, candidates: Frac[]) {
   return choose(rng, fmtFrac(correct), candidates.map(fmtFrac), () =>
     fmtFrac(frac(correct.n * 2 + nonZero(rng, -3, 3), correct.d * 2)),
   );
+}
+
+function fmtSet(items: number[]): string {
+  const sorted = [...new Set(items)].sort((a, b) => a - b);
+  return sorted.length ? `{${sorted.join(', ')}}` : '∅';
+}
+
+function randomSet(rng: Rng, size: number): number[] {
+  return shuffle(rng, [1, 2, 3, 4, 5, 6, 7, 8, 9]).slice(0, size);
+}
+
+// Parenthesised only when it's more than one term: "x" but "(x + 2)".
+function group(expr: string): string {
+  return expr.includes(' ') ? `(${expr})` : expr;
+}
+
+// a·x^n with the usual coefficient shorthand: "x^2", "-x^2", "3x^2".
+function term(a: number, power: string): string {
+  return `${a === 1 ? '' : a === -1 ? '-' : a}${power}`;
+}
+
+function fmtVec(x: number, y: number): string {
+  return `[${x}, ${y}]`;
 }
 
 // ---------- generators ----------
@@ -630,6 +666,292 @@ export const GENERATORS: Record<SkillId, Generator> = {
         [fmtQuadratic(0, a * b), fmtQuadratic(a * b, a + b), fmtQuadratic(a + b, a + b), fmtQuadratic(-(a + b), a * b)],
         () => fmtQuadratic(a + b + nonZero(rng, -2, 2), a * b),
       ),
+    };
+  },
+
+  setOps: rng => {
+    // Overlapping sets, so union, intersection and difference all differ.
+    const shared = randomSet(rng, randInt(rng, 1, 2));
+    const rest = shuffle(rng, [1, 2, 3, 4, 5, 6, 7, 8, 9].filter(n => !shared.includes(n)));
+    const a = [...shared, ...rest.slice(0, randInt(rng, 1, 3))];
+    const b = [...shared, ...rest.slice(3, 3 + randInt(rng, 1, 3))];
+    const union = fmtSet([...a, ...b]);
+    const inter = fmtSet(a.filter(n => b.includes(n)));
+    const aMinusB = fmtSet(a.filter(n => !b.includes(n)));
+    const bMinusA = fmtSet(b.filter(n => !a.includes(n)));
+    const op = pick(rng, [
+      { key: 'set_union', correct: union },
+      { key: 'set_intersection', correct: inter },
+      { key: 'set_difference', correct: aMinusB },
+    ] as const);
+    return {
+      textKey: op.key,
+      expression: `A = ${fmtSet(a)} , B = ${fmtSet(b)}`,
+      ...choose(rng, op.correct, [union, inter, aMinusB, bMinusA, fmtSet(a), fmtSet(b)], () =>
+        fmtSet(randomSet(rng, randInt(rng, 1, 4))),
+      ),
+    };
+  },
+
+  vectorFromPoints: rng => {
+    const [x1, y1, x2, y2] = [0, 0, 0, 0].map(() => randInt(rng, -6, 6));
+    const [dx, dy] = [x2 - x1, y2 - y1];
+    return {
+      textKey: 'vector_ab',
+      expression: `A(${x1}, ${y1}) , B(${x2}, ${y2})`,
+      ...choose(
+        rng,
+        fmtVec(dx, dy),
+        // A - B, B + A, and x/y swapped: the usual slips.
+        [fmtVec(-dx, -dy), fmtVec(x2 + x1, y2 + y1), fmtVec(dy, dx)],
+        () => fmtVec(dx + nonZero(rng, -3, 3), dy + randInt(rng, -3, 3)),
+      ),
+    };
+  },
+
+  vectorAdd: rng => {
+    const [a, b, c, d] = [0, 0, 0, 0].map(() => randInt(rng, -6, 6));
+    const k = randInt(rng, 2, 4);
+    const kind = randInt(rng, 0, 2);
+    if (kind === 0) {
+      return {
+        textKey: 'compute',
+        expression: `${fmtVec(a, b)} + ${fmtVec(c, d)}`,
+        ...choose(rng, fmtVec(a + c, b + d), [fmtVec(a - c, b - d), fmtVec(a + d, b + c), fmtVec(a * c, b * d)], () =>
+          fmtVec(a + c + nonZero(rng, -3, 3), b + d),
+        ),
+      };
+    }
+    if (kind === 1) {
+      return {
+        textKey: 'compute',
+        expression: `${fmtVec(a, b)} - ${fmtVec(c, d)}`,
+        ...choose(rng, fmtVec(a - c, b - d), [fmtVec(a + c, b + d), fmtVec(c - a, d - b), fmtVec(a - c, b + d)], () =>
+          fmtVec(a - c, b - d + nonZero(rng, -3, 3)),
+        ),
+      };
+    }
+    return {
+      textKey: 'compute',
+      expression: `${k}${fmtVec(a, b)} + ${fmtVec(c, d)}`,
+      // Forgetting to multiply the second component, or scaling the sum.
+      ...choose(rng, fmtVec(k * a + c, k * b + d), [fmtVec(k * a + c, b + d), fmtVec(k * (a + c), k * (b + d)), fmtVec(a + c, b + d)], () =>
+        fmtVec(k * a + c + nonZero(rng, -3, 3), k * b + d),
+      ),
+    };
+  },
+
+  // ریاضی نهم «حجم و مساحت»: sphere, cone and pyramid, sized so the
+  // answer is a whole number (times π where it has one).
+  solidVolume: rng => {
+    const piTimes = (k: number) => (k === 1 ? 'π' : `${k}π`);
+    const kind = randInt(rng, 0, 2);
+    if (kind === 0) {
+      const r = 3 * randInt(rng, 1, 3);
+      const k = (4 * r ** 3) / 3;
+      return {
+        textKey: 'sphere_volume',
+        params: { r },
+        // Missing the 4/3, using r^2, or 4πr^2 (the surface area).
+        ...choose(rng, piTimes(k), [piTimes(r ** 3), piTimes((4 * r ** 2) / 3), piTimes(4 * r ** 2)], () =>
+          piTimes(k + 3 * nonZero(rng, -5, 5)),
+        ),
+      };
+    }
+    if (kind === 1) {
+      const r = randInt(rng, 1, 6);
+      const h = 3 * randInt(rng, 1, 4);
+      const k = (r * r * h) / 3;
+      return {
+        textKey: 'cone_volume',
+        params: { r, h },
+        // Forgetting ÷3 (a cylinder), or r instead of r^2.
+        ...choose(rng, piTimes(k), [piTimes(r * r * h), piTimes((r * h) / 3), piTimes(2 * r * h)], () =>
+          piTimes(k + nonZero(rng, -5, 5)),
+        ),
+      };
+    }
+    const a = randInt(rng, 2, 9);
+    const h = 3 * randInt(rng, 1, 4);
+    const v = (a * a * h) / 3;
+    return {
+      textKey: 'pyramid_volume',
+      params: { a, h },
+      ...chooseNumber(rng, v, [a * a * h, (a * h) / 3, 4 * a * h], 6),
+    };
+  },
+
+  // ---------- grades 10–12 ----------
+
+  setComplement: rng => {
+    const u = [1, 2, 3, 4, 5, 6, 7, 8];
+    const a = randomSet(rng, randInt(rng, 2, 5)).filter(n => n <= 8);
+    const set = a.length ? a : [1, 2];
+    const comp = u.filter(n => !set.includes(n));
+    return {
+      textKey: 'set_complement',
+      expression: `U = ${fmtSet(u)} , A = ${fmtSet(set)}`,
+      // A itself, U, or the complement with one element slipped in/out.
+      ...choose(rng, fmtSet(comp), [fmtSet(set), fmtSet(u), fmtSet([...comp, set[0]]), fmtSet(comp.slice(1))], () =>
+        fmtSet(randomSet(rng, randInt(rng, 2, 5)).filter(n => n <= 8)),
+      ),
+    };
+  },
+
+  quadraticRoots: rng => {
+    const r1 = randInt(rng, -6, 6);
+    let r2 = randInt(rng, -6, 6);
+    while (r2 === r1 || r2 === -r1) {
+      r2 = randInt(rng, -6, 6);
+    }
+    // (x - r1)(x - r2) = x^2 - (r1 + r2)x + r1·r2
+    const roots = (p: number, q: number) => [p, q].sort((m, n) => m - n).join(' , ');
+    return {
+      textKey: 'quadratic_roots',
+      expression: `${fmtQuadratic(-(r1 + r2), r1 * r2)} = 0`,
+      // The classic sign slip, and half-right answers.
+      ...choose(rng, roots(r1, r2), [roots(-r1, -r2), roots(r1, -r2), roots(-r1, r2)], () =>
+        roots(r1 + nonZero(rng, -2, 2), r2),
+      ),
+    };
+  },
+
+  logValue: rng => {
+    const base = pick(rng, [2, 3, 5, 10] as const);
+    const k = base === 10 ? randInt(rng, 1, 4) : randInt(rng, 2, base === 2 ? 6 : 4);
+    const value = base ** k;
+    const name = base === 10 ? 'log' : `log${'₀₁₂₃₄₅₆₇₈₉'[base]}`;
+    return {
+      textKey: 'compute',
+      expression: `${name}(${value})`,
+      // value ÷ base, base × k and k + 1 — mixing up log with division.
+      ...chooseNumber(rng, k, [value / base, base * k, k + 1], 3),
+    };
+  },
+
+  logEquation: rng => {
+    const base = pick(rng, [2, 3, 5] as const);
+    const n = randInt(rng, 1, base === 2 ? 5 : 3);
+    const c = randInt(rng, -4, 4);
+    const x = base ** n - c;
+    const sub = '₀₁₂₃₄₅₆₇₈₉'[base];
+    return {
+      textKey: 'solve_x',
+      expression: `log${sub}(${fmtLinear(1, c)}) = ${n}`,
+      // base·n instead of base^n, n^base, and forgetting to move c.
+      ...chooseNumber(rng, x, [base * n - c, n ** base - c, base ** n], 5),
+    };
+  },
+
+  expEquation: rng => {
+    const base = pick(rng, [2, 3, 5] as const);
+    const p = randInt(rng, 1, base === 5 ? 2 : 3);
+    const k = randInt(rng, -3, 3);
+    const m = p * randInt(rng, 1, base === 2 ? 3 : 2);
+    // (base^p)^(x + k) = base^m  →  p(x + k) = m
+    const x = m / p - k;
+    return {
+      textKey: 'solve_x',
+      expression: `${base ** p}^${group(fmtLinear(1, k))} = ${base ** m}`,
+      // Using m without dividing by p, and dropping k.
+      ...chooseNumber(rng, x, [m - k, m / p, m / p + k], 3),
+    };
+  },
+
+  limitAlgebraic: rng => {
+    const a = randInt(rng, -5, 5);
+    if (rng() < 0.3) {
+      // A polynomial: just substitute.
+      const b = randInt(rng, -5, 5);
+      const c = randInt(rng, -5, 5);
+      const value = a * a + b * a + c;
+      return {
+        textKey: 'limit_value',
+        expression: `lim(x→${a}) ${fmtQuadratic(b, c)}`,
+        ...chooseNumber(rng, value, [a * a + c, value + 2 * a, -value], 4),
+      };
+    }
+    // (x - a)(x + b)/(x - a): 0/0, cancel, substitute → a + b.
+    let b = randInt(rng, -5, 5);
+    while (b === -a) {
+      b = randInt(rng, -5, 5);
+    }
+    return {
+      textKey: 'limit_value',
+      expression: `lim(x→${a}) (${fmtQuadratic(b - a, -a * b)})/${group(fmtLinear(1, -a))}`,
+      // 0/0 read as 0 or 1, the wrong sign, and b alone.
+      ...chooseNumber(rng, a + b, [0, 1, a - b, b], 4),
+    };
+  },
+
+  limitInfinity: rng => {
+    const kind = randInt(rng, 0, 2);
+    const p = nonZero(rng, -6, 6);
+    const q = randInt(rng, 1, 6);
+    const r = randInt(rng, -9, 9);
+    const s = nonZero(rng, -9, 9);
+    if (kind === 0) {
+      // Same degree: ratio of the leading coefficients.
+      return {
+        textKey: 'limit_value',
+        expression: `lim(x→∞) (${term(p, 'x^2')} + ${r})/(${term(q, 'x^2')} + ${s})`.replace(/\+ -/g, '- ').replace(/ \+ 0\)/g, ')'),
+        ...choose(rng, fmtFrac(frac(p, q)), [fmtFrac(frac(q, p)), fmtFrac(frac(r, s)), '0', '∞'], () =>
+          fmtFrac(frac(p + nonZero(rng, -3, 3), q)),
+        ),
+      };
+    }
+    if (kind === 1) {
+      // Lower degree on top: 0.
+      return {
+        textKey: 'limit_value',
+        expression: `lim(x→∞) (${term(p, 'x')} + ${r})/(${term(q, 'x^2')} + ${s})`.replace(/\+ -/g, '- ').replace(/ \+ 0\)/g, ')'),
+        ...choose(rng, '0', [fmtFrac(frac(p, q)), '∞', fmtFrac(frac(r, s))], () => String(nonZero(rng, -5, 5))),
+      };
+    }
+    // Higher degree on top: ±∞ with the sign of p/q.
+    const correct = p > 0 ? '∞' : '-∞';
+    return {
+      textKey: 'limit_value',
+      expression: `lim(x→∞) (${term(p, 'x^2')} + ${r})/(${term(q, 'x')} + ${s})`.replace(/\+ -/g, '- ').replace(/ \+ 0\)/g, ')'),
+      ...choose(rng, correct, [p > 0 ? '-∞' : '∞', fmtFrac(frac(p, q)), '0'], () => String(nonZero(rng, -5, 5))),
+    };
+  },
+
+  graphCounting: rng => {
+    const kind = randInt(rng, 0, 3);
+    if (kind === 0) {
+      const p = randInt(rng, 4, 12);
+      return {
+        textKey: 'graph_complete',
+        params: { p },
+        // Each edge counted twice, p², and p - 1 (a vertex's degree).
+        ...chooseNumber(rng, (p * (p - 1)) / 2, [p * (p - 1), (p * p) / 2, p - 1], 5),
+      };
+    }
+    if (kind === 1) {
+      const k = randInt(rng, 2, 5);
+      const p = 2 * randInt(rng, k, 8); // k·p even, k ≤ p - 1
+      return {
+        textKey: 'graph_regular',
+        params: { p, k },
+        ...chooseNumber(rng, (k * p) / 2, [k * p, k + p, 2 * k * p], 5),
+      };
+    }
+    if (kind === 2) {
+      const q = randInt(rng, 5, 20);
+      return {
+        textKey: 'graph_degree_sum',
+        params: { q },
+        // Forgetting the ×2 (each edge has two ends).
+        ...chooseNumber(rng, 2 * q, [q, q + 2, 2 * q - 2], 5),
+      };
+    }
+    const p = randInt(rng, 5, 9);
+    const q = randInt(rng, 3, (p * (p - 1)) / 2 - 2);
+    return {
+      textKey: 'graph_complement',
+      params: { p, q },
+      ...chooseNumber(rng, (p * (p - 1)) / 2 - q, [p * (p - 1) - q, p * p - q, q], 5),
     };
   },
 

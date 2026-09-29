@@ -7,6 +7,7 @@ import { CheckStepsScreen } from '../screens/CheckSteps/CheckStepsScreen';
 import { ExamResultScreen } from '../screens/Exam/ExamResultScreen';
 import { ExamScreen } from '../screens/Exam/ExamScreen';
 import { ExamSetupScreen } from '../screens/Exam/ExamSetupScreen';
+import { GeometryScreen } from '../screens/Geometry/GeometryScreen';
 import { GuideScreen } from '../screens/Guide/GuideScreen';
 import { HistoryScreen } from '../screens/History/HistoryScreen';
 import { HomeScreen } from '../screens/Home/HomeScreen';
@@ -80,6 +81,11 @@ export function RootNavigator() {
         name="ExamResult"
         component={ExamResultScreen}
         options={{ title: t('exam.resultTitle') }}
+      />
+      <Stack.Screen
+        name="Geometry"
+        component={GeometryScreen}
+        options={{ title: t('geometry.title') }}
       />
       <Stack.Screen name="Guide"component={GuideScreen} options={{ title: t('guide.title') }} />
       <Stack.Screen

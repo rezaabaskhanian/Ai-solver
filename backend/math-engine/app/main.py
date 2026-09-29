@@ -17,14 +17,25 @@ from .solver.check import UnsupportedForCheck, check_student_work
 from .solver.derivative import solve_derivative
 from .solver.expression import solve_expression
 from .solver.formatting import format_expr
+from .solver.geometry import GeometryError, solve_geometry, verify_geometry
+from .solver.graphs import GraphError, solve_graph, verify_graph
 from .solver.integral import IntegrationUnsupported, solve_integral
+from .solver.limit import LimitUnsupported, format_limit_value, solve_limit
 from .solver.linear import solve_linear
+from .solver.logarithm import (
+    LogEquationUnsupported,
+    solve_exponential_equation,
+    solve_log_equation,
+    verify_roots,
+)
 from .solver.messages import normalize_lang
 from .solver.parser import ParseError, parse_problem
 from .solver.practice import UnsupportedPracticeType, generate_practice_problem
 from .solver.quadratic import solve_quadratic
 from .solver.schemas_internal import StepData
-from .solver.verify import verify_equation_root, verify_integral
+from .solver.sets import SetsError, solve_sets, verify_sets
+from .solver.vectors import VectorError, solve_vector, verify_vector
+from .solver.verify import verify_equation_root, verify_integral, verify_limit
 
 app = FastAPI(title="MathMotion Math Engine", version="0.1.0")
 
@@ -34,6 +45,13 @@ def _to_step(step: StepData, lang: str) -> Step:
         id=step.id, before=step.before, after=step.after,
         operation=step.operation, value=step.value, target=step.target,
         explanation=step.explanation_in(lang),
+    )
+
+
+def _unsupported(message: str) -> JSONResponse:
+    return JSONResponse(
+        status_code=422,
+        content={"error": "unsupported_problem_type", "message": message},
     )
 
 
@@ -109,6 +127,55 @@ def solve(req: SolveRequest):
             )
         verified = verify_integral(parsed.expr, parsed.symbol, result)
         answer = f"{format_expr(result)} + C"
+
+    elif parsed.problem_type == "limit":
+        try:
+            step_data, result, sides = solve_limit(
+                parsed.expr, parsed.symbol, parsed.limit_point, parsed.limit_dir,
+            )
+        except LimitUnsupported as exc:
+            return _unsupported(exc.message)
+        verified = verify_limit(parsed.expr, parsed.symbol, parsed.limit_point, sides)
+        answer = format_limit_value(result)
+
+    elif parsed.problem_type == "set_operation":
+        try:
+            step_data, answer, value = solve_sets(parsed.structure)
+        except SetsError as exc:
+            return _unsupported(exc.message)
+        verified = verify_sets(parsed.structure, value)
+
+    elif parsed.problem_type == "geometry":
+        try:
+            step_data, answer, value = solve_geometry(parsed.structure)
+        except GeometryError as exc:
+            return _unsupported(exc.message)
+        verified = verify_geometry(parsed.structure, value)
+
+    elif parsed.problem_type == "graph":
+        try:
+            step_data, answer, value = solve_graph(parsed.structure)
+        except GraphError as exc:
+            return _unsupported(exc.message)
+        verified = verify_graph(parsed.structure, value)
+
+    elif parsed.problem_type == "vector":
+        try:
+            step_data, answer, value = solve_vector(parsed.structure)
+        except VectorError as exc:
+            return _unsupported(exc.message)
+        verified = verify_vector(parsed.structure, value)
+
+    elif parsed.problem_type in ("log_equation", "exponential_equation"):
+        solver = (solve_log_equation if parsed.problem_type == "log_equation"
+                  else solve_exponential_equation)
+        try:
+            step_data, roots = solver(parsed.lhs, parsed.rhs, parsed.symbol)
+        except LogEquationUnsupported as exc:
+            return _unsupported(exc.message)
+        verified = verify_roots(parsed.lhs, parsed.rhs, parsed.symbol, roots)
+        # "∅": every candidate root fell outside the domain (or none existed).
+        answer = " or ".join(f"{parsed.symbol} = {format_expr(r)}" for r in roots) or "∅"
 
     else:
         return JSONResponse(

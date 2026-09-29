@@ -16,7 +16,7 @@ import { MathExpression } from '../MathExpression/MathExpression';
 import { PremiumBanner } from '../Home/PremiumBanner';
 import { Icon, type IconName } from '../common/Icon';
 
-type MenuScreen = 'Home' | 'Topics' | 'ExamSetup' | 'History' | 'Guide' | 'Settings';
+type MenuScreen = 'Home' | 'Topics' | 'ExamSetup' | 'Geometry' | 'History' | 'Guide' | 'Settings';
 
 interface MenuItem {
   icon: IconName;
@@ -41,6 +41,12 @@ const LEARN_ITEMS: MenuItem[] = [
     labelKey: 'drawer.exam',
     screen: 'ExamSetup',
     activeFor: ['ExamSetup', 'Exam', 'ExamResult'],
+  },
+  {
+    icon: 'square-foot',
+    labelKey: 'drawer.geometry',
+    screen: 'Geometry',
+    activeFor: ['Geometry'],
     badge: { labelKey: 'drawer.new', tone: 'new' },
   },
   { icon: 'history', labelKey: 'drawer.history', screen: 'History', activeFor: ['History'] },

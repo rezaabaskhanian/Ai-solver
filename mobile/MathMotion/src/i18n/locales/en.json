@@ -33,6 +33,7 @@
     "toolScan": "Scan",
     "toolExam": "Exam prep",
     "toolTopics": "Topics",
+    "toolGeometry": "Geometry",
     "practiceTitle": "Ready-to-practice problems",
     "practiceHint": "Tap to solve",
     "proBodyShort": "Unlimited step-by-step solutions",
@@ -87,7 +88,9 @@
     "tabs": {
       "general": "General",
       "trig": "Trig",
-      "calculus": "Calculus"
+      "calculus": "Calculus",
+      "limitLog": "Limits & logs",
+      "setsVectors": "Sets & vectors"
     }
   },
   "solution": {
@@ -127,7 +130,51 @@
       "power_rule": "Power rule",
       "trig_rule": "Trig rule",
       "apply_derivative_rules": "Apply derivative rules",
-      "simplify": "Simplify"
+      "simplify": "Simplify",
+      "log_rule": "Log rule (1/x)",
+      "apply_integration_rules": "Apply integration rules",
+      "substitute": "Substitute",
+      "indeterminate_form": "Indeterminate 0/0",
+      "multiply_conjugate": "Multiply by the conjugate",
+      "cancel": "Cancel the common factor",
+      "nonzero_over_zero": "Nonzero over zero",
+      "one_sided_limit": "One-sided limit",
+      "limit_does_not_exist": "Limit does not exist",
+      "keep_leading_terms": "Keep the highest powers",
+      "evaluate_limit": "Evaluate the limit",
+      "apply_limit_rules": "Limit rules",
+      "domain": "Find the domain",
+      "combine_logs": "Combine the logs",
+      "drop_logs": "Equate the arguments",
+      "to_exponential": "Rewrite as a power",
+      "reject_root": "Reject a root outside the domain",
+      "check_domain": "Check the domain",
+      "same_base": "Use a common base",
+      "equate_exponents": "Equate the exponents",
+      "take_log": "Take the log of both sides",
+      "union": "Union",
+      "intersection": "Intersection",
+      "difference": "Difference",
+      "complement": "Complement",
+      "power_set": "All subsets",
+      "count": "Count",
+      "subsets_count": "Number of subsets (2ⁿ)",
+      "counting_formula": "Counting formula",
+      "conclude": "Conclude",
+      "vector_from_points": "Vector between two points",
+      "scale": "Multiply the vector by a number",
+      "length": "Vector length",
+      "formula": "Write the formula",
+      "compute": "Compute",
+      "approximate": "Approximate",
+      "square_root": "Take the square root",
+      "handshake": "Degree sum = 2q",
+      "odd_sum": "Degree sum is odd",
+      "degree_bound": "Degree at most p − 1",
+      "havel_hakimi": "Havel–Hakimi",
+      "graph_exists": "The graph exists",
+      "degrees": "Vertex degrees",
+      "min_max_degree": "Smallest and largest degree"
     },
     "stepsTitle": "Solution steps",
     "before": "Before:",
@@ -148,6 +195,13 @@
       "derivative": "Goal: find the derivative",
       "integral": "Goal: find the integral",
       "trig_expression": "Goal: simplify the trig expression",
+      "limit": "Goal: find the limit",
+      "log_equation": "Goal: solve the logarithmic equation",
+      "exponential_equation": "Goal: solve the exponential equation",
+      "set_operation": "Goal: find the set or its number of elements",
+      "vector": "Goal: compute the vector",
+      "geometry": "Goal: compute with a geometry formula",
+      "graph": "Goal: count the edges and degrees of the graph",
       "default": "Goal: solve the problem"
     }
   },
@@ -187,7 +241,14 @@
     "arithmetic_equation": "Arithmetic Equation",
     "derivative": "Derivative",
     "integral": "Integral",
-    "trig_expression": "Trigonometric Simplification"
+    "trig_expression": "Trigonometric Simplification",
+    "limit": "Limit",
+    "log_equation": "Logarithmic Equation",
+    "exponential_equation": "Exponential Equation",
+    "set_operation": "Sets",
+    "vector": "Vectors",
+    "geometry": "Geometry",
+    "graph": "Graphs"
   },
   "errors": {
     "couldNotUnderstand": "We couldn't understand this problem. Please check your equation.",
@@ -221,6 +282,32 @@
     "purchaseSuccess": "Premium unlocked — thank you!",
     "paywallTitleDaily": "You've used today's free solves"
   },
+  "geometry": {
+    "title": "Geometry calculator",
+    "intro": "Pick a shape, choose what you want and type the measurements to see the step-by-step solution.",
+    "groups": { "plane": "Flat shapes", "solid": "Solids", "other": "Pythagoras & angles" },
+    "shapes": {
+      "square": "Square", "rectangle": "Rectangle", "triangle": "Triangle", "parallelogram": "Parallelogram",
+      "trapezoid": "Trapezoid", "rhombus": "Rhombus", "circle": "Circle", "cube": "Cube",
+      "cuboid": "Cuboid", "cylinder": "Cylinder", "cone": "Cone", "sphere": "Sphere",
+      "pyramid": "Pyramid (square base)", "pythagoras": "Pythagoras", "polygon": "Regular polygon"
+    },
+    "quantities": {
+      "area": "Area", "perimeter": "Perimeter", "volume": "Volume", "surface": "Surface area",
+      "pythagoras": "Missing side", "angle_sum": "Sum of interior angles",
+      "interior_angle": "Each interior angle", "exterior_angle": "Each exterior angle"
+    },
+    "params": {
+      "a": "Side a", "b": "Side b", "c": "Side c (hypotenuse)", "h": "Height h", "r": "Radius r",
+      "d1": "Diagonal d1", "d2": "Diagonal d2", "n": "Number of sides n"
+    },
+    "whichSide": "Which side do you want to find?",
+    "formula": "{{what}} of a {{shape}}",
+    "unitsNote": "Use one unit for every measurement (e.g. cm); the answer is in that unit (squared for area, cubed for volume).",
+    "degreesNote": "The answer is in degrees.",
+    "solve": "Solve",
+    "openCalculator": "Open the geometry calculator"
+  },
   "drawer": {
     "open": "Open menu",
     "tagline": "See math solved step by step",
@@ -228,6 +315,7 @@
     "topics": "Topics",
     "history": "Solved problems",
     "exam": "Exam prep",
+    "geometry": "Geometry calculator",
     "guide": "How to use",
     "settings": "Appearance",
     "quickMenu": "Quick menu",
@@ -290,11 +378,53 @@
       "summary": "Term-by-term differentiation with the power rule and trig derivatives.",
       "tip": "Power rule: the derivative of xⁿ is n·xⁿ⁻¹, and the derivative of a constant is 0."
     },
+    "limit": {
+      "title": "Limits",
+      "summary": "Limits by substitution, resolving 0/0 (factoring or the conjugate), one-sided limits and limits at infinity.",
+      "tip": "Substitute first. If you get 0/0, factor or multiply by the conjugate; at infinity only the highest powers matter."
+    },
+    "logarithm": {
+      "title": "Logarithms & Exponential Equations",
+      "summary": "Logarithmic and exponential equations using the log rules, the definition of a log, and a common base.",
+      "tip": "log(x) is base 10 and ln(x) is base e. Always check the domain: what's inside a log must be positive."
+    },
+    "sets": {
+      "title": "Sets",
+      "summary": "Union, intersection, difference, complement, subsets and the counting formula for a union.",
+      "tip": "Each element is written once. Key formula: n(A∪B) = n(A) + n(B) - n(A∩B)."
+    },
+    "vectors": {
+      "title": "Vectors & Coordinates",
+      "summary": "Adding and subtracting vectors, scalar multiples, the vector between two points and a vector's length.",
+      "tip": "Vector AB is B's coordinates minus A's. Add and subtract vectors component by component."
+    },
+    "geometry": {
+      "title": "Geometry: area, volume, Pythagoras",
+      "summary": "Area and perimeter of shapes, volume and surface area of solids, the Pythagorean theorem and polygon angles.",
+      "tip": "The easiest way is the geometry calculator: pick a shape and type the measurements. Answers with π are shown exactly and approximately."
+    },
+    "graphs": {
+      "title": "Graphs (discrete math)",
+      "summary": "Edges of complete, regular and complement graphs, vertex degrees, and whether a degree sequence is possible.",
+      "tip": "The degrees always add up to twice the number of edges (2q), so the sum is even. In a simple graph with p vertices every degree is at most p - 1."
+    },
     "integral": {
       "title": "Integrals",
       "summary": "Indefinite integrals term by term, plus the constant of integration.",
       "tip": "Reverse power rule: the integral of xⁿ is xⁿ⁺¹/(n+1). Don't forget + C."
-    }
+    },
+    "allTopics": "All topics",
+    "gradeChip": "Grade {{grade}}",
+    "gradeIntro": "This grade's textbook chapters. Tap a chapter to see its lessons and related practice.",
+    "lessonsCount": "{{count}} lessons",
+    "noLessons": "No separate lessons",
+    "inApp": "practice in app",
+    "lessonNo": "Lesson {{n}}",
+    "examThisChapter": "Exam on this chapter",
+    "referenceOnly": "Problems from this chapter can't be solved automatically yet — only the lesson list is shown for now.",
+    "tracksNote": "Grades 11 and 12 currently list the math & physics track books; geometry and experimental-sciences books are coming soon.",
+    "inBooks": "In the textbooks",
+    "chapterRef": "Grade {{grade}} — {{book}}, chapter {{n}}: {{title}}"
   },
   "exam": {
     "title": "Exam prep",
@@ -370,7 +500,21 @@
       "dice_mult3": "A die is rolled. What is the probability of a multiple of 3?",
       "dice_greater": "A die is rolled. What is the probability of a number greater than {{k}}?",
       "expand": "Expand the expression below.",
-      "slope": "What is the slope of the line through points A and B?"
+      "slope": "What is the slope of the line through points A and B?",
+      "set_union": "Which set is the union of A and B?",
+      "set_intersection": "Which set is the intersection of A and B?",
+      "set_difference": "Which set is A minus B?",
+      "vector_ab": "What are the coordinates of vector AB (from A to B)?",
+      "sphere_volume": "What is the volume of a sphere with radius {{r}}?",
+      "cone_volume": "What is the volume of a cone with base radius {{r}} and height {{h}}?",
+      "pyramid_volume": "What is the volume of a pyramid with a square base of side {{a}} and height {{h}}?",
+      "set_complement": "Which set is the complement of A in U?",
+      "quadratic_roots": "What are the roots of this equation?",
+      "limit_value": "Find the value of this limit.",
+      "graph_complete": "How many edges does the complete graph on {{p}} vertices have?",
+      "graph_regular": "How many edges does a {{k}}-regular graph with {{p}} vertices have?",
+      "graph_degree_sum": "What is the sum of the vertex degrees of a graph with {{q}} edges?",
+      "graph_complement": "A simple graph has {{p}} vertices and {{q}} edges. How many edges does its complement have?"
     },
     "chapters": {
       "g6_patterns": "Numbers and patterns",
@@ -405,7 +549,31 @@
       "g9_algebraic": "Algebraic expressions",
       "g9_lines": "Lines and linear equations",
       "g9_rational": "Rational expressions",
-      "g9_volume": "Volume and surface area"
+      "g9_volume": "Volume and surface area",
+      "g10_sets": "Sets, patterns and sequences",
+      "g10_trig": "Trigonometry",
+      "g10_powers": "Rational exponents and algebraic expressions",
+      "g10_equations": "Equations and inequalities",
+      "g10_function": "Functions",
+      "g10_counting": "Counting without counting",
+      "g10_statistics": "Statistics and probability",
+      "g11c_algebra": "Calculus 1 — Algebra and equations",
+      "g11c_function": "Calculus 1 — Functions",
+      "g11c_exp_log": "Calculus 1 — Exponential and logarithmic functions",
+      "g11c_trig": "Calculus 1 — Trigonometry",
+      "g11c_limits": "Calculus 1 — Limits and continuity",
+      "g11s_logic": "Statistics & probability — Foundations",
+      "g11s_probability": "Statistics & probability — Probability",
+      "g11s_descriptive": "Statistics & probability — Descriptive statistics",
+      "g11s_inferential": "Statistics & probability — Inferential statistics",
+      "g12c_function": "Calculus 2 — Functions",
+      "g12c_trig": "Calculus 2 — Trigonometry",
+      "g12c_limits": "Calculus 2 — Infinite limits and limits at infinity",
+      "g12c_derivative": "Calculus 2 — Derivatives",
+      "g12c_applications": "Calculus 2 — Applications of derivatives",
+      "g12d_numbers": "Discrete math — Number theory",
+      "g12d_graphs": "Discrete math — Graphs and modelling",
+      "g12d_counting": "Discrete math — Combinatorics"
     }
   },
   "guide": {
@@ -426,7 +594,12 @@
         "fraction": "Fraction: top / bottom; wrap long ones in parentheses.",
         "pi": "Pi: pi. Sine and cosine: sin( ) and cos( ).",
         "derivative": "Derivative: put the expression inside d/dx( ).",
-        "integral": "Integral: write the expression between ∫ and dx."
+        "integral": "Integral: write the expression between ∫ and dx.",
+        "limit": "Limit: lim(x→2) then the expression; ∞ for infinity, 0+ or 0- for one-sided limits.",
+        "log": "Logarithm: log(x) is base 10, log_2(x) base 2, ln(x) base e.",
+        "sets": "Sets: define them first, e.g. A={1,2,3}, then ask (∪ union, ∩ intersection, - difference, ' complement, n( ) count). Separate parts with commas.",
+        "vectors": "Vectors: write them in [ , ], e.g. [2, 3]. Points like A(1, 2) and the vector between them AB. Length inside | |.",
+        "graphs": "Graphs: complete_graph(p=6) edges of K_p, regular_graph(p=8, k=3) a regular graph, complement_edges(p=6, q=9) the complement, degree_sequence(…) does such a graph exist, graph(ab, bc) the vertex degrees."
       }
     },
     "scan": {
@@ -511,5 +684,178 @@
     },
     "start": "Start learning",
     "freeNote": "No sign-up — you get a few free solves to try it."
+  },
+  "lessons": {
+    "ui": {
+      "title": "Lesson",
+      "concepts": "The idea",
+      "examples": "Worked examples",
+      "mistakes": "Common mistakes",
+      "tryIt": "Try it",
+      "answer": "Answer",
+      "wrong": "Wrong",
+      "right": "Right",
+      "show": "Show the lesson",
+      "hide": "Hide the lesson"
+    },
+    "limit": {
+      "concepts": {
+        "meaning": "A limit asks what value the function approaches as x gets closer and closer to a — x itself never equals a.",
+        "substitute": "Always substitute first. If the function is defined there (polynomials are), the limit is just its value.",
+        "zeroOverZero": "Getting 0/0 means an indeterminate form: factor and cancel the common factor, or multiply by the conjugate when there is a root.",
+        "infinite": "A nonzero number over 0 means the function blows up. Check the left and right limits; if they differ, the limit does not exist.",
+        "atInfinity": "As x goes to infinity, only the highest-power terms of a polynomial fraction matter."
+      },
+      "examples": {
+        "factor": "Resolving 0/0 by factoring",
+        "conjugate": "Resolving 0/0 with the conjugate"
+      },
+      "steps": {
+        "factor1": "Substituting gives an indeterminate form, so simplify first.",
+        "factor2": "Factor the numerator (difference of squares).",
+        "factor3": "Cancel the common factor — allowed because x approaches 2 but never equals it.",
+        "factor4": "Now substitution works.",
+        "conjugate1": "Indeterminate again.",
+        "conjugate2": "Multiply top and bottom by the conjugate of the numerator to clear the root.",
+        "conjugate3": "Cancel the common factor.",
+        "conjugate4": "Substitute."
+      },
+      "mistakes": {
+        "zeroOverZero": "Treating 0/0 as 0 or 1. It is not an answer — it tells you to simplify.",
+        "infinityOverInfinity": "Infinity over infinity is indeterminate too and need not be 1 — compare the highest powers.",
+        "sides": "Not checking both sides when the denominator becomes 0. Here the right limit is +∞ and the left −∞, so the limit does not exist."
+      }
+    },
+    "logarithm": {
+      "concepts": {
+        "meaning": "A logarithm answers \"which power?\": log base b of A is c exactly when b to the power c is A.",
+        "bases": "log with no base means base 10; ln means base e.",
+        "product": "The log of a product is the sum of the logs.",
+        "quotient": "The log of a quotient is the difference of the logs.",
+        "power": "A power inside a log comes out in front.",
+        "domain": "What is inside a log must be positive. Write the domain first and check your answers against it at the end.",
+        "exponential": "For an exponential equation, write both sides with the same base and equate the exponents; if that is impossible, take a log of both sides."
+      },
+      "examples": {
+        "logEquation": "A logarithmic equation",
+        "sameBase": "An exponential equation with a common base"
+      },
+      "steps": {
+        "logEquation1": "Write the domain.",
+        "logEquation2": "Combine the two logs into one.",
+        "logEquation3": "Rewrite as a power, by the definition of a log.",
+        "logEquation4": "Solve the quadratic by factoring.",
+        "logEquation5": "Reject the answer that breaks the domain.",
+        "sameBase1": "Write both sides as powers of 3.",
+        "sameBase2": "Equal bases, so equal exponents."
+      },
+      "mistakes": {
+        "sum": "Splitting the log of a sum. That rule only holds for a product.",
+        "domain": "Not checking the domain and keeping an answer that makes a log argument zero or negative.",
+        "quotient": "Confusing a quotient of logs with the log of a quotient."
+      }
+    },
+    "sets": {
+      "concepts": {
+        "meaning": "A set is a collection of distinct objects: each element is written once and order does not matter.",
+        "union": "Union: every element that is in at least one of the sets.",
+        "intersection": "Intersection: only the elements in both sets.",
+        "difference": "A minus B: the elements of A that are not in B. Order matters.",
+        "complement": "Complement of A: the elements of the universal set U that are not in A.",
+        "subsets": "A set with n elements has 2 to the n subsets, counting the empty set and the set itself.",
+        "counting": "To count a union, subtract the shared elements once, since they were counted twice."
+      },
+      "examples": {
+        "operations": "Several operations",
+        "counting": "The counting formula"
+      },
+      "steps": {
+        "operations1": "First the union.",
+        "operations2": "Then the intersection.",
+        "operations3": "Remove the intersection from the union.",
+        "counting1": "Write the counting formula.",
+        "counting2": "Substitute the numbers and call the unknown x."
+      },
+      "mistakes": {
+        "repeat": "Writing a shared element twice in a union.",
+        "order": "Treating A minus B and B minus A as the same.",
+        "counting": "Adding the counts without subtracting the intersection — shared elements get counted twice."
+      }
+    },
+    "vectors": {
+      "concepts": {
+        "meaning": "A vector is a directed segment with a size and a direction. The first component is the horizontal move, the second the vertical move.",
+        "fromPoints": "The vector from A to B is B's coordinates minus A's (end minus start).",
+        "add": "Add and subtract vectors component by component.",
+        "scale": "Multiplying by a number multiplies every component; a negative number reverses the direction.",
+        "length": "A vector’s length comes from Pythagoras."
+      },
+      "examples": {
+        "length": "Length of the vector between two points",
+        "combine": "Multiplying and subtracting vectors"
+      },
+      "steps": {
+        "length1": "End minus start.",
+        "length2": "Length by Pythagoras.",
+        "combine1": "First multiply each component by 3.",
+        "combine2": "Then subtract component by component."
+      },
+      "mistakes": {
+        "direction": "Start minus end — the vector points the wrong way.",
+        "scale": "Multiplying only the first component.",
+        "length": "Taking the sum of the components as the length."
+      }
+    },
+    "geometry": {
+      "concepts": {
+        "areaPerimeter": "Area is how much surface a shape covers (square units); perimeter is the distance around it (length units).",
+        "circle": "Area and circumference of a circle, with π.",
+        "pythagoras": "Pythagoras holds only in a right triangle: the square of the hypotenuse (the longest side, opposite the right angle) equals the sum of the squares of the other two.",
+        "prism": "Prism and cylinder volume: base area times height. A pyramid or cone is one third of that.",
+        "sphere": "Volume and surface area of a sphere.",
+        "polygon": "Sum of the interior angles of an n-gon, in degrees. The exterior angles always add up to 360°."
+      },
+      "examples": {
+        "pythagoras": "Finding a side with Pythagoras",
+        "cone": "Volume of a cone"
+      },
+      "steps": {
+        "pythagoras1": "The hypotenuse is known, so the missing side is hypotenuse squared minus the other side squared.",
+        "pythagoras3": "Take the square root; a length is positive.",
+        "cone1": "The cone volume formula.",
+        "cone3": "Approximate with π ≈ 3.14."
+      },
+      "mistakes": {
+        "hypotenuse": "Adding the squares when the hypotenuse is the known side.",
+        "diameter": "Using the diameter instead of the radius; the radius is half the diameter.",
+        "third": "Forgetting to divide by 3 for a pyramid or cone."
+      }
+    },
+    "graphs": {
+      "concepts": {
+        "meaning": "A graph is made of vertices and edges: p is the number of vertices (order), q the number of edges (size). A simple graph has no loops or multiple edges.",
+        "degree": "The degree of a vertex is the number of edges at it. In a simple graph with p vertices, a degree is at most p − 1.",
+        "handshake": "The degrees add up to twice the number of edges, because each edge has two ends — so there is always an even number of odd-degree vertices.",
+        "complete": "In a complete graph every two vertices are joined.",
+        "regular": "In a k-regular graph every vertex has degree k.",
+        "complement": "The complement has the same vertices and exactly the edges the graph does not have."
+      },
+      "examples": {
+        "regular": "Is there a 3-regular graph on 7 vertices?",
+        "sequence": "A degree sequence"
+      },
+      "steps": {
+        "regular1": "Add up the degrees.",
+        "regular2": "The degree sum is odd but must be even, so no such graph exists.",
+        "sequence1": "The degree sum is even — the necessary condition holds.",
+        "sequence2": "Havel–Hakimi: remove the largest degree and subtract 1 from that many of the next degrees.",
+        "sequence3": "Repeat until everything is 0 — so the graph exists."
+      },
+      "mistakes": {
+        "evenOnly": "Thinking an even degree sum is enough. This sum is even, yet no simple graph has these degrees.",
+        "complete": "Counting each edge of a complete graph twice — divide by 2.",
+        "maxDegree": "A degree equal to or larger than the number of vertices in a simple graph."
+      }
+    }
   }
 }

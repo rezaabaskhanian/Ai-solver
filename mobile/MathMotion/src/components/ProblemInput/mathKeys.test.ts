@@ -28,6 +28,19 @@ describe('applyMathKey', () => {
     expect(applyMathKey('x', { start: 9, end: 9 }, key('equals'))).toEqual({ value: 'x=', cursor: 2 });
   });
 
+  it('leaves the cursor on the point a limit approaches', () => {
+    expect(applyMathKey('', { start: 0, end: 0 }, key('limit'))).toEqual({ value: 'lim(x→)', cursor: 6 });
+  });
+
+  it('places the cursor inside set braces and between vector brackets', () => {
+    expect(applyMathKey('A=', { start: 2, end: 2 }, key('setBraces'))).toEqual({ value: 'A={}', cursor: 3 });
+    expect(applyMathKey('', { start: 0, end: 0 }, key('vector'))).toEqual({ value: '[,]', cursor: 1 });
+  });
+
+  it('places the cursor inside a based log', () => {
+    expect(applyMathKey('', { start: 0, end: 0 }, key('log2'))).toEqual({ value: 'log_2()', cursor: 6 });
+  });
+
   it('leaves the cursor between the integral sign and dx', () => {
     expect(applyMathKey('', { start: 0, end: 0 }, key('integral'))).toEqual({ value: '∫ dx', cursor: 1 });
   });

@@ -22,6 +22,13 @@ import (
 const recognitionPrompt = `You will be shown a photo that may contain one or more handwritten or ` +
 	`printed math problems. Transcribe EVERY distinct problem exactly as written, one per line, ` +
 	`using plain ASCII (e.g. x^2, sqrt(x), sin(x), *, /  — no LaTeX, no unicode math symbols). ` +
+	`Use exactly this notation for calculus and logarithms: derivative d/dx(expr), integral ` +
+	`integrate(expr, x), limit lim(x->a) expr (lim(x->oo) for infinity, lim(x->0+) / lim(x->0-) ` +
+	`for one-sided limits), log with base b log_b(expr), a log written without a base log(expr), ` +
+	`natural log ln(expr). ` +
+	`Sets: define each set, then the question, separated by commas, e.g. A={1,2,3}, B={2,3,4}, A∪B ` +
+	`(∪ union, ∩ intersection, - difference, A' complement with U={...} defined, n(A) number of ` +
+	`elements). Vectors: [x, y], points A(1, 2), the vector between points AB, length |AB|. ` +
 	`Respond with the transcriptions only, one problem per line: no numbering, no explanation, ` +
 	`no commentary, no markdown formatting. If there is no legible math problem in the image, ` +
 	`respond with exactly: NONE`

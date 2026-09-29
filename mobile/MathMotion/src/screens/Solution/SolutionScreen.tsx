@@ -12,22 +12,14 @@ import { AppButton } from '../../components/common/AppButton';
 import { AppText } from '../../components/common/AppText';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 import { StepViewer } from '../../components/StepViewer/StepViewer';
+import { openPractice, PRACTICE_TYPES } from '../../content/practice';
 import { useIsRTL } from '../../hooks/useIsRTL';
 import type { RootStackParamList } from '../../navigation/types';
 import { toApiError, translationKeyForApiError } from '../../services/api/apiError';
 import { practiceProblem } from '../../services/api/problems';
-import type { ProblemType } from '../../types/problem';
 import { makeStyles, radius, spacing, useColors } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Solution'>;
-
-// Only these types have a practice generator (see
-// backend/math-engine/app/solver/practice.py) — derivative/integral/
-// trig/arithmetic_equation don't, so "Practice similar" is hidden for
-// them rather than shown and failing.
-const PRACTICE_SUPPORTED_TYPES: ProblemType[] = [
-  'linear_equation', 'quadratic_equation', 'expression', 'arithmetic',
-];
 
 // Solution UI per PRD section 39/16, laid out after the Stitch
 // "solution_steps" designs: problem card, a toggle between the animated
@@ -44,7 +36,10 @@ export function SolutionScreen({ route, navigation }: Props) {
   const hasSteps = result.steps.length > 0;
   const [generatingPractice, setGeneratingPractice] = useState(false);
   const [practiceErrorKey, setPracticeErrorKey] = useState<string | null>(null);
-  const canPractice = PRACTICE_SUPPORTED_TYPES.includes(result.type);
+  // Only types with a practice generator (content/practice.ts) —
+  // derivative/integral/trig/geometry... don't, so "Practice similar" is
+  // hidden for them rather than shown and failing.
+  const canPractice = PRACTICE_TYPES.includes(result.type);
 
   const viewShotRef = useRef<ViewShot>(null);
   const [sharing, setSharing] = useState(false);
@@ -79,7 +74,7 @@ export function SolutionScreen({ route, navigation }: Props) {
     setPracticeErrorKey(null);
     try {
       const practice = await practiceProblem(result.type);
-      navigation.navigate('CheckSteps', { problem: practice.problem });
+      openPractice(navigation, result.type, practice.problem);
     } catch (err) {
       const apiError = toApiError(err);
       setPracticeErrorKey(t(translationKeyForApiError(apiError), { defaultValue: apiError.message }));

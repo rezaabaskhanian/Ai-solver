@@ -1,6 +1,7 @@
 import sympy
 
 from .formatting import format_expr
+from .functions import to_real_logs
 from .messages import explained
 from .schemas_internal import StepData
 
@@ -10,7 +11,7 @@ def solve_expression(expr: sympy.Expr) -> tuple[list[StepData], sympy.Expr]:
     simplification per PRD section 3 ('Simplifying expressions',
     'Fractions', 'Powers').
     """
-    simplified = sympy.nsimplify(sympy.simplify(expr), rational=True)
+    simplified = sympy.nsimplify(sympy.simplify(to_real_logs(expr)), rational=True)
     steps: list[StepData] = []
 
     if simplified != expr:

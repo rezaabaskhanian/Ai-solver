@@ -14,7 +14,7 @@ function seeded(seed: number): Rng {
 }
 
 // Same token set MathExpression renders — anything else would vanish.
-const RENDERABLE = /^(\d+(\.\d+)?|[a-zA-Z]+|\^|[+\-*/=(),]|\s)+$/;
+const RENDERABLE = /^(\d+(\.\d+)?|[a-zA-Z]+[₀-₉]*|\^|[+\-*/=(),]|[^\s\w]|\s)+$/;
 
 const skills = Object.keys(GENERATORS) as SkillId[];
 
@@ -61,6 +61,100 @@ describe('exam generators', () => {
       for (let d = answer + 1; d <= Math.min(a, b); d += 1) {
         expect(a % d === 0 && b % d === 0).toBe(false);
       }
+    }
+  });
+});
+
+describe('set and vector generators', () => {
+  it('computes vector AB as B - A', () => {
+    const rng = seeded(11);
+    for (let i = 0; i < 100; i += 1) {
+      const q = GENERATORS.vectorFromPoints(rng);
+      const [x1, y1, x2, y2] = q.expression!.match(/-?\d+/g)!.map(Number);
+      expect(q.choices[q.answerIndex]).toBe(`[${x2 - x1}, ${y2 - y1}]`);
+    }
+  });
+
+  it('computes set operations correctly', () => {
+    const rng = seeded(13);
+    const parse = (s: string) => (s === '∅' ? [] : s.slice(1, -1).split(', ').map(Number));
+    for (let i = 0; i < 100; i += 1) {
+      const q = GENERATORS.setOps(rng);
+      const [a, b] = q.expression!.split(' , ').map(part => parse(part.slice(4)));
+      const answer = parse(q.choices[q.answerIndex]);
+      const want =
+        q.textKey === 'set_union'
+          ? [...new Set([...a, ...b])]
+          : q.textKey === 'set_intersection'
+            ? a.filter(n => b.includes(n))
+            : a.filter(n => !b.includes(n));
+      expect(answer).toEqual(want.sort((x, y) => x - y));
+    }
+  });
+});
+
+describe('solid volume generator', () => {
+  it('uses V = 4πr³/3, πr²h/3 and a²h/3', () => {
+    const rng = seeded(17);
+    for (let i = 0; i < 100; i += 1) {
+      const q = GENERATORS.solidVolume(rng);
+      const { r, h, a } = q.params as Record<string, number>;
+      const want =
+        q.textKey === 'sphere_volume'
+          ? `${(4 * r ** 3) / 3}π`
+          : q.textKey === 'cone_volume'
+            ? ((r * r * h) / 3 === 1 ? 'π' : `${(r * r * h) / 3}π`)
+            : String((a * a * h) / 3);
+      expect(q.choices[q.answerIndex]).toBe(want);
+    }
+  });
+});
+
+describe('grade 10–12 generators', () => {
+  const rng = seeded(23);
+
+  it('gives real roots of the quadratic', () => {
+    for (let i = 0; i < 100; i += 1) {
+      const q = GENERATORS.quadraticRoots(rng);
+      const m = q.expression!.match(/^x\^2(?: ([+-]) (\d*)x)?(?: ([+-]) (\d+))? = 0$/)!;
+      const b = m[1] ? Number(`${m[1]}${m[2] || '1'}`) : 0;
+      const c = m[3] ? Number(`${m[3]}${m[4]}`) : 0;
+      q.choices[q.answerIndex].split(' , ').map(Number).forEach(r => expect(r * r + b * r + c).toBe(0));
+    }
+  });
+
+  it('computes log values as exponents', () => {
+    for (let i = 0; i < 100; i += 1) {
+      const q = GENERATORS.logValue(rng);
+      const [, sub, value] = q.expression!.match(/^log([₀-₉]?)\((\d+)\)$/)!;
+      const base = sub ? '₀₁₂₃₄₅₆₇₈₉'.indexOf(sub) : 10;
+      expect(base ** Number(q.choices[q.answerIndex])).toBe(Number(value));
+    }
+  });
+
+  it('cancels the common factor in a 0/0 limit', () => {
+    for (let i = 0; i < 100; i += 1) {
+      const q = GENERATORS.limitAlgebraic(rng);
+      const [, a] = q.expression!.match(/^lim\(x→(-?\d+)\)/)!;
+      const x = Number(a);
+      // Evaluate the expression just next to the point: it must be close
+      // to the answer (works for both the 0/0 and the polynomial kind).
+      const body = q.expression!.replace(/^lim\(x→-?\d+\) /, '');
+      const js = body.replace(/(\d)x/g, '$1*x').replace(/\^/g, '**').replace(/x/g, '(x)');
+      const f = new Function('x', `return ${js};`) as (v: number) => number;
+      expect(f(x + 1e-7)).toBeCloseTo(Number(q.choices[q.answerIndex]), 4);
+    }
+  });
+
+  it('counts the edges of complete graphs', () => {
+    for (let i = 0; i < 100; i += 1) {
+      const q = GENERATORS.graphCounting(rng);
+      const { p, k, q: edges } = q.params as Record<string, number>;
+      const answer = Number(q.choices[q.answerIndex]);
+      if (q.textKey === 'graph_complete') expect(answer).toBe((p * (p - 1)) / 2);
+      if (q.textKey === 'graph_regular') expect(answer).toBe((k * p) / 2);
+      if (q.textKey === 'graph_degree_sum') expect(answer).toBe(2 * edges);
+      if (q.textKey === 'graph_complement') expect(answer).toBe((p * (p - 1)) / 2 - edges);
     }
   });
 });

@@ -1,4 +1,6 @@
-import { buildQuizChoices } from './quizChoices';
+import en from '../../i18n/locales/en.json';
+import fa from '../../i18n/locales/fa.json';
+import { buildQuizChoices, OPERATION_POOLS } from './quizChoices';
 import type { SolutionStep } from '../../types/problem';
 
 const t = (key: string, opts?: { defaultValue?: string }) => opts?.defaultValue ?? key;
@@ -54,6 +56,37 @@ describe('buildQuizChoices', () => {
     // translatedOperationLabel's `{ defaultValue: operation }`).
     expect(correct?.label).toBe('move_term');
     expect(choices.filter(c => !c.correct).every(c => c.label !== correct?.label)).toBe(true);
+  });
+
+  it('draws wrong options from the same kind of problem', () => {
+    const choices = buildQuizChoices(step({ operation: 'union', value: null }), t, 'set_operation');
+    const setMoves = ['union', 'intersection', 'difference', 'complement', 'count', 'counting_formula'];
+    expect(choices).toHaveLength(4);
+    expect(choices.filter(c => c.correct)).toEqual([{ label: 'union', correct: true }]);
+    choices.forEach(c => expect(setMoves).toContain(c.label));
+  });
+
+  it('gives four distinct options for every new problem type', () => {
+    const cases: Array<[string, Parameters<typeof buildQuizChoices>[2]]> = [
+      ['indeterminate_form', 'limit'],
+      ['to_exponential', 'log_equation'],
+      ['same_base', 'exponential_equation'],
+      ['scale', 'vector'],
+      ['formula', 'geometry'],
+      ['havel_hakimi', 'graph'],
+    ];
+    cases.forEach(([operation, type], i) => {
+      const choices = buildQuizChoices(step({ id: i + 1, operation, value: null }), t, type);
+      expect(new Set(choices.map(c => c.label)).size).toBe(4);
+      expect(choices.filter(c => c.correct)).toHaveLength(1);
+    });
+  });
+
+  it('has a Persian and English label for every quiz option', () => {
+    Object.values(OPERATION_POOLS).flat().forEach(op => {
+      expect(fa.solution.operations).toHaveProperty([op!]);
+      expect(en.solution.operations).toHaveProperty([op!]);
+    });
   });
 
   it('shuffles deterministically by step id', () => {

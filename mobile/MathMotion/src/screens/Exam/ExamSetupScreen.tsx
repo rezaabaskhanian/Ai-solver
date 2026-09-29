@@ -9,6 +9,7 @@ import { Card } from '../../components/common/Card';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 import { EXAM_SYLLABUS, findGrade, type GradeId } from '../../content/examSyllabus';
 import { useIsRTL } from '../../hooks/useIsRTL';
+import { usePreferencesStore } from '../../store/usePreferencesStore';
 import type { RootStackParamList } from '../../navigation/types';
 import { makeStyles, radius, spacing, useColors } from '../../theme';
 import { Icon } from '../../components/common/Icon';
@@ -19,14 +20,21 @@ const QUESTION_COUNTS = [5, 10, 15, 20];
 
 // «آمادگی برای امتحان»: the student picks a grade and exactly the chapters
 // their exam covers ("only these for grade 6"), then how many questions.
-export function ExamSetupScreen({ navigation }: Props) {
+export function ExamSetupScreen({ navigation, route }: Props) {
   const colors = useColors();
   const styles = useStyles();
   const { t } = useTranslation();
   const isRTL = useIsRTL();
 
-  const [grade, setGrade] = useState<GradeId>(6);
-  const [chapterIds, setChapterIds] = useState<string[]>([]);
+  // Opened from a textbook chapter (Topics) → that grade + chapter
+  // preselected; otherwise the student's saved grade when the exam
+  // covers it, else grade 6.
+  const savedGrade = usePreferencesStore(s => s.grade);
+  const [grade, setGrade] = useState<GradeId>(() => {
+    const wanted = route.params?.grade ?? savedGrade;
+    return EXAM_SYLLABUS.some(g => g.grade === wanted) ? (wanted as GradeId) : 6;
+  });
+  const [chapterIds, setChapterIds] = useState<string[]>(() => route.params?.chapterIds ?? []);
   const [count, setCount] = useState(10);
 
   const chapters = findGrade(grade)?.chapters ?? [];
@@ -100,7 +108,7 @@ export function ExamSetupScreen({ navigation }: Props) {
                 )}
               </View>
               <AppText style={styles.flexOne} weight={checked ? 'medium' : 'regular'}>
-                {t('exam.chapterNumber', { n: index + 1 })} {t(`exam.chapters.${chapter.id}`)}
+                {t('exam.chapterNumber', { n: chapter.number ?? index + 1 })} {t(`exam.chapters.${chapter.id}`)}
               </AppText>
               {!enabled && (
                 <AppText size="xs" color={colors.textSecondary}>

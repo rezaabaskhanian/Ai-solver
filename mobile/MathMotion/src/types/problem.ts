@@ -10,6 +10,13 @@ export type ProblemType =
   | 'derivative'
   | 'integral'
   | 'trig_expression'
+  | 'limit'
+  | 'log_equation'
+  | 'exponential_equation'
+  | 'set_operation'
+  | 'vector'
+  | 'geometry'
+  | 'graph'
   | (string & {});
 
 export interface ParseResult {

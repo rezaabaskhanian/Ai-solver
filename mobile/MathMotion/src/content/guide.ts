@@ -33,6 +33,11 @@ export const GUIDE_SECTIONS: GuideSection[] = [
       { id: 'pi', symbol: 'π', example: 'sin(pi/6)' },
       { id: 'derivative', symbol: 'd/dx', example: 'd/dx(x^3 + 2x)' },
       { id: 'integral', symbol: '∫', example: '∫ 2x dx' },
+      { id: 'limit', symbol: 'lim', example: 'lim(x→2) (x^2 - 4)/(x - 2)' },
+      { id: 'log', symbol: 'log', example: 'log_2(x) + log_2(x - 2) = 3' },
+      { id: 'sets', symbol: '∪ ∩', example: 'A={1,2,3}, B={2,3,4}, A∩B' },
+      { id: 'vectors', symbol: '[ , ]', example: 'A(1, 2), B(4, 6), AB' },
+      { id: 'graphs', symbol: 'K₆', example: 'degree_sequence(3, 3, 2, 2, 2)' },
     ],
   },
   {
