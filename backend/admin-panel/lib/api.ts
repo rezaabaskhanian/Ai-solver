@@ -1,4 +1,15 @@
-import type { AppUser, GrantAction, Plan, ProxyStatus, SettingsResp } from "./types";
+import type {
+  AppUser,
+  GrantAction,
+  LandingFAQ,
+  LandingHighlight,
+  LandingHighlightKind,
+  LandingSection,
+  LandingSettings,
+  Plan,
+  ProxyStatus,
+  SettingsResp,
+} from "./types";
 
 export const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
@@ -127,4 +138,120 @@ export async function grantPremium(userId: string, action: GrantAction): Promise
       body: JSON.stringify(action),
     })
   );
+}
+
+// ---------- صفحه‌ی معرفی (landing, mathmotion.ir) — مثل پنل لینگوفلو ----------
+function jsonBody(method: string, body: unknown): RequestInit {
+  return { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) };
+}
+
+// آپلود یک عکس (اسکرین‌شات اپ و ...)؛ مسیر عمومی آن را برمی‌گرداند، مثل /uploads/x.png
+export async function uploadImage(file: File): Promise<string> {
+  const fd = new FormData();
+  fd.append("image", file);
+  const data = await jsonOrThrow<{ url: string }>(await authFetch("/admin/upload", { method: "POST", body: fd }));
+  return data.url;
+}
+
+export async function getLandingSettings(): Promise<LandingSettings> {
+  return jsonOrThrow<LandingSettings>(await authFetch("/admin/landing-settings", { method: "GET" }));
+}
+
+export async function updateLandingSettings(s: LandingSettings): Promise<void> {
+  await jsonOrThrow(await authFetch("/admin/landing-settings", jsonBody("PUT", s)));
+}
+
+export async function listLandingHighlights(kind: LandingHighlightKind): Promise<LandingHighlight[]> {
+  const data = await jsonOrThrow<{ highlights: LandingHighlight[] }>(
+    await authFetch(`/admin/landing-highlights/${kind}`, { method: "GET" })
+  );
+  return data.highlights || [];
+}
+
+export async function createLandingHighlight(
+  kind: LandingHighlightKind,
+  icon: string,
+  title: string,
+  description: string,
+  position: number
+): Promise<LandingHighlight> {
+  return jsonOrThrow<LandingHighlight>(
+    await authFetch(`/admin/landing-highlights/${kind}`, jsonBody("POST", { icon, title, description, position }))
+  );
+}
+
+export async function updateLandingHighlight(
+  kind: LandingHighlightKind,
+  id: string,
+  icon: string,
+  title: string,
+  description: string,
+  position: number
+): Promise<void> {
+  await jsonOrThrow(
+    await authFetch(`/admin/landing-highlights/${kind}/${id}`, jsonBody("PUT", { icon, title, description, position }))
+  );
+}
+
+export async function deleteLandingHighlight(kind: LandingHighlightKind, id: string): Promise<void> {
+  await jsonOrThrow(await authFetch(`/admin/landing-highlights/${kind}/${id}`, { method: "DELETE" }));
+}
+
+export async function listLandingSections(): Promise<LandingSection[]> {
+  const data = await jsonOrThrow<{ sections: LandingSection[] }>(
+    await authFetch("/admin/landing-sections", { method: "GET" })
+  );
+  return data.sections || [];
+}
+
+export async function createLandingSection(
+  tabLabel: string,
+  title: string,
+  description: string,
+  position: number
+): Promise<LandingSection> {
+  return jsonOrThrow<LandingSection>(
+    await authFetch("/admin/landing-sections", jsonBody("POST", { tab_label: tabLabel, title, description, position }))
+  );
+}
+
+export async function updateLandingSection(
+  id: string,
+  tabLabel: string,
+  title: string,
+  description: string,
+  position: number
+): Promise<void> {
+  await jsonOrThrow(
+    await authFetch(`/admin/landing-sections/${id}`, jsonBody("PUT", { tab_label: tabLabel, title, description, position }))
+  );
+}
+
+export async function deleteLandingSection(id: string): Promise<void> {
+  await jsonOrThrow(await authFetch(`/admin/landing-sections/${id}`, { method: "DELETE" }));
+}
+
+export async function addLandingSectionImage(sectionId: string, url: string, position = 0): Promise<void> {
+  await jsonOrThrow(await authFetch(`/admin/landing-sections/${sectionId}/images`, jsonBody("POST", { url, position })));
+}
+
+export async function deleteLandingSectionImage(sectionId: string, imageId: string): Promise<void> {
+  await jsonOrThrow(await authFetch(`/admin/landing-sections/${sectionId}/images/${imageId}`, { method: "DELETE" }));
+}
+
+export async function listLandingFAQs(): Promise<LandingFAQ[]> {
+  const data = await jsonOrThrow<{ faqs: LandingFAQ[] }>(await authFetch("/admin/landing-faqs", { method: "GET" }));
+  return data.faqs || [];
+}
+
+export async function createLandingFAQ(question: string, answer: string, position: number): Promise<LandingFAQ> {
+  return jsonOrThrow<LandingFAQ>(await authFetch("/admin/landing-faqs", jsonBody("POST", { question, answer, position })));
+}
+
+export async function updateLandingFAQ(id: string, question: string, answer: string, position: number): Promise<void> {
+  await jsonOrThrow(await authFetch(`/admin/landing-faqs/${id}`, jsonBody("PUT", { question, answer, position })));
+}
+
+export async function deleteLandingFAQ(id: string): Promise<void> {
+  await jsonOrThrow(await authFetch(`/admin/landing-faqs/${id}`, { method: "DELETE" }));
 }

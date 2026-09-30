@@ -7,8 +7,9 @@ import AIPanel from "./AIPanel";
 import ProxyPanel from "./ProxyPanel";
 import QuotaPanel from "./QuotaPanel";
 import SubscriptionPanel from "./SubscriptionPanel";
+import LandingPanel from "./LandingPanel";
 
-type Tab = "ai" | "quota" | "subscriptions" | "proxy";
+type Tab = "ai" | "quota" | "subscriptions" | "landing" | "proxy";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -57,6 +58,9 @@ export default function DashboardPage() {
           >
             اشتراک‌ها
           </button>
+          <button className={`sidebar-link ${tab === "landing" ? "active" : ""}`} onClick={() => setTab("landing")}>
+            صفحه‌ی معرفی (سایت)
+          </button>
           <button className={`sidebar-link ${tab === "proxy" ? "active" : ""}`} onClick={() => setTab("proxy")}>
             پراکسی Xray
           </button>
@@ -73,6 +77,7 @@ export default function DashboardPage() {
         {tab === "ai" && <AIPanel notify={notify} />}
         {tab === "quota" && <QuotaPanel notify={notify} />}
         {tab === "subscriptions" && <SubscriptionPanel notify={notify} />}
+        {tab === "landing" && <LandingPanel notify={notify} />}
         {tab === "proxy" && <ProxyPanel notify={notify} />}
       </main>
 

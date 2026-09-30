@@ -10,6 +10,7 @@ import (
 	"mathmotion/go-api/internal/config"
 	accounthandler "mathmotion/go-api/internal/delivery/httpserver/account"
 	billinghandler "mathmotion/go-api/internal/delivery/httpserver/billing"
+	landinghandler "mathmotion/go-api/internal/delivery/httpserver/landing"
 	problemhandler "mathmotion/go-api/internal/delivery/httpserver/problem"
 	proxyhandler "mathmotion/go-api/internal/delivery/httpserver/proxy"
 	settingshandler "mathmotion/go-api/internal/delivery/httpserver/settings"
@@ -19,6 +20,7 @@ import (
 	accountservice "mathmotion/go-api/internal/service/account"
 	authservice "mathmotion/go-api/internal/service/auth"
 	billingservice "mathmotion/go-api/internal/service/billing"
+	landingservice "mathmotion/go-api/internal/service/landing"
 	problemservice "mathmotion/go-api/internal/service/problem"
 	proxyservice "mathmotion/go-api/internal/service/proxy"
 	quotaservice "mathmotion/go-api/internal/service/quota"
@@ -35,6 +37,8 @@ type Service struct {
 	proxyHandler    proxyhandler.Handler
 	settingsHandler settingshandler.Handler
 	accountHandler  accounthandler.Handler
+	landingHandler  landinghandler.Handler
+	uploadDir       string
 	userSvc         userservice.Service
 	authSvc         authservice.Service
 	rateLimiter     *middleware.RateLimiter
@@ -52,6 +56,8 @@ func New(
 	quotaSvc quotaservice.Service,
 	accountSvc accountservice.Service,
 	authSvc authservice.Service,
+	landingSvc landingservice.Service,
+	uploadDir string,
 ) Service {
 	return Service{
 		cfg:             cfg,
@@ -61,6 +67,8 @@ func New(
 		proxyHandler:    proxyhandler.New(proxySvc, settingsSvc),
 		settingsHandler: settingshandler.New(settingsSvc, visionClient, quotaSvc),
 		accountHandler:  accounthandler.New(accountSvc),
+		landingHandler:  landinghandler.New(landingSvc, uploadDir),
+		uploadDir:       uploadDir,
 		userSvc:         userSvc,
 		authSvc:         authSvc,
 		rateLimiter:     middleware.NewRateLimiter(cfg.RateLimit.RPS, cfg.RateLimit.Burst),
@@ -99,12 +107,18 @@ func (s Service) Server() {
 	s.visionHandler.SetVisionRoutes(e, s.rateLimiter.Middleware, device)
 	s.accountHandler.SetRoutes(e, s.rateLimiter.Middleware, device)
 
+	// The mathmotion.ir landing page (backend/landing) reads its content
+	// here, and the images uploaded from the admin panel are served from disk.
+	s.landingHandler.SetPublicRoutes(e, s.rateLimiter.Middleware)
+	e.Static(landinghandler.UploadURLPath, s.uploadDir)
+
 	// Operator-only (the admin panel), no device resolution or rate
 	// limiting — gated by a static bearer token instead (see middleware.Admin).
 	admin := e.Group("/admin", middleware.Admin(s.cfg.Admin.Token))
 	s.proxyHandler.SetProxyRoutes(admin)
 	s.settingsHandler.SetSettingsRoutes(admin)
 	s.billingHandler.SetAdminRoutes(admin)
+	s.landingHandler.SetAdminRoutes(admin)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", s.cfg.HttpServer.Port)))
 }

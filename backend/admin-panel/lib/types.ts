@@ -70,3 +70,45 @@ export interface ProxyStatus {
   via_proxy: boolean;
   link?: string;
 }
+
+// ---------- صفحه‌ی معرفی (landing, mathmotion.ir) ----------
+export interface LandingImage {
+  id: string;
+  url: string;
+}
+
+export interface LandingSection {
+  id: string;
+  tab_label: string;
+  title: string;
+  description: string;
+  position: number;
+  images: LandingImage[];
+}
+
+export interface LandingSettings {
+  hero_title: string;
+  hero_subtitle: string;
+  hero_image_url: string;
+  google_play_url: string;
+  bazaar_url: string;
+  cta_title: string;
+  cta_subtitle: string;
+}
+
+export type LandingHighlightKind = "feature" | "step";
+
+export interface LandingHighlight {
+  id: string;
+  icon: string;
+  title: string;
+  description: string;
+  position: number;
+}
+
+export interface LandingFAQ {
+  id: string;
+  question: string;
+  answer: string;
+  position: number;
+}

@@ -7,6 +7,7 @@
 دو رکورد A به IP سرور، با پروکسی آروان روشن (مثل دامنه‌های LingoFlow):
 - `api.mathmotion.ir` (همان `API_HOST`)
 - `admin.mathmotion.ir` (همان `ADMIN_HOST`)
+- `mathmotion.ir` و `www.mathmotion.ir` (همان `LANDING_HOST`) — صفحه‌ی معرفی (لندینگ)
 
 حالت ارتباط آروان با سرور (origin) باید **HTTP** باشد، مثل LingoFlow، چون Traefik فقط روی پورت 80
 (entrypoint `web`) گوش می‌دهد.
@@ -33,6 +34,7 @@ docker compose -f docker-compose.prod.yaml build mathmotion-xray
 docker compose -f docker-compose.prod.yaml build mathmotion-math-engine
 docker compose -f docker-compose.prod.yaml build mathmotion-api
 docker compose -f docker-compose.prod.yaml build mathmotion-admin
+docker compose -f docker-compose.prod.yaml build mathmotion-landing
 ```
 
 ## ۵. اجرا
@@ -79,3 +81,16 @@ docker stats --no-stream | grep -E 'mathmotion|shadowing'
 free -h
 ```
 اگر swap مدام بالا رفت یا لینگوفلو کند شد، Ai-solver را به یک سرور جدا ببر.
+
+## صفحه‌ی معرفی (لندینگ، mathmotion.ir)
+
+مثل لینگوفلو: یک سایت Next.js (`backend/landing`) که محتوایش را از
+`GET /api/v1/public/landing` می‌خواند و از تب «صفحه‌ی معرفی (سایت)» پنل ادمین ویرایش می‌شود
+(هیرو و لینک‌های دانلود، «چرا MathMotion»، «چطور کار می‌کنه»، بخش‌های تکمیلی با عکس، سوالات متداول).
+عکس‌های آپلودی در volume `uploads` ذخیره و از `https://API_HOST/uploads/...` سرو می‌شوند.
+
+```bash
+docker compose -f docker-compose.prod.yaml build mathmotion-landing
+docker compose -f docker-compose.prod.yaml up -d mathmotion-landing
+```
+`NEXT_PUBLIC_API_URL` موقع build ثابت می‌شود؛ اگر `API_HOST` عوض شد، لندینگ را دوباره build کن.

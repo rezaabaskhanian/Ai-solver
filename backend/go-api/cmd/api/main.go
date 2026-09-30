@@ -15,6 +15,7 @@ import (
 	"mathmotion/go-api/internal/repository/migrator"
 	"mathmotion/go-api/internal/repository/postgres"
 	postgresbilling "mathmotion/go-api/internal/repository/postgres/billing"
+	postgreslanding "mathmotion/go-api/internal/repository/postgres/landing"
 	postgresotp "mathmotion/go-api/internal/repository/postgres/otp"
 	postgresproblem "mathmotion/go-api/internal/repository/postgres/problem"
 	postgressettings "mathmotion/go-api/internal/repository/postgres/settings"
@@ -23,6 +24,7 @@ import (
 	accountservice "mathmotion/go-api/internal/service/account"
 	authservice "mathmotion/go-api/internal/service/auth"
 	billingservice "mathmotion/go-api/internal/service/billing"
+	landingservice "mathmotion/go-api/internal/service/landing"
 	otpservice "mathmotion/go-api/internal/service/otp"
 	problemservice "mathmotion/go-api/internal/service/problem"
 	proxyservice "mathmotion/go-api/internal/service/proxy"
@@ -207,6 +209,11 @@ func main() {
 
 	proxySvc := proxyservice.New(cfg.Proxy.XrayConfigPath, cfg.Outbound.ProxyURL)
 
+	// The mathmotion.ir landing content, and where admin-uploaded images
+	// are stored (a volume in production so they survive redeploys).
+	landingSvc := landingservice.New(postgreslanding.New(db.Pool))
+	uploadDir := getEnv("UPLOAD_DIR", "uploads")
+
 	httpserver.New(cfg, userSvc, problemSvc, billingSvc, visionSvc, visionClient, proxySvc, settingsSvc, quotaSvc,
-		accountSvc, authSvc).Server()
+		accountSvc, authSvc, landingSvc, uploadDir).Server()
 }
