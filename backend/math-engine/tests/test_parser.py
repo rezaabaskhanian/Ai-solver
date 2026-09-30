@@ -100,12 +100,20 @@ def test_trig_expression_is_detected():
     assert parsed.problem_type == "trig_expression"
 
 
-def test_exact_value_trig_is_plain_arithmetic():
-    # sympy resolves sin(pi/6) to 1/2 immediately at parse time — there's
-    # no sin() left in the tree to detect, and no step-by-step identity
-    # narrative makes sense for a single resolved number.
+def test_exact_value_trig_keeps_the_trig_function():
+    # sympy resolves sin(pi/6) to 1/2 at parse time; the unevaluated
+    # parse is kept (trig_raw) so the problem still reads sin(π/6) and
+    # trig.py can show the exact-value step.
     parsed = parse_problem("sin(pi/6)")
-    assert parsed.problem_type == "arithmetic"
+    assert parsed.problem_type == "trig_expression"
+    assert parsed.display == "sin(π/6)"
+    assert parsed.trig_raw is not None
+
+
+def test_degree_angle_is_displayed_in_degrees():
+    parsed = parse_problem("2sin(30°) + cos(0°)")
+    assert parsed.problem_type == "trig_expression"
+    assert parsed.display == "2sin(30°) + cos(0°)"
 
 
 def test_ocr_digit_confusion_is_corrected_with_low_confidence():

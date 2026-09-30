@@ -20,6 +20,7 @@ from .graphs import GraphError, looks_like_graph, parse_graph_problem
 from .normalize import normalize_input
 from .plot import PlotProblem
 from .sets import SetsError, looks_like_sets, parse_set_problem
+from . import trig
 from .vectors import VectorError, looks_like_vectors, parse_vector_problem
 
 _TRANSFORMATIONS = standard_transformations + (
@@ -332,6 +333,9 @@ class ParsedProblem:
     derivative_at: Optional[sympy.Expr] = None
     # "integral": (lower, upper) for a definite integral, None otherwise.
     integral_bounds: Optional[tuple[sympy.Expr, sympy.Expr]] = None
+    # "trig_expression" with a trig function of a number (sin(30°),
+    # cos(pi/3)): the expression as written, before sympy evaluated it.
+    trig_raw: Optional[sympy.Expr] = None
     # Set for "set_operation" (sets.SetProblem) and "vector"
     # (vectors.VectorProblem): these aren't sympy expressions.
     structure: Optional[Any] = None
@@ -346,6 +350,16 @@ def _parse_side(text: str) -> sympy.Expr:
         return parse_expr(text, local_dict=_LOCAL_DICT, transformations=_TRANSFORMATIONS)
     except Exception as exc:  # sympy raises several exception types
         raise ParseError(f"Could not parse '{text}' as a math expression") from exc
+
+
+def _parse_side_unevaluated(text: str) -> Optional[sympy.Expr]:
+    """The expression as written (sin(pi/6) stays sin(pi/6)), or None if
+    sympy can't build it unevaluated — callers then use the evaluated one."""
+    try:
+        return parse_expr(_rewrite_logs(text), local_dict=_LOCAL_DICT,
+                          transformations=_TRANSFORMATIONS, evaluate=False)
+    except Exception:  # sympy raises several exception types
+        return None
 
 
 # (display, problem_type, symbol, lhs, rhs, expr, extra ParsedProblem fields)
@@ -531,6 +545,16 @@ def _parse_core(normalized: str) -> _CoreParse:
         problem_type = "trig_expression"
     display = format_expr(expr)
     symbol = next(iter(free_symbols)) if free_symbols else None
+
+    # sympy resolves sin(pi/6) to 1/2 the moment it parses it, leaving
+    # nothing to explain. An unevaluated parse keeps sin(π/6) (and a
+    # degree angle, which normalize turned into 30*pi/180) so trig.py can
+    # show degrees -> radians -> exact value as steps.
+    unevaluated = _parse_side_unevaluated(parts[0])
+    if unevaluated is not None and trig.has_numeric_trig(unevaluated):
+        display = trig.format_with_degrees(unevaluated)
+        return display, "trig_expression", symbol, None, None, expr, {"trig_raw": unevaluated}
+
     # Kept with LogB so expression.py can show "log₂(8)" before its value.
     return display, problem_type, symbol, None, None, expr, {}
 

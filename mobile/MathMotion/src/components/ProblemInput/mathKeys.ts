@@ -32,6 +32,8 @@ export const MATH_KEYS: MathKey[] = [
   { id: 'cos', label: 'cos', insert: 'cos()', cursor: 4 },
   { id: 'tan', label: 'tan', insert: 'tan()', cursor: 4 },
   { id: 'pi', label: 'π', insert: 'pi' },
+  // An angle in degrees, sin(30°): the engine converts it to radians.
+  { id: 'degree', label: '°', insert: '°' },
   { id: 'derivative', label: 'd/dx', insert: 'd/dx()', cursor: 5, tone: 'calculus' },
   { id: 'integral', label: '∫ dx', insert: '∫ dx', cursor: 1, tone: 'calculus' },
   // f'(2) / y'' — the prime a phone keyboard buries (or turns into ’).
@@ -64,7 +66,7 @@ export const MATH_KEY_TABS: {
     id: 'general',
     keys: ['x', 'square', 'power', 'sqrt', 'parens', 'equals', 'plus', 'minus', 'times', 'divide', 'pi', 'derivative'],
   },
-  { id: 'trig', keys: ['sin', 'cos', 'tan', 'pi', 'x', 'square', 'parens', 'equals', 'plus', 'minus', 'times', 'divide'] },
+  { id: 'trig', keys: ['sin', 'cos', 'tan', 'degree', 'pi', 'x', 'square', 'parens', 'equals', 'plus', 'minus', 'times', 'divide'] },
   { id: 'calculus', keys: ['derivative', 'integral', 'prime', 'x', 'square', 'power', 'sqrt', 'parens', 'sin', 'cos', 'plus', 'minus', 'times'] },
   { id: 'limitLog', keys: ['limit', 'infinity', 'log', 'log2', 'ln', 'x', 'power', 'sqrt', 'parens', 'equals', 'plus', 'minus', 'divide'] },
   {
@@ -78,7 +80,7 @@ export const MATH_KEY_TABS: {
 // tab's keys build before they have to guess it.
 export const TAB_EXAMPLES: Record<(typeof MATH_KEY_TABS)[number]['id'], string[]> = {
   general: ['2x+5=17', 'x^2-5x+6=0', 'y=x^2-4'],
-  trig: ['sin(x)^2+cos(x)^2', 'tan(x)*cos(x)'],
+  trig: ['sin(30°)', 'sin(x)^2+cos(x)^2', 'tan(x)*cos(x)'],
   calculus: ['d/dx(x^3+2x)', "f(x)=x^3, f''(x)", "f(x)=x^3, f'(2)", '∫ 2x dx', '∫_0^1 x^2 dx'],
   limitLog: ['lim(x→2)(x^2-4)/(x-2)', 'log_2(x)+log_2(x-2)=3'],
   setsVectors: ['A={1,2,3}, B={2,3,4}, A∪B', '[2, 3] + [1, -4]'],

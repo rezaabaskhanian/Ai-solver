@@ -32,6 +32,15 @@ const recognitionPrompt = `You will be shown a photo that may contain one or mor
 	// rewritten into them here.
 	`Problems may be written in Persian, as in Iranian school textbooks. Never output Persian ` +
 	`words: turn the instruction into the notation above and keep only the math. ` +
+	// Iranian students write Persian digits by hand, and read as Latin
+	// letters they come out as garbage (۷ as V, ۵ as o, ۰ dropped as a dot).
+	`Numbers are often written with Persian digits ۰ ۱ ۲ ۳ ۴ ۵ ۶ ۷ ۸ ۹ (or Arabic ٠ ١ ٢ ٣ ٤ ٥ ٦ ٧ ٨ ٩), ` +
+	`printed or handwritten, possibly mixed with Latin letters such as x and y. Always output them ` +
+	`as ASCII digits 0-9. In handwriting: ۰ is a small dot or short dash (zero, not a decimal point ` +
+	`or a stray mark), ۱ a vertical stroke, ۲ and ۳ have one and two bumps on top, ۴ has two small ` +
+	`loops on its left, ۵ is a rounded loop like an upside-down heart or the letter o (five, not ` +
+	`zero), ۶ is a hook, ۷ looks like the letter V (seven, not the variable v), ۸ like an upside-down ` +
+	`V (eight). The Persian decimal separator ٫ is a decimal point. ` +
 	`Derivatives: y', f'(x), dy/dx, «مشتق ... را بیابید / حساب کنید», «مشتق تابع ...» all mean ` +
 	`d/dx(expr), where expr is the function itself — e.g. "y = x^3 , y' = ?" or «مشتق تابع ` +
 	`f(x) = x^3 را بیابید» becomes d/dx(x^3); output only that line, not the function's ` +

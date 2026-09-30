@@ -40,3 +40,16 @@ def test_sqrt_symbol_with_parentheses():
 
 def test_bare_sqrt_symbol():
     assert normalize_input("√9+√x") == "sqrt(9)+sqrt(x)"
+
+
+def test_degrees_become_radians():
+    assert normalize_input("sin(30°)") == "sin((30*pi/180))"
+    assert normalize_input("cos(22.5 °)") == "cos((22.5*pi/180))"
+
+
+def test_degree_sign_lookalikes_and_persian_digits():
+    # º (ordinal indicator) and ˚ (ring above) are what some phone
+    # keyboards offer for the degree sign.
+    assert normalize_input("sin(30º)") == "sin((30*pi/180))"
+    assert normalize_input("tan(45˚)") == "tan((45*pi/180))"
+    assert normalize_input("sin(۳۰°)") == "sin((30*pi/180))"

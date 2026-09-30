@@ -16,6 +16,7 @@ from .schemas import (
 from .solver.check import UnsupportedForCheck, check_student_work
 from .solver.derivative import DerivativeUnsupported, solve_derivative_problem
 from .solver.expression import solve_expression
+from .solver.trig import solve_trig_values
 from .solver.formatting import format_expr, format_roots
 from .solver.geometry import GeometryError, solve_geometry, verify_geometry
 from .solver.graphs import GraphError, solve_graph, verify_graph
@@ -131,6 +132,11 @@ def solve(req: SolveRequest):
             verify_equation_root(parsed.lhs, parsed.rhs, parsed.symbol, r) for r in roots
         )
         answer = format_roots(parsed.symbol, roots)
+
+    elif parsed.problem_type == "trig_expression" and parsed.trig_raw is not None:
+        step_data, result = solve_trig_values(parsed.trig_raw, parsed.expr)
+        verified = True
+        answer = format_expr(result)
 
     elif parsed.problem_type in ("expression", "arithmetic", "trig_expression"):
         step_data, result = solve_expression(parsed.expr)

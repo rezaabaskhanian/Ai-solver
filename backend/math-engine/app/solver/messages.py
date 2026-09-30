@@ -183,6 +183,19 @@ MESSAGES: dict[str, dict[str, str]] = {
         "en": "Simplify the expression.",
         "fa": "عبارت را ساده می‌کنیم.",
     },
+    # trig.py
+    "trig_degrees_to_radians": {
+        "en": "Convert the angles from degrees to radians: π radians = 180°, so {conversions}.",
+        "fa": "زاویه‌ها را از درجه به رادیان می‌بریم: π رادیان برابر ۱۸۰ درجه است، پس {conversions}.",
+    },
+    "trig_exact_values": {
+        "en": "Replace each trigonometric ratio with its known exact value: {values}.",
+        "fa": "به‌جای هر نسبت مثلثاتی، مقدار دقیق و معروفش را می‌گذاریم: {values}.",
+    },
+    "trig_evaluate": {
+        "en": "Work out the remaining arithmetic.",
+        "fa": "بقیه‌ی محاسبه را انجام می‌دهیم.",
+    },
     # derivative.py
     "derivative_sum_rule": {
         "en": "Differentiate each term separately (sum rule).",

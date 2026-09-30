@@ -146,3 +146,14 @@ def test_practice_unsupported_type_returns_422():
     resp = client.post("/practice", json={"type": "derivative"})
     assert resp.status_code == 422
     assert resp.json()["error"] == "unsupported_problem_type"
+
+
+def test_solve_trig_in_degrees():
+    # "°" used to reach sympy as an unknown symbol: sin(30°) came back
+    # as the unsolved "sin(30*°)".
+    for problem, answer in [("sin(30°)", "1/2"), ("cos(60°)", "1/2"), ("tan(45°)", "1"), ("cos(120°)", "-1/2")]:
+        resp = client.post("/solve", json={"problem": problem})
+        assert resp.status_code == 200, problem
+        body = resp.json()
+        assert body["answer"] == answer, problem
+        assert body["verified"] is True

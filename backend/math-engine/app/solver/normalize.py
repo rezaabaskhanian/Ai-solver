@@ -31,6 +31,13 @@ _DIGIT_TRANSLATION = str.maketrans(
     "01234567890123456789",
 )
 
+# Angles in degrees: "sin(30°)" -> "sin((30*pi/180))", so sympy gets the
+# radian value it expects and simplifies it exactly (pi/6). Without this
+# "°" reached sympy as an unknown symbol and sin(30°) came back unsolved.
+# Phone keyboards also offer º (ordinal indicator) and ˚ (ring above)
+# for the same sign.
+_DEGREES = re.compile(r"([0-9]+(?:\.[0-9]+)?)\s*[°º˚]")
+
 # "√(...)" -> "sqrt(...)", and the bare "√9" / "√x" forms keyboards and
 # the app's own math key row produce -> "sqrt(9)" / "sqrt(x)".
 _SQRT_PAREN = re.compile(r"√\s*\(")
@@ -60,6 +67,8 @@ def normalize_input(raw: str) -> str:
 
     text = _LOG_SUBSCRIPT_BASE.sub(lambda m: "log_" + m.group(1).translate(_SUBSCRIPT_DIGITS), text)
     text = _LOG_BRACED_BASE.sub(r"log_\1", text)
+
+    text = _DEGREES.sub(r"(\1*pi/180)", text)
 
     text = _SQRT_PAREN.sub("sqrt(", text)
     text = _SQRT_BARE.sub(r"sqrt(\1)", text)

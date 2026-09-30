@@ -96,7 +96,7 @@
     },
     "tabHints": {
       "general": "Write equations with \"=\". Use xⁿ for powers, e.g. x^2 is x squared. To plot a function, write y = and then the function.",
-      "trig": "Put the angle in parentheses, e.g. sin(x). Tap π for pi.",
+      "trig": "Put the angle in parentheses, e.g. sin(x). For an angle in degrees, tap ° after the number, e.g. sin(30°). Tap π for pi.",
       "calculus": "Derivative: tap d/dx and type the function inside the parentheses. Second derivative or a derivative at a point: define the function, then use the f′ key to write f''(x) or f'(2). Integral: tap ∫ dx and type the function between ∫ and dx; for a definite integral write the bounds like ∫_0^1.",
       "limitLog": "Limit: tap lim, type the value x approaches after →, then the function after the parenthesis. Logs: log is base 10, log₂ is base 2.",
       "setsVectors": "Define each set, separate with commas, then write the question. Write vectors inside [ , ]."
@@ -826,6 +826,279 @@
       "show": "Show the lesson",
       "hide": "Hide the lesson"
     },
+    "arithmetic": {
+      "intro": "Arithmetic is the base of all mathematics. Every algebra, equation or calculus problem ends in a few additions, multiplications and divisions. A slip here gives a wrong answer even with the right method.\n\nThe key idea is the order of operations. When an expression has several operations, follow this order:\n1. Brackets first.\n2. Then powers.\n3. Then multiplication and division, from left to right.\n4. Finally addition and subtraction, also from left to right.",
+      "concepts": {
+        "order": "Multiplication and division are \"stronger\" than addition and subtraction and are done first, even when the addition is written first. Below, first 3 × 4 = 12, then add 2.\n\nGoing strictly left to right and adding 2 and 3 first gives 20, which is wrong. Scientific calculators and all textbooks follow this order.",
+        "parentheses": "Brackets mean \"do this first\". Whenever an addition or subtraction must happen before a multiplication, put it in brackets.\n\nCompare the expression below with the previous one: same numbers, but 2 and 3 are in brackets, so they are added first and the answer is 20, not 14. With nested brackets, start with the innermost.",
+        "leftToRight": "Multiplication and division have the same rank: neither goes first. When both appear, work from left to right in the order they are written. Addition and subtraction work the same way.\n\nBelow, first 12 ÷ 4 = 3, then 3 × 3 = 9.",
+        "negatives": "Sign rules for multiplication and division:\n• Positive times positive and negative times negative give a positive result.\n• Positive times negative gives a negative result.\n\nFor addition and subtraction, think of a negative number as a debt: owing 3 and receiving 10 leaves you with 7. Put brackets around a negative number inside an expression so its sign does not get lost."
+      },
+      "examples": {
+        "order": "Example 1: order of operations",
+        "negative": "Example 2: brackets and a negative number",
+        "mixed": "Example 3: all the operations together"
+      },
+      "steps": {
+        "order1": "This expression has a division, an addition and a power. Powers come first: 3 squared is 3 × 3 = 9.",
+        "order2": "Next come multiplication and division. There is one division: 12 ÷ 4 = 3.",
+        "order3": "Only the addition is left: 3 + 9 = 12. Adding 4 and 3 first would have given a completely wrong answer.",
+        "negative1": "Brackets come first. Inside, subtract 8 from 5. Since 8 is bigger than 5, the result is negative: −3.",
+        "negative2": "Now multiply: −3 × 2. Negative times positive is negative, so the result is −6.",
+        "negative3": "Finally add: −6 + 10. We owe 6 and receive 10, so 4 is left.",
+        "mixed1": "Power first: 2 cubed means three 2s multiplied together, which is 8. Note that 2 cubed is not 6.",
+        "mixed2": "Then the multiplication: 3 × 4 = 12. The expression is now 20 − 12 + 8.",
+        "mixed3": "Only addition and subtraction remain, so go left to right: 20 − 12 = 8, then 8 + 8 = 16. Adding 12 and 8 first would give 0, which is wrong."
+      },
+      "mistakes": {
+        "addFirst": "Doing operations in the order they are written, ignoring priority. Multiplication and division always come before addition and subtraction, unless the addition is in brackets.",
+        "divisionOrder": "Giving multiplication priority over division. They have the same rank and go left to right. Here 12 is divided by 4 first, then the result is multiplied by 3.",
+        "negativeSquare": "Confusing \"minus 3 squared\" with \"(minus 3) squared\". Without brackets, the power applies only to 3 and the minus comes after, so the answer is −9. Only with −3 in brackets is the answer +9."
+      }
+    },
+    "fractions": {
+      "intro": "A fraction means \"part of a whole\". Cut a pizza into 4 equal slices and take 3, and you have three quarters of it. Fractions appear everywhere: in equations, probability, limits and integrals, so mastering them matters.\n\nRoadmap for fractions:\n1. Adding and subtracting: first give them a common denominator, then add or subtract the numerators.\n2. Multiplying: numerator times numerator, denominator times denominator.\n3. Dividing: flip the second fraction and multiply.\n4. Always simplify the answer as far as possible.",
+      "concepts": {
+        "meaning": "A fraction has two parts. The bottom number, the denominator, says how many equal parts the whole is cut into. The top number, the numerator, says how many parts we take.\n\nIn the fraction below, the whole is cut into 4 parts and we have 3 of them. The denominator can never be 0, because nothing can be cut into zero parts.",
+        "simplify": "Dividing the numerator and denominator by the same nonzero number does not change the fraction's value. This is simplifying. Dividing by the greatest common divisor (GCD) gets you to the simplest form in one go.\n\nBelow, 6 and 8 are both divisible by 2. That gives 3/4, which cannot be simplified further because 3 and 4 share no divisor except 1.",
+        "addSub": "Only fractions with the same denominator can be added directly, like adding three sixths and two sixths. So first give them a common denominator: the least common multiple (LCM) of the denominators.\n\nMultiply the numerator and denominator of each fraction by whatever brings its denominator to the common one. Then add or subtract the numerators and keep the denominator.",
+        "multiply": "Multiplying fractions is the easiest operation: multiply the numerators together and the denominators together. No common denominator is needed.\n\nTip: you can also simplify before multiplying. If one numerator shares a factor with the other denominator, divide both by it. This keeps the numbers small.",
+        "divide": "Dividing by a fraction means multiplying by its reciprocal, the fraction flipped upside down. So the first fraction stays, the division becomes a multiplication, and the second fraction is flipped.\n\nWhy? Dividing by 1/2 asks \"how many halves fit in this number?\", which is the same as multiplying by 2. After the switch, continue with the multiplication rule."
+      },
+      "examples": {
+        "add": "Example 1: adding two fractions",
+        "multiply": "Example 2: multiplying two fractions",
+        "divide": "Example 3: dividing two fractions"
+      },
+      "steps": {
+        "add1": "The denominators 2 and 3 differ, so we cannot add directly. The LCM of 2 and 3 is 6. Multiply the top and bottom of 1/2 by 3 to get 3/6, and the top and bottom of 1/3 by 2 to get 2/6.",
+        "add2": "Now the denominators match. Add the numerators (3 + 2 = 5) and keep the denominator 6. 5/6 cannot be simplified.",
+        "multiply1": "Multiply the numerators (3 × 2 = 6) and the denominators (4 × 9 = 36). Multiplication needs no common denominator.",
+        "multiply2": "6 and 36 are both divisible by 6. Dividing top and bottom by 6 gives 1/6. A faster way: cancel 3 with 9 and 2 with 4 before multiplying.",
+        "divide1": "Turn the division into a multiplication: the first fraction (2/3) stays, ÷ becomes ×, and the second fraction is flipped, so 4/9 becomes 9/4.",
+        "divide2": "By the multiplication rule, multiply the numerators (2 × 9 = 18) and the denominators (3 × 4 = 12).",
+        "divide3": "The GCD of 18 and 12 is 6. Dividing both by 6 gives 3/2, which is one and a half."
+      },
+      "mistakes": {
+        "addTops": "Adding numerator to numerator and denominator to denominator. That only works for multiplication! 1/2 + 1/3 must be more than 1/2, yet 2/5 is less than 1/2. Always find a common denominator first.",
+        "crossMultiply": "Cross-multiplying when multiplying fractions (first numerator times second denominator). Cross-multiplication is only for solving a proportion (two equal fractions). To multiply fractions, multiply top by top and bottom by bottom.",
+        "divideFlip": "Not flipping the second fraction when dividing, or flipping the first one instead. The rule: keep the first, change ÷ to ×, flip the second."
+      }
+    },
+    "powers": {
+      "intro": "A power is a short way to write repeated multiplication. Instead of 2 × 2 × 2 × 2 × 2 we write 2 to the power 5. The lower number is the base; the small raised number is the exponent, which says how many times the base is multiplied by itself.\n\nPowers are used constantly in algebra, equations, derivatives and logarithms. A few simple rules, all following from repeated multiplication, cover them:\n1. Same base, multiplied: add the exponents.\n2. Same base, divided: subtract the exponents.\n3. A power of a power: multiply the exponents.\n4. A power of a product: the exponent goes to each factor.",
+      "concepts": {
+        "meaning": "2 to the power 3 means three 2s multiplied: 2 × 2 × 2 = 8. Note this is different from 2 × 3.\n\nThe same holds for variables: x to the power 4 is four xs multiplied together. If you remember what a power means, you can rebuild every rule below yourself.",
+        "product": "When two powers with the same base are multiplied, keep the base and add the exponents.\n\nWhy? x squared is two xs and x cubed is three xs. Multiplied together that is five xs, which is x to the power 5. This rule only works when the bases are the same.",
+        "quotient": "When dividing two powers with the same base, subtract the bottom exponent from the top one.\n\nWhy? x to the 5 over x squared is five xs on top and two below. Two of the top xs cancel with the two below, leaving three xs.",
+        "powerOfPower": "When a power is raised to another power, multiply the exponents.\n\nWhy? (x cubed) squared means x cubed multiplied by itself: 3 + 3, that is six xs, which is 3 × 2.",
+        "productPower": "When a product in brackets is raised to a power, each factor gets the power. For example (2x) cubed is 2 cubed times x cubed.\n\nCareful: this works for products only, not sums. A power of a sum cannot be distributed (see the common mistakes).",
+        "zeroNegative": "Any nonzero number to the power 0 is 1. The quotient rule shows why: a to the n divided by itself is both 1 and a to the 0.\n\nA negative exponent means a reciprocal: a to the −n is 1 over a to the n. For example 2 to the −3 is 1/8. A negative exponent does not make the number negative."
+      },
+      "examples": {
+        "sameBase": "Example 1: multiplying powers with the same base",
+        "quotient": "Example 2: dividing powers with the same base",
+        "productPower": "Example 3: the power of a product"
+      },
+      "steps": {
+        "sameBase1": "Both bases are 2, so by the product rule keep the base and add the exponents: 3 + 2 = 5.",
+        "sameBase2": "Now work out 2 to the 5: five 2s multiplied, which is 32. Check: 2 cubed is 8, 2 squared is 4, and 8 × 4 = 32.",
+        "quotient1": "The bases match (both x), so subtract the bottom exponent from the top one: 5 − 2.",
+        "quotient2": "5 − 2 = 3, so the answer is x cubed. Of the five xs on top, two cancelled with the bottom and three remain.",
+        "productPower1": "Inside the brackets is a product of two factors: 2 and x cubed. By the power-of-a-product rule, the exponent 2 goes to each factor. Do not forget to square the 2 as well.",
+        "productPower2": "2 squared is 4. For (x cubed) squared use the power-of-a-power rule: multiply the exponents, 3 × 2 = 6.",
+        "productPower3": "Put the parts together: 4 times x to the 6, that is 4x⁶."
+      },
+      "mistakes": {
+        "multiplyExponents": "Multiplying the exponents when multiplying two powers with the same base. In a product the exponents add (2 + 3 = 5). Exponents multiply only for a power of a power.",
+        "baseTimesExponent": "Multiplying the base by the exponent. 2 cubed means three 2s multiplied, not 2 × 3. The first is 8, the second 6.",
+        "sumPower": "Distributing a power over a sum. A power distributes over a product only. The square of a sum must be expanded with the identity, which has a middle term (twice the product). With a = 1 and b = 2: 3 squared is 9, not 1 + 4."
+      }
+    },
+    "expressions": {
+      "intro": "An algebraic expression combines numbers, variables (like x) and operations. Simplifying means writing the same expression shorter and tidier without changing its value. It is the first step of solving equations, factoring and almost every algebra problem.\n\nRoadmap for simplifying:\n1. Open brackets by distributing (multiply the outside number by every term inside).\n2. Watch out for a minus sign in front of a bracket.\n3. Group like terms together.\n4. Add the coefficients of like terms.",
+      "concepts": {
+        "terms": "An expression is made of terms separated by + or −. The expression below has three terms. The number in front of a variable is its coefficient (3 and 5); a term with no variable is the constant (−7).\n\nThe sign before a term belongs to that term. So the last term is −7, not 7. This matters when you move terms around.",
+        "like": "Like terms have exactly the same variable with the same power. 2x and 3x are like terms, but x and x² are not.\n\nOnly like terms can be added, and only their coefficients add up. 2 apples plus 3 apples is 5 apples, but 2 apples plus 3 oranges cannot be simplified further.",
+        "distribute": "To open a bracket, multiply the outside number by every term inside. This is the distributive property.\n\nFor example 3(x + 2) = 3x + 6: the 3 multiplies both x and 2. The most common mistake is multiplying only the first term.",
+        "minusDistribute": "A minus sign in front of a bracket belongs to the outside number and multiplies every term. So every sign inside the bracket flips.\n\nBelow, −2 times x is −2x and −2 times +3 is −6. When there is just a lone minus before a bracket, treat it as −1.",
+        "identities": "Identities are ready-made products that come up often and are worth memorising. The most important is the square of a sum: the first squared, plus twice the product of the two, plus the second squared.\n\nOther key identities: the square of a difference (with a negative middle term) and the difference of squares: (a + b)(a − b) = a² − b²."
+      },
+      "examples": {
+        "combine": "Example 1: combining like terms",
+        "distribute": "Example 2: opening a bracket",
+        "minus": "Example 3: a bracket with a minus sign"
+      },
+      "steps": {
+        "combine1": "Group the terms: the x terms (5x and −3x) on one side and the constants (2 and 4) on the other. Note that the minus sign of −3x moves with it.",
+        "combine2": "Simplify each group: the x coefficients give 5 − 3 = 2, so 2x. The constants give 2 + 4 = 6. The answer is 2x + 6.",
+        "distribute1": "Open the bracket first: multiply 3 by both terms inside. 3 times x is 3x and 3 times 2 is 6.",
+        "distribute2": "Now add like terms: 3x and 2x both contain x and make 5x together. The 6 has no like term and stays as it is.",
+        "minus1": "Open the first bracket: multiply 4 by x and by −1 to get 4x − 4.",
+        "minus2": "Open the second bracket. The minus belongs to the 2, so multiply −2 by both terms: −2 times x is −2x and −2 times +3 is −6. This is the key step: the sign of the 3 flipped.",
+        "minus3": "Put everything together and add like terms: 4x − 2x = 2x, and −4 − 6 = −10."
+      },
+      "mistakes": {
+        "unlike": "Adding unlike terms. 2x + 3 cannot be simplified, since one term has x and the other is a constant. Test it: with x = 1 both 2x + 3 and 5x give 5, but with x = 2 the first is 7 and the second 10. So they are not equal.",
+        "partialDistribute": "Multiplying the outside number by the first term only. It must multiply every term inside, so 3 times 2 gives 6 as well.",
+        "minusSign": "Forgetting the minus for the second term. −2 times +3 is −6, not +6. A minus in front of a bracket flips the sign of every term inside."
+      }
+    },
+    "linear": {
+      "intro": "An equation is an equality with an unknown number (usually x). Solving it means finding the number that makes both sides equal when put in place of x. In a linear equation, x appears only to the first power (no x², no √x).\n\nRoadmap for a linear equation:\n1. If there are brackets or fractions, open or clear them first.\n2. Move every x term to one side and every number to the other.\n3. Simplify each side.\n4. Divide both sides by the coefficient of x.\n5. Substitute the answer into the original equation to check it.",
+      "concepts": {
+        "meaning": "The equation below asks: \"which number, doubled and increased by 5, gives 17?\" The answer is 6, because 2 × 6 + 5 = 17.\n\nFor easy equations you might guess the answer, but harder ones need a reliable method. That method is described below.",
+        "balance": "Picture an equation as a balanced scale. Whatever you do to one pan you must do to the other to keep it balanced.\n\nSo you may add or subtract the same number on both sides, or multiply or divide both sides by the same nonzero number. The equality still holds. \"Moving a term across and flipping its sign\" is really the same thing.",
+        "strategy": "The goal is to get x alone. Undo what was done to x in reverse order. In 2x + 5, x was first multiplied by 2 and then 5 was added. So reverse it: first subtract 5, then divide by 2.\n\nEach operation's opposite: addition undoes subtraction and multiplication undoes division.",
+        "bothSides": "If x appears on both sides, first gather the x terms on one side. It is usually best to move them to the side with the larger x coefficient so the coefficient stays positive.\n\nWhen a term moves to the other side, its sign flips: plus becomes minus and minus becomes plus. The scale explains why: you really subtracted it from, or added it to, both sides.",
+        "check": "Never skip the last step: substitute your answer into the original equation. If both sides come out equal, the answer is right.\n\nIt takes only a few seconds and catches sign and arithmetic slips. In an exam, this check can save your mark."
+      },
+      "examples": {
+        "basic": "Example 1: a simple equation",
+        "bothSides": "Example 2: x on both sides",
+        "fraction": "Example 3: an equation with a fraction"
+      },
+      "steps": {
+        "basic1": "We want x alone. Undo the 5 first: subtract 5 from both sides. On the left, +5 and −5 cancel.",
+        "basic2": "After simplifying, the left side is 2x and the right side is 17 − 5 = 12.",
+        "basic3": "x is multiplied by 2, so divide both sides by 2: 12 ÷ 2 = 6. Check: 2 × 6 + 5 = 17 ✓",
+        "bothSides1": "x is on both sides. Move 2x from the right to the left; its sign flips to −2x. Now all the x terms are on the left.",
+        "bothSides2": "Move −3 from the left to the right, where it becomes +3. Left: 5x − 2x = 3x. Right: 9 + 3 = 12.",
+        "bothSides3": "Divide both sides by the coefficient 3: 12 ÷ 3 = 4. Check: left 5 × 4 − 3 = 17, right 2 × 4 + 9 = 17 ✓",
+        "fraction1": "First subtract 4 from both sides to leave the x fraction alone: 9 − 4 = 5. Now x/3 = 5.",
+        "fraction2": "x is divided by 3, so multiply both sides by 3 to undo it: 5 × 3 = 15. Check: 15 ÷ 3 + 4 = 9 ✓"
+      },
+      "mistakes": {
+        "signMove": "Not flipping the sign when a term moves across. +5 becomes −5 on the right, because we really subtracted 5 from both sides.",
+        "divideWrong": "Subtracting the coefficient instead of dividing. 2x means 2 times x, so to get x alone divide by 2, don't subtract 2.",
+        "partial": "Opening the bracket only partly. The 3 must multiply both terms inside, so 3 times 2 gives 6. Alternatively, divide both sides by 3 first to get x + 2 = 5."
+      }
+    },
+    "quadratic": {
+      "intro": "A quadratic equation is one where the highest power of x is 2. They appear in physics (throwing a ball), geometry (areas) and optimisation problems. Unlike a linear equation, a quadratic can have two solutions, one, or none.\n\nRoadmap:\n1. Move every term to one side so the other side is 0.\n2. If there is no x term (middle term), isolate x² and take the square root (both plus and minus).\n3. If the expression factors easily, factor it and set each factor to 0.\n4. Otherwise, compute the discriminant (Δ) and use the quadratic formula.",
+      "concepts": {
+        "meaning": "The standard form has a as the coefficient of x², b of x, c the constant, and 0 on the right. a must not be 0, or the equation becomes linear.\n\nBefore anything else, write the equation in this form and identify a, b and c with their signs. For x² − 5x + 6 = 0, a = 1, b = −5 and c = 6.",
+        "factor": "When a = 1, look for two numbers whose product is c and whose sum is b. If you find them, the equation can be written as a product of two brackets.\n\nBelow, the two numbers with product 6 and sum −5 are −2 and −3. So the expression factors as (x − 2)(x − 3). Expand the brackets to check.",
+        "zeroProduct": "The key to factoring is this rule: if a product of two numbers is 0, at least one of them must be 0.\n\nSo once the equation is a product of two brackets equal to 0, set each bracket to 0 and solve two simple linear equations. This works only for 0: if a product is 6, you cannot conclude that one factor is 6.",
+        "square": "If there is no x term, the easiest way is to isolate x² and take the square root of both sides.\n\nRemember that two numbers square to k: one positive and one negative. Both 2² and (−2)² equal 4. If k is negative, there is no real solution, since no square is negative.",
+        "delta": "The discriminant is computed from the coefficients and tells you how many solutions there are before solving:\n• Δ > 0: two different solutions.\n• Δ = 0: one solution (a double root).\n• Δ < 0: no real solutions.\n\nWhen computing Δ, put each coefficient in brackets with its sign. Most mistakes come from the sign of b or c.",
+        "formula": "This formula works for every quadratic, even when factoring is hard or impossible. The ± sign means two answers: one with + and one with −.\n\nOrder of work: write a, b and c, compute Δ, then substitute into the formula. If Δ is not a perfect square (like 5), the answer keeps the square root."
+      },
+      "examples": {
+        "factor": "Example 1: solving by factoring",
+        "square": "Example 2: no x term",
+        "delta": "Example 3: solving with the discriminant"
+      },
+      "steps": {
+        "factor1": "The equation is in standard form with a = 1. Look for two numbers with product 6 (c) and sum −5 (b). −2 and −3 work: negative times negative is +6, and their sum is −5.",
+        "factor2": "With these numbers the expression becomes a product of two brackets. To check, expand: x² − 3x − 2x + 6, which is the original equation.",
+        "factor3": "The product is 0, so at least one bracket is 0. Set each bracket to 0 separately to get two solutions: 2 and 3.",
+        "square1": "There is no x term, so isolate x²: move −4 to the right, where it becomes +4.",
+        "square2": "Take the square root of both sides. Two numbers square to 4: 2 and −2. So there are two solutions. Writing only 2 loses half the answer.",
+        "delta1": "This does not factor with integers (no two integers have product −1 and sum 1), so use the discriminant. First write the coefficients with their signs. Note that c is −1.",
+        "delta2": "Compute Δ = b² − 4ac. Since c is negative, the two minuses make a plus and Δ = 1 + 4 = 5. Δ is positive, so there are two solutions.",
+        "delta3": "Substitute into the formula: −b is −1, plus or minus √5, over 2a = 2. Since 5 is not a perfect square, the answers keep the root: one with + and one with −."
+      },
+      "mistakes": {
+        "loseRoot": "Writing only the positive answer when taking a square root. (−2)² is also 4, so there are two solutions: 2 and −2.",
+        "divideByX": "Dividing both sides by x. That loses the solution x = 0 (division by 0 is not allowed). Instead, move everything to one side, factor out x and set each factor to 0.",
+        "deltaSign": "Losing the sign of c when computing Δ. Here c = −1, so −4 × (−1) = +4 and Δ = 5, not −3. With the wrong Δ you might think the equation has no solution."
+      }
+    },
+    "trig": {
+      "intro": "Trigonometry studies how a triangle's angles relate to its sides. It lets you find a building's height from its shadow, describe waves and solve many physics problems. The three main ratios are sine, cosine and tangent.\n\nRoadmap for trigonometry problems:\n1. If the angle is in radians (with π), convert it to degrees.\n2. Recall the values for the special angles (30°, 45°, 60°).\n3. To simplify expressions, write tan and cot in terms of sin and cos.\n4. Look for the main identity (sin² + cos² = 1).",
+      "concepts": {
+        "ratios": "In a right triangle, for angle α: a is the opposite side, b the adjacent side and c the hypotenuse (the longest side, opposite the right angle).\n• Sine: opposite over hypotenuse.\n• Cosine: adjacent over hypotenuse.\n• Tangent: opposite over adjacent.\n\nSince the hypotenuse is the longest side, sine and cosine always lie between −1 and 1. Tangent can be any number.",
+        "special": "Memorise the ratios for 30°, 45° and 60°; they come up in most problems:\n• sin 30° and cos 60° are both 1/2.\n• sin 60° and cos 30° are both √3/2.\n• sin 45° and cos 45° are both √2/2.\n\nTrick: sin 30°, 45°, 60° are √1/2, √2/2, √3/2 in order. Cosine is the same list reversed.",
+        "radians": "Angles are measured in degrees or radians. A full turn is 360° or 2π radians, so π radians equals 180°.\n\nTo convert radians to degrees, replace π with 180°. For example π/6 is 180°/6 = 30°. An angle written without a degree sign usually means radians.",
+        "pythagorean": "The most important identity: for every angle, sin² + cos² = 1. It comes straight from Pythagoras' theorem (see Example 3).\n\nUse it to find cosine from sine and vice versa. When simplifying, wherever sin² and cos² appear together, replace them with 1.",
+        "tan": "Tangent equals sine over cosine. Why: dividing opposite/hypotenuse by adjacent/hypotenuse cancels the hypotenuse and leaves opposite/adjacent.\n\nWhen simplifying trig expressions, the best start is to write everything in terms of sine and cosine. Cotangent is the reciprocal of tangent: cosine over sine."
+      },
+      "examples": {
+        "special": "Example 1: the sine of a special angle",
+        "tanCos": "Example 2: simplifying with the definition of tangent",
+        "identity": "Example 3: proving the main identity"
+      },
+      "steps": {
+        "special1": "The angle is in radians (it has π). To convert to degrees, replace π with 180°: 180 ÷ 6 = 30°.",
+        "special2": "30° is a special angle, and sin 30° = 1/2. In a right triangle with a 30° angle, the side opposite that angle is half the hypotenuse.",
+        "tanCos1": "Write tangent in terms of sine and cosine: tan x = sin x / cos x.",
+        "tanCos2": "Now a fraction with cos x below is multiplied by cos x. cos x cancels top and bottom and only sin x remains. (This holds where cos x is not 0, since tan x is undefined there.)",
+        "identity1": "Place angle x in a right triangle with opposite side a, adjacent side b and hypotenuse c. By definition, sin x = a/c and cos x = b/c.",
+        "identity2": "Square both and add. The denominators match (both c²), so add the numerators.",
+        "identity3": "By Pythagoras, a² + b² = c². So the top and bottom are both c² and the result is 1. This identity holds for every angle."
+      },
+      "mistakes": {
+        "squareInside": "Confusing \"(sin x)²\" with \"sin(x²)\". In the first, take the sine and then square it. In the second, square the angle and then take the sine. They are usually not equal.",
+        "linear": "Pulling a number out of a sine. Sine is not linear: sin 2x is not 2 sin x. For example sin 60° ≈ 0.87, but 2 sin 30° = 1. The correct formula is 2 sin x cos x.",
+        "degrees": "Mixing up degrees and radians. sin 30 without a degree sign means 30 radians, which is not 1/2 (it is about −0.99). This mistake is common on calculators too; always check the angle unit."
+      }
+    },
+    "derivative": {
+      "intro": "The derivative measures a function's rate of change. If a function gives a car's position, its derivative is the car's speed. Geometrically, the derivative at a point is the slope of the tangent line to the graph there. Derivatives let you find a function's largest and smallest values and understand its graph.\n\nRoadmap for differentiating:\n1. Split the function into separate terms and differentiate each.\n2. Use the power rule for x to the n.\n3. If two functions are multiplied, use the product rule.\n4. If one function sits inside another (like a bracket to a power), use the chain rule.\n5. Finally, simplify the answer.",
+      "concepts": {
+        "meaning": "The derivative is defined as a limit: the change in the function's value divided by the change in x, as the change in x (h) approaches 0. It is the slope of the line through two very close points on the graph.\n\nIn practice you do not use this definition every time. The rules below come from it and make the work much faster.",
+        "power": "The most used rule: for x to the n, bring the exponent to the front (it becomes a coefficient) and reduce the exponent by one.\n\nSo the derivative of x³ is 3x², and of x² is 2x. The derivative of x (x to the 1) is 1. If the term has a coefficient, it stays and multiplies the result.",
+        "sumConst": "The derivative of a constant is 0, because a constant does not change.\n\nThe derivative of a sum (or difference) is the sum (or difference) of the derivatives. So any polynomial can be differentiated term by term. A constant factor stays outside: the derivative of 5 times a function is 5 times its derivative.",
+        "trig": "The derivative of sine is cosine, and the derivative of cosine is minus sine. Remember that the minus sign appears only for cosine.\n\nThese formulas hold only when the angle is in radians. The derivative of tangent is 1 + tan².",
+        "product": "When two functions are multiplied, the derivative of the product is not the product of the derivatives! The product rule: the derivative of the first times the second, plus the first times the derivative of the second.\n\nMethod: identify the two functions and call them f and g. Write each derivative separately. Then substitute into the formula.",
+        "chain": "When one function is inside another (like a bracket to a power, or sin 2x), use the chain rule: differentiate the outer function leaving the inside untouched, then multiply by the derivative of the inner function.\n\nTrick: call the inner expression u. The problem looks simpler, and at the end you just multiply by u′."
+      },
+      "examples": {
+        "poly": "Example 1: the derivative of a polynomial",
+        "product": "Example 2: the product rule",
+        "chain": "Example 3: the chain rule"
+      },
+      "steps": {
+        "poly1": "Differentiate term by term. For x³, by the power rule, the 3 comes to the front and the exponent drops by one: 3x².",
+        "poly2": "The second term is 2x². The coefficient 2 stays and multiplies the derivative of x² (2x): 2 × 2x = 4x. The minus sign stays with it.",
+        "poly3": "The last term is the constant 5. A constant does not change, so its derivative is 0.",
+        "poly4": "Put everything together: 3x² − 4x + 0, which is 3x² − 4x.",
+        "product1": "This is a product of two functions: x and sin x. Call the first f and the second g.",
+        "product2": "Write each derivative separately: the derivative of x is 1 (power rule with n = 1) and the derivative of sin x is cos x.",
+        "product3": "Substitute into the product rule: f′ (1) times g (sin x), plus f (x) times g′ (cos x). The answer: sin x + x cos x.",
+        "chain1": "This is a bracket to the power 3, a composite function. Call the inside u = x² + 1. Now the expression is u³.",
+        "chain2": "By the chain rule, first differentiate the outer function u³, giving 3u², then multiply by the derivative of u.",
+        "chain3": "Compute u′ separately: the derivative of x² is 2x and of 1 is 0. So u′ = 2x.",
+        "chain4": "Put x² + 1 back in place of u and multiply: 3 × 2x = 6x. The answer is 6x(x² + 1)²."
+      },
+      "mistakes": {
+        "constant": "Taking the derivative of a constant to be the constant itself. A constant never changes, so its rate of change (derivative) is 0. Its graph is a horizontal line with slope 0.",
+        "product": "Taking the derivative of a product as the product of the derivatives. That is wrong; use the product rule, which has two terms: f′g + fg′.",
+        "chain": "Forgetting to multiply by the inner derivative in the chain rule. After differentiating the outer function, you must multiply by the derivative of the inside of the bracket (here 2x)."
+      }
+    },
+    "integral": {
+      "intro": "The integral is the reverse of the derivative. If the derivative turns position into speed, the integral turns speed back into position. An indefinite integral finds a function (an antiderivative) whose derivative is the given function. A definite integral computes the area under a graph between two points.\n\nRoadmap for integrating:\n1. Split the expression into separate terms and integrate each.\n2. Take constant factors outside.\n3. Use the power rule for x to the n and the table for special functions.\n4. For an indefinite integral, add the constant C.\n5. For a definite integral, evaluate the antiderivative at the upper and lower limits and subtract.",
+      "concepts": {
+        "meaning": "The indefinite integral of f is a function F whose derivative is f. For example, since the derivative of x² is 2x, the integral of 2x is x².\n\nWhy add C? Because the derivative of a constant is 0, so x² + 5 and x² − 3 also have derivative 2x. C stands for any constant. You can always check your answer by differentiating it.",
+        "power": "The power rule for integrals reverses the power rule for derivatives: add one to the exponent and divide by the new exponent.\n\nFor example, the integral of x² is x³/3. Check: the derivative of x³/3 is 3x²/3 = x². The rule fails for n = −1, since it would divide by 0.",
+        "special": "A few common integrals, from reversing well-known derivatives:\n• The integral of 1/x is ln x (the n = −1 case).\n• The integral of cos x is sin x.\n• The integral of sin x is −cos x.\n\nWatch the signs: for derivatives the minus belonged to cosine; for integrals it belongs to sine.",
+        "linearity": "The integral of a sum is the sum of the integrals, so any polynomial can be integrated term by term. A constant factor comes outside: the integral of 3x² is 3 times the integral of x².\n\nBut note: the integral of a product is not the product of the integrals. That needs other methods (such as integration by parts).",
+        "definite": "The definite integral from a to b gives the area under the graph between x = a and x = b. To compute it, find the antiderivative F (without C), evaluate it at the upper limit b and the lower limit a, and subtract the second from the first.\n\nNo C is needed, since it cancels in the subtraction. The result is a number, not a function."
+      },
+      "examples": {
+        "poly": "Example 1: the integral of a polynomial",
+        "special": "Example 2: integrals of special functions",
+        "definite": "Example 3: a definite integral"
+      },
+      "steps": {
+        "poly1": "Integrate term by term. In the first term take out the 3. By the power rule, the integral of x² is x³/3. Multiplying by 3 cancels the denominator, leaving x³.",
+        "poly2": "In the second term take out the 2. The integral of x (x to the 1) is x²/2. The 2 cancels the denominator, leaving x².",
+        "poly3": "Add the two results and, since the integral is indefinite, add the constant C. Check: the derivative of x³ + x² is 3x² + 2x ✓",
+        "special1": "The first term is 1/x. The power rule fails here (n = −1), so use the table: the answer is ln x, because the derivative of ln x is 1/x.",
+        "special2": "The second term is cos x. Which function has derivative cos x? Sine. So the integral of cos x is sin x.",
+        "special3": "Add the two results and add C. One C is enough, since a sum of constants is still a constant.",
+        "definite1": "First find the antiderivative, as for an indefinite integral but without C: the integral of x² is x³/3.",
+        "definite2": "Evaluate it at the upper limit (3) and the lower limit (0). 3³ = 27 and 27/3 = 9. At 0 it is 0.",
+        "definite3": "Subtract the lower value from the upper one: 9 − 0 = 9. So the area under x² between 0 and 3 is 9."
+      },
+      "mistakes": {
+        "forgetC": "Leaving out C in an indefinite integral. Infinitely many functions have derivative 2x (x² plus any number), and C stands for all of them. Without C the answer is incomplete.",
+        "power": "Differentiating instead of integrating. For an integral the exponent goes up by one and you divide by the new exponent; it does not come to the front and drop. Always check your answer by differentiating.",
+        "reciprocal": "Using the power rule for x to the −1. That leads to division by 0. The integral of 1/x is ln x."
+      }
+    },
     "limit": {
       "intro": "The limit is one of the basic ideas of calculus. Derivatives and continuity are built on it. A limit asks: \"as x gets very close to a number, where does the function's value go?\" It is about approaching, not arriving. So a limit can exist even where the function itself is not defined.\n\nFor any limit problem, follow this roadmap:\n1. Substitute the number into the function.\n2. If you get an ordinary number, that is the answer.\n3. If you get 0/0, simplify (factor or use the conjugate) and substitute again.\n4. If you get a nonzero number over 0, check the left and right limits separately.\n5. If x goes to infinity, compare the highest powers of the numerator and denominator.",
       "concepts": {
@@ -860,134 +1133,162 @@
       }
     },
     "logarithm": {
+      "intro": "A logarithm is the reverse of a power. A power asks \"what is 2 to the 3?\" (8), while a logarithm asks \"to what power must 2 be raised to get 8?\" (3). Logarithms solve equations with the unknown in the exponent, model population growth and interest, and measure earthquakes and sound.\n\nRoadmap for log and exponential equations:\n1. Write the domain first: the inside of every logarithm must be positive.\n2. Use the log rules to combine several logarithms into one.\n3. Use the definition to rewrite the equation in exponential form.\n4. Solve the resulting equation.\n5. Check the solutions against the domain and reject any that fail.",
       "concepts": {
-        "meaning": "A logarithm answers \"which power?\": log base b of A is c exactly when b to the power c is A.",
-        "bases": "log with no base means base 10; ln means base e.",
-        "product": "The log of a product is the sum of the logs.",
-        "quotient": "The log of a quotient is the difference of the logs.",
-        "power": "A power inside a log comes out in front.",
-        "domain": "What is inside a log must be positive. Write the domain first and check your answers against it at the end.",
-        "exponential": "For an exponential equation, write both sides with the same base and equate the exponents; if that is impossible, take a log of both sides."
+        "meaning": "log base b of A equals c means b to the c equals A. Both statements say exactly the same thing, and you can always switch between them.\n\nBelow, log₂ 8 = 3 because 2³ = 8. To compute a logarithm, ask: \"to what power must I raise the base to get the number inside?\"",
+        "bases": "Two bases are used so often that they have their own symbols:\n• log with no base means base 10 (the common logarithm).\n• ln means base e (the natural logarithm). e is about 2.72.\n\nFor example log 100 = 2 because 10² = 100. Also, the log of 1 in any base is 0, and the log of the base itself is 1.",
+        "product": "The log of a product is the sum of the logs. This comes from the power rules: multiplying powers with the same base adds the exponents, and a logarithm is an exponent.\n\nThe rule works both ways: split one logarithm into two, or combine a sum of two logs with the same base into one. In equations the second direction is the usual one.",
+        "quotient": "The log of a quotient is the difference of the logs: log of the numerator minus log of the denominator. It comes from the quotient rule for powers, where exponents subtract.\n\nOrder matters: always subtract the log of the denominator from the log of the numerator.",
+        "power": "An exponent inside a logarithm comes out in front as a coefficient. For example log(x³) = 3 log x.\n\nThis is key for equations with the unknown in the exponent: taking the log of both sides brings the unknown down and leaves an ordinary equation.",
+        "domain": "The inside of a logarithm must always be greater than 0. The log of 0 or a negative number is undefined, since no power of a positive base is 0 or negative.\n\nSo in every log equation, write the domain first (each inside must be positive) and reject any solution that breaks it at the end. Most students skip this step.",
+        "exponential": "In an exponential equation the unknown is in the exponent. Two methods:\n• Same base: if both sides can be written as powers of the same base, set the exponents equal. Below, 8 is 2³.\n• Take logs: if a common base is not possible, take the log of both sides and use the power rule to bring the unknown down."
       },
       "examples": {
-        "logEquation": "A logarithmic equation",
-        "sameBase": "An exponential equation with a common base"
+        "logEquation": "Example 1: a logarithmic equation",
+        "sameBase": "Example 2: an exponential equation with a common base",
+        "common": "Example 3: a base-10 logarithm"
       },
       "steps": {
-        "logEquation1": "Write the domain.",
-        "logEquation2": "Combine the two logs into one.",
-        "logEquation3": "Rewrite as a power, by the definition of a log.",
-        "logEquation4": "Solve the quadratic by factoring.",
-        "logEquation5": "Reject the answer that breaks the domain.",
-        "sameBase1": "Write both sides as powers of 3.",
-        "sameBase2": "Equal bases, so equal exponents."
+        "logEquation1": "Before anything, write the domain. The inside of both logarithms must be positive: x > 0 and x − 2 > 0. Together these mean x must be greater than 2.",
+        "logEquation2": "Two logs with the same base (2) are added. By the product rule, their sum is the log of the product: log₂(x(x − 2)).",
+        "logEquation3": "Use the definition: if the base-2 log of something is 3, that something is 2³ = 8. The logarithm is gone.",
+        "logEquation4": "Expand the bracket and move 8 to the left. This gives a quadratic. The two numbers with product −8 and sum −2 are −4 and 2, so it factors.",
+        "logEquation5": "Two solutions: 4 and −2. Check the domain: 4 is greater than 2 and is accepted. −2 makes the inside of a log negative and is rejected. So only x = 4 is a solution.",
+        "sameBase1": "9 and 27 are both powers of 3: 9 = 3² and 27 = 3³. So 9^x becomes 3^(2x) (power of a power).",
+        "sameBase2": "Now both sides have the same base (3). When the bases are equal, the exponents must be equal too. So 2x = 3.",
+        "sameBase3": "Divide both sides by 2: x = 3/2. Check: 9^(3/2) is (√9)³ = 3³ = 27 ✓",
+        "common1": "First the domain: the inside of the log (x) must be positive.",
+        "common2": "log with no base means base 10. So the equation says: \"10 to what power gives x? The answer is 2.\"",
+        "common3": "By the definition, x = 10² = 100. 100 is positive and satisfies the domain, so it is accepted."
       },
       "mistakes": {
-        "sum": "Splitting the log of a sum. That rule only holds for a product.",
-        "domain": "Not checking the domain and keeping an answer that makes a log argument zero or negative.",
-        "quotient": "Confusing a quotient of logs with the log of a quotient."
+        "sum": "Taking the log of a sum as the sum of the logs. The rule holds only for products. There is no simple rule for the log of a sum. For example log 1 + log 1 = 0, but log 2 is not 0.",
+        "domain": "Not checking the domain and keeping a solution that makes the inside of a log negative or 0. In Example 1, −2 came out of the quadratic but is not a solution, since the log of a negative number is undefined.",
+        "quotient": "Confusing a quotient of logs with the log of a quotient. The log of a quotient is the difference of the logs, not their quotient. A quotient of two logs (log a / log b) belongs to the change-of-base formula and is something else."
       }
     },
     "sets": {
+      "intro": "A set is a collection of well-defined objects, such as the even numbers below 10 or the students in a class. Sets are the basic language of mathematics and are used heavily in probability, logic and counting.\n\nRoadmap for set problems:\n1. Write each set's elements precisely (no repeats).\n2. Work out operations like the order of operations: brackets first.\n3. Use each operation's definition: union, intersection, difference or complement.\n4. In counting problems, count shared elements only once.\n5. If you get stuck, draw a Venn diagram (overlapping circles).",
       "concepts": {
-        "meaning": "A set is a collection of distinct objects: each element is written once and order does not matter.",
-        "union": "Union: every element that is in at least one of the sets.",
-        "intersection": "Intersection: only the elements in both sets.",
-        "difference": "A minus B: the elements of A that are not in B. Order matters.",
-        "complement": "Complement of A: the elements of the universal set U that are not in A.",
-        "subsets": "A set with n elements has 2 to the n subsets, counting the empty set and the set itself.",
-        "counting": "To count a union, subtract the shared elements once, since they were counted twice."
+        "meaning": "A set is written with braces, its elements separated by commas. Two key rules:\n• Each element is written once; repeating an element adds nothing.\n• Order does not matter; {1, 2} and {2, 1} are the same set.\n\nA set with no elements is the empty set, written ∅.",
+        "union": "The union of A and B is every element in at least one of the sets: in A, in B, or in both. The key word is \"or\".\n\nTo write the union, list all of A, then add the elements of B not listed yet. A shared element is written only once.",
+        "intersection": "The intersection of A and B is only the elements in both sets. The key word is \"and\".\n\nTo find it, go through A one element at a time and keep each one that is also in B. If there is none, the intersection is empty and the sets are called disjoint.",
+        "difference": "A − B is the elements of A that are not in B. Start from A and cross out every element that is also in B.\n\nOrder matters: A − B usually differs from B − A. Below, A − B is {1}, but B − A is {3}.",
+        "complement": "The complement of A (written with a prime) is every element of the universal set U that is not in A. The universal set is \"everything\" under consideration in the problem.\n\nThe complement is U − A. It cannot be found without U, so look for it in the problem.",
+        "subsets": "B is a subset of A if every element of B is also in A. A set with n elements has exactly 2ⁿ subsets. The set of all of them is the power set, written P.\n\nWhy 2ⁿ? To build a subset, each element has two choices: in or out. The empty set and the set itself are both subsets.",
+        "counting": "To count the elements of a union, add the sizes of A and B and subtract the size of the intersection once. Why? Shared elements were counted in A and again in B, that is twice.\n\nThe formula has four quantities. Knowing three, you find the fourth with a simple equation (Example 2)."
       },
       "examples": {
-        "operations": "Several operations",
-        "counting": "The counting formula"
+        "operations": "Example 1: combining several operations",
+        "counting": "Example 2: the counting formula",
+        "subsets": "Example 3: the number of subsets"
       },
       "steps": {
-        "operations1": "First the union.",
-        "operations2": "Then the intersection.",
-        "operations3": "Remove the intersection from the union.",
-        "counting1": "Write the counting formula.",
-        "counting2": "Substitute the numbers and call the unknown x."
+        "operations1": "As in the order of operations, brackets first. The first bracket is the union: write all of A (1, 2, 3) and add only 4 from B, since 2 and 3 are already listed.",
+        "operations2": "The second bracket is the intersection: elements in both A and B. 1 is only in A and 4 only in B, but 2 and 3 are in both.",
+        "operations3": "Now the difference: start from the union and cross out the intersection (2 and 3). 1 and 4 remain: the elements in exactly one of the sets.",
+        "counting1": "The problem gives the sizes of A, B and their union and asks for the intersection. The union formula links all four, so start from it.",
+        "counting2": "Put in the known numbers and call the unknown intersection size x. This gives a simple linear equation.",
+        "counting3": "8 + 6 = 14. So 11 = 14 − x and x = 14 − 11 = 3. Three elements are in both sets.",
+        "subsets1": "First count the elements of A: a, b and c, so 3 elements.",
+        "subsets2": "By the formula, a 3-element set has 2³ = 8 subsets.",
+        "subsets3": "To check, list them all: the empty set, three one-element subsets, three two-element subsets and the set itself. 1 + 3 + 3 + 1 = 8 ✓"
       },
       "mistakes": {
-        "repeat": "Writing a shared element twice in a union.",
-        "order": "Treating A minus B and B minus A as the same.",
-        "counting": "Adding the counts without subtracting the intersection — shared elements get counted twice."
+        "repeat": "Repeating a shared element in a union. Each element of a set is written once. 2 is in both sets but appears only once in the union.",
+        "order": "Confusing A − B with B − A. A − B is the elements of A that are not in B, so the answer must come from A; 3 is not in A and cannot be in the answer.",
+        "counting": "Simply adding the sizes without subtracting the intersection. Shared elements were counted in A and in B, so without subtracting they count twice. Plain addition is right only when the sets are disjoint."
       }
     },
     "vectors": {
+      "intro": "A vector has both a size (magnitude) and a direction. \"5 km\" is just a size, but \"5 km north\" is a vector. Velocity, force and displacement are all vectors. In the plane, a vector is written with two numbers (components): horizontal movement and vertical movement.\n\nRoadmap for vector problems:\n1. Given two points, find the vector between them as \"end minus start\".\n2. Add, subtract and multiply by a number component by component.\n3. Use Pythagoras for the length.\n4. When in doubt, draw the vector on the coordinate plane.",
       "concepts": {
-        "meaning": "A vector is a directed segment with a size and a direction. The first component is the horizontal move, the second the vertical move.",
-        "fromPoints": "The vector from A to B is B's coordinates minus A's (end minus start).",
-        "add": "Add and subtract vectors component by component.",
-        "scale": "Multiplying by a number multiplies every component; a negative number reverses the direction.",
-        "length": "A vector’s length comes from Pythagoras."
+        "meaning": "A vector is a directed segment: an arrow from one point to another. In the plane it has two components: the first is horizontal movement (positive is right, negative is left) and the second vertical (positive is up, negative is down).\n\nThe vector below means 3 units right and 2 units down. Where it starts does not matter; any arrow with the same size and direction is the same vector.",
+        "fromPoints": "To find the vector from A to B, subtract A's coordinates from B's: end minus start, component by component.\n\nThe logic is simple: how far right and how far up must you go to get from A to B? Below, x goes from 1 to 4 (3 right) and y from 2 to 6 (4 up).",
+        "add": "Vectors are added and subtracted component by component: first with first, second with second.\n\nGeometrically: make the first vector's move, then from there make the second's. The sum goes straight from the starting point to the end point.",
+        "scale": "Multiplying a vector by a number multiplies both components by it. The result points along the same line, with its length scaled.\n\nA number above 1 makes the vector longer, between 0 and 1 shorter. A negative number reverses its direction.",
+        "length": "A vector's length (magnitude) comes from Pythagoras. The two components are like the legs of a right triangle and the vector is its hypotenuse.\n\nSo square each component, add, and take the square root. The length is always positive (or 0), even when components are negative."
       },
       "examples": {
-        "length": "Length of the vector between two points",
-        "combine": "Multiplying and subtracting vectors"
+        "add": "Example 1: adding two vectors",
+        "length": "Example 2: the length of the vector between two points",
+        "combine": "Example 3: scaling and subtracting"
       },
       "steps": {
-        "length1": "End minus start.",
-        "length2": "Length by Pythagoras.",
-        "combine1": "First multiply each component by 3.",
-        "combine2": "Then subtract component by component."
+        "add1": "Add matching components: the first components (2 and 1) together and the second components (3 and −4) together. Put the negative number in brackets so its sign is not lost.",
+        "add2": "2 + 1 = 3 and 3 + (−4) = −1. The sum is 3 units right and 1 unit down.",
+        "length1": "First find AB: end (B) minus start (A). First component 4 − 1 = 3, second 6 − 2 = 4.",
+        "length2": "Now the length by Pythagoras: 3² (9) plus 4² (16) is 25, and √25 = 5. So the distance between A and B is 5.",
+        "combine1": "By the order of operations, multiplication comes before subtraction. Multiply both components by 3: 3 × 2 = 6 and 3 × (−1) = −3.",
+        "combine2": "Now subtract component by component: 6 − 1 = 5 and −3 − 5 = −8."
       },
       "mistakes": {
-        "direction": "Start minus end — the vector points the wrong way.",
-        "scale": "Multiplying only the first component.",
-        "length": "Taking the sum of the components as the length."
+        "direction": "Computing start minus end. AB goes from A to B, so it is B − A. Reversing it gives BA, which points the opposite way (both components flip sign).",
+        "scale": "Multiplying only the first component. The number must multiply every component; otherwise the direction changes and the result no longer lies along the original vector.",
+        "length": "Taking the length as the sum of the components. The length is the straight-line distance, not the staircase path \"across, then up\". That is why Pythagoras is used: √(9 + 16) = 5, not 7."
       }
     },
     "geometry": {
+      "intro": "Geometry is about shapes, sizes and space. It computes the area of a plot of land, the paint needed for a wall, the volume of a tank, or the length of a ladder leaning on a wall.\n\nRoadmap for geometry problems:\n1. Draw the shape and label the known measurements.\n2. Decide what is asked: a length, an area or a volume?\n3. Choose the right formula.\n4. Make the units match (e.g. all in cm).\n5. Substitute, and do not forget the unit: plain for length, squared for area, cubed for volume.",
       "concepts": {
-        "areaPerimeter": "Area is how much surface a shape covers (square units); perimeter is the distance around it (length units).",
-        "circle": "Area and circumference of a circle, with π.",
-        "pythagoras": "Pythagoras holds only in a right triangle: the square of the hypotenuse (the longest side, opposite the right angle) equals the sum of the squares of the other two.",
-        "prism": "Prism and cylinder volume: base area times height. A pyramid or cone is one third of that.",
-        "sphere": "Volume and surface area of a sphere.",
-        "polygon": "Sum of the interior angles of an n-gon, in degrees. The exterior angles always add up to 360°."
+        "areaPerimeter": "Area is how much surface is covered, measured in square units such as cm². Perimeter is the length around the shape, measured in length units such as cm.\n\nFor a rectangle with length a and width b: area = a × b and perimeter = 2(a + b). A 3 by 5 rectangle has area 15 and perimeter 16.",
+        "circle": "Everything in a circle depends on the radius r, the distance from the centre to the edge. The diameter is twice the radius.\n• Area: π times r squared.\n• Circumference: 2πr (or π times the diameter).\n\nπ is about 3.14. Answers are usually written with π (e.g. 9π), with an approximate value when needed.",
+        "pythagoras": "Pythagoras' theorem holds only in a right triangle: the square of the hypotenuse equals the sum of the squares of the other two sides. The hypotenuse is the longest side, opposite the right angle.\n\nGiven the two legs, add their squares and take the root. Given the hypotenuse and one leg, subtract the leg's square from the hypotenuse's square and take the root. Well-known triangles: 3-4-5 and 5-12-13.",
+        "prism": "The volume of a prism or cylinder is base area times height. A cylinder's base is a circle, so its volume is πr²h.\n\nPyramids and cones are pointed, and their volume is exactly one third of the prism or cylinder with the same base and height. Same formula, divided by 3.",
+        "sphere": "For a sphere of radius r:\n• Volume: 4πr³/3.\n• Surface area: 4πr².\n\nCareful: volume uses r cubed (it is three-dimensional) and surface area uses r squared. If the diameter is given, halve it first.",
+        "polygon": "The interior angles of an n-sided polygon add up to (n − 2) × 180°. Diagonals from one vertex split any polygon into n − 2 triangles, and each triangle's angles add to 180°.\n\nIn a regular polygon (all sides and angles equal), each angle is this sum divided by n. The exterior angles of any convex polygon always add to 360°."
       },
       "examples": {
-        "pythagoras": "Finding a side with Pythagoras",
-        "cone": "Volume of a cone"
+        "pythagoras": "Example 1: finding a side with Pythagoras",
+        "cone": "Example 2: the volume of a cone",
+        "polygon": "Example 3: the angle sum of a hexagon"
       },
       "steps": {
-        "pythagoras1": "The hypotenuse is known, so the missing side is hypotenuse squared minus the other side squared.",
-        "pythagoras3": "Take the square root; a length is positive.",
-        "cone1": "The cone volume formula.",
-        "cone3": "Approximate with π ≈ 3.14."
+        "pythagoras1": "One leg (a = 5) and the hypotenuse (c = 13) are known, and we want the other leg b. Since the hypotenuse is known, rearrange for b: b² = c² − a².",
+        "pythagoras2": "Substitute: 13² = 169 and 5² = 25. 169 − 25 = 144.",
+        "pythagoras3": "√144 = 12. Ignore the negative root, since a length is always positive. Check: 5-12-13 is one of the well-known right triangles.",
+        "cone1": "A cone is pointed, so its volume is one third of the cylinder with the same base and height. The base is a circle, with area πr².",
+        "cone2": "Substitute radius 3 and height 4: 3² = 9, and π × 9 × 4 = 36π. Divided by 3 that is 12π.",
+        "cone3": "The exact answer is 12π. For an approximation take π ≈ 3.14: 12 × 3.14 ≈ 37.7. Volume is in cubic units (e.g. cm³).",
+        "polygon1": "Write the formula for the interior angle sum of an n-gon. Diagonals from one vertex split a hexagon into 4 triangles.",
+        "polygon2": "n = 6: 6 − 2 = 4, and 4 × 180° = 720°. That is 4 triangles of 180° each.",
+        "polygon3": "Extra: in a regular hexagon (like a honeycomb cell) all angles are equal, each 720° / 6 = 120°."
       },
       "mistakes": {
-        "hypotenuse": "Adding the squares when the hypotenuse is the known side.",
-        "diameter": "Using the diameter instead of the radius; the radius is half the diameter.",
-        "third": "Forgetting to divide by 3 for a pyramid or cone."
+        "hypotenuse": "Adding the squares when the hypotenuse is known. The hypotenuse is the longest side, so its square is larger than any other side's. To find a shorter side, subtract the known leg's square from the hypotenuse's square. Adding gives a side longer than the hypotenuse, which is impossible.",
+        "diameter": "Using the diameter instead of the radius in a circle formula. The radius is half the diameter. If the diameter is 6, the radius is 3 and the area is 9π, not 36π. Always check whether the given number is a diameter or a radius.",
+        "third": "Forgetting to divide by 3 for a pyramid or cone. These shapes are pointed and hold only a third of the prism or cylinder with the same base and height."
       }
     },
     "graphs": {
+      "intro": "A graph models \"things and their connections\": points (vertices) joined by lines (edges). City maps with roads, friendships in a social network and computers on the internet are all graphs.\n\nRoadmap for graph problems:\n1. Identify the number of vertices (p) and edges (q).\n2. If degrees are given, add them first: the sum must be even and equal 2q.\n3. Check the simple-graph limit: no degree exceeds p − 1.\n4. Use the special formulas for complete, regular and complement graphs.\n5. To test a degree sequence, use the Havel–Hakimi method.",
       "concepts": {
-        "meaning": "A graph is made of vertices and edges: p is the number of vertices (order), q the number of edges (size). A simple graph has no loops or multiple edges.",
-        "degree": "The degree of a vertex is the number of edges at it. In a simple graph with p vertices, a degree is at most p − 1.",
-        "handshake": "The degrees add up to twice the number of edges, because each edge has two ends — so there is always an even number of odd-degree vertices.",
-        "complete": "In a complete graph every two vertices are joined.",
-        "regular": "In a k-regular graph every vertex has degree k.",
-        "complement": "The complement has the same vertices and exactly the edges the graph does not have."
+        "meaning": "A graph has two sets: vertices (V) and edges (E). p is the number of vertices (the order) and q the number of edges (the size).\n\nA simple graph has two restrictions: no loops (an edge joining a vertex to itself) and no multiple edges (at most one edge between two vertices). Textbooks mostly work with simple graphs.",
+        "degree": "A vertex's degree is the number of edges attached to it, that is, its number of neighbours. A vertex of degree 0 is isolated.\n\nIn a simple graph with p vertices, a vertex can connect at most to all the other p − 1 vertices. So no degree can exceed p − 1.",
+        "handshake": "The handshake lemma: the degrees of all vertices add up to twice the number of edges. Each edge has two ends and counts toward two degrees, just as every handshake involves two people.\n\nKey consequences: the degree sum is always even, and the number of odd-degree vertices is always even. This is the first thing to check when asking whether a graph can exist.",
+        "complete": "In the complete graph Kₚ every two vertices are joined, so every degree is p − 1.\n\nEdges: each vertex sends out p − 1 edges, giving p(p − 1) in total. But each edge was counted twice (once from each end), so divide by 2. This is the most edges a simple graph with p vertices can have.",
+        "regular": "In a k-regular graph every vertex has degree k. By the handshake lemma, the degree sum k × p equals 2q.\n\nSo a k-regular graph on p vertices exists only if k × p is even (and k ≤ p − 1). If k and p are both odd, no such graph exists.",
+        "complement": "A graph's complement has the same vertices, and its edges are exactly those not in the original. Put a graph and its complement together and you get the complete graph.\n\nSo the edges of a graph plus the edges of its complement equal the edges of the complete graph. Each vertex's degree in the complement is p − 1 minus its original degree."
       },
       "examples": {
-        "regular": "Is there a 3-regular graph on 7 vertices?",
-        "sequence": "A degree sequence"
+        "regular": "Example 1: is there a 3-regular graph on 7 vertices?",
+        "sequence": "Example 2: testing a degree sequence",
+        "complete": "Example 3: the edges of a complete graph"
       },
       "steps": {
-        "regular1": "Add up the degrees.",
-        "regular2": "The degree sum is odd but must be even, so no such graph exists.",
-        "sequence1": "The degree sum is even — the necessary condition holds.",
-        "sequence2": "Havel–Hakimi: remove the largest degree and subtract 1 from that many of the next degrees.",
-        "sequence3": "Repeat until everything is 0 — so the graph exists."
+        "regular1": "In a 3-regular graph on 7 vertices, each of the 7 vertices has degree 3. So the degree sum is 3 × 7 = 21.",
+        "regular2": "By the handshake lemma the degree sum must be 2q, an even number. But 21 is odd. No number of edges works, so no such graph exists.",
+        "sequence1": "First the necessary condition: the degree sum is 12, which is even. So if the graph exists it has 12 / 2 = 6 edges. But evenness is not enough; we must check further.",
+        "sequence2": "Havel–Hakimi: sort the degrees from largest to smallest. Remove the largest (3): that vertex joins the next 3 vertices, so subtract 1 from the next 3 degrees: 3, 2, 2 become 2, 1, 1, and the last 2 is untouched. Sort again.",
+        "sequence3": "Repeat: remove 2 and subtract 1 from the next two, then remove 1 and subtract 1 from the next one. Everything reaches 0 and no degree goes negative, so the graph exists.",
+        "complete1": "In the complete graph on 6 vertices, each vertex joins all 5 others. So every degree is 5.",
+        "complete2": "The degree sum is 6 × 5 = 30. By the handshake lemma this is twice the number of edges.",
+        "complete3": "So there are 30 / 2 = 15 edges. The complete-graph formula gives the same directly: 6 × 5 / 2."
       },
       "mistakes": {
-        "evenOnly": "Thinking an even degree sum is enough. This sum is even, yet no simple graph has these degrees.",
-        "complete": "Counting each edge of a complete graph twice — divide by 2.",
-        "maxDegree": "A degree equal to or larger than the number of vertices in a simple graph."
+        "evenOnly": "Treating an even degree sum as enough. Evenness is necessary, not sufficient. Here the sum is 8 (even), but two degree-3 vertices in a 4-vertex graph must join everyone, which gives the other two vertices degree at least 2, not 1. Havel–Hakimi also reaches a negative degree.",
+        "complete": "Counting the edges of a complete graph twice. Each vertex sends out 5 edges, but each edge joins two vertices and was counted from both ends. So divide by 2.",
+        "maxDegree": "A degree equal to or larger than the number of vertices in a simple graph. In a 4-vertex graph each vertex has at most 3 neighbours (the other vertices), since loops and repeated edges are not allowed."
       }
     }
   }
