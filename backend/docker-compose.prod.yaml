@@ -46,6 +46,7 @@ services:
       context: ./math-engine
       args:
         REGISTRY: ${DOCKER_REGISTRY:-docker.io}
+        PIP_INDEX_URL: ${PIP_INDEX_URL:-https://pypi.org/simple}
     container_name: mathmotion_math_engine_prod
     restart: unless-stopped
     # SymPy can spike CPU on a hard input — capped at half of the shared

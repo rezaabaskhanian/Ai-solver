@@ -4,6 +4,12 @@
 ARG REGISTRY=docker.io
 FROM ${REGISTRY}/library/python:3.11-slim
 
+# files.pythonhosted.org doesn't resolve from the (Iranian) aramina
+# server's DNS, so production builds install from a PyPI mirror
+# (PIP_INDEX_URL in .env). Defaults to the real PyPI elsewhere.
+ARG PIP_INDEX_URL=https://pypi.org/simple
+ENV PIP_INDEX_URL=${PIP_INDEX_URL}
+
 WORKDIR /app
 
 COPY requirements.txt .
