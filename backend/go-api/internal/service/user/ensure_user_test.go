@@ -18,6 +18,10 @@ func (f fakeUserRepo) EnsureUser(ctx context.Context, deviceID string) (domain.U
 	return f.user, f.err
 }
 
+func (f fakeUserRepo) GetByID(ctx context.Context, id string) (domain.User, error) {
+	return f.user, f.err
+}
+
 func TestEnsureUser_Success(t *testing.T) {
 	want := domain.NewUser("user-1", "device-1")
 	svc := New(fakeUserRepo{user: want})

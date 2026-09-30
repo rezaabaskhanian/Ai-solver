@@ -36,6 +36,17 @@ const (
 	// KeyXrayVlessLink is written by POST /admin/proxy (not by PUT
 	// /admin/settings) so the panel can pre-fill the last link it sent.
 	KeyXrayVlessLink = "XRAY_VLESS_LINK"
+
+	// KeyBazaarAPISecret is the Cafe Bazaar developer panel's API token
+	// (Pishkhan → the app → «API پیشخان بازار» → «دریافت توکن جدید») that
+	// internal/service/billing sends to verify purchases.
+	KeyBazaarAPISecret = "BAZAAR_API_SECRET"
+
+	// sms.ir, for the sign-up / password-reset SMS codes
+	// (internal/service/sms): the API key and the id of the OTP template
+	// (with a CODE parameter) defined in the sms.ir panel.
+	KeySMSIrAPIKey     = "SMS_IR_API_KEY"
+	KeySMSIrTemplateID = "SMS_IR_OTP_TEMPLATE_ID"
 )
 
 // EditableKeys is what PUT /admin/settings accepts.
@@ -52,6 +63,10 @@ var EditableKeys = map[string]bool{
 	KeyFreeDailyLimit:        true,
 	KeyFreeLifetimeLimit:     true,
 	KeyPremiumDailyScanLimit: true,
+
+	KeyBazaarAPISecret: true,
+	KeySMSIrAPIKey:     true,
+	KeySMSIrTemplateID: true,
 }
 
 type Repository interface {

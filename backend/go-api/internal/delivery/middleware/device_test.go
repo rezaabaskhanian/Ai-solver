@@ -28,9 +28,16 @@ func (f *fakeUserRepo) EnsureUser(ctx context.Context, deviceID string) (domain.
 	return domain.User{ID: f.userID, DeviceID: deviceID, IsPremium: f.isPremium}, nil
 }
 
+func (f *fakeUserRepo) GetByID(ctx context.Context, id string) (domain.User, error) {
+	if id != f.userID {
+		return domain.User{}, domain.ErrNotFound
+	}
+	return domain.User{ID: f.userID, IsPremium: f.isPremium}, nil
+}
+
 func TestDevice_MintsIDWhenHeaderMissing(t *testing.T) {
 	repo := &fakeUserRepo{userID: "user-1"}
-	mw := Device(userservice.New(repo))
+	mw := Device(userservice.New(repo), nil)
 
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
@@ -61,7 +68,7 @@ func TestDevice_MintsIDWhenHeaderMissing(t *testing.T) {
 
 func TestDevice_ReusesProvidedDeviceID(t *testing.T) {
 	repo := &fakeUserRepo{userID: "user-2"}
-	mw := Device(userservice.New(repo))
+	mw := Device(userservice.New(repo), nil)
 
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
@@ -84,7 +91,7 @@ func TestDevice_ReusesProvidedDeviceID(t *testing.T) {
 
 func TestDevice_SetsIsPremiumInContext(t *testing.T) {
 	repo := &fakeUserRepo{userID: "user-3", isPremium: true}
-	mw := Device(userservice.New(repo))
+	mw := Device(userservice.New(repo), nil)
 
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
@@ -107,7 +114,7 @@ func TestDevice_SetsIsPremiumInContext(t *testing.T) {
 
 func TestDevice_RepositoryErrorSkipsNextHandler(t *testing.T) {
 	repo := &fakeUserRepo{err: errors.New("db down")}
-	mw := Device(userservice.New(repo))
+	mw := Device(userservice.New(repo), nil)
 
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodGet, "/", nil)

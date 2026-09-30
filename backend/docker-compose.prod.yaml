@@ -104,10 +104,19 @@ services:
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
       DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
       BAZAAR_PACKAGE_NAME: ${BAZAAR_PACKAGE_NAME:-com.mathmotion}
+      # The old one-time lifetime unlock; plans for sale (monthly...) are
+      # managed in the admin panel's «اشتراک‌ها» tab.
       BAZAAR_PRODUCT_ID: ${BAZAAR_PRODUCT_ID:-mathmotion_premium_unlock}
-      BAZAAR_CLIENT_ID: ${BAZAAR_CLIENT_ID:-}
-      BAZAAR_CLIENT_SECRET: ${BAZAAR_CLIENT_SECRET:-}
-      BAZAAR_REFRESH_TOKEN: ${BAZAAR_REFRESH_TOKEN:-}
+      # Pishkhan API token for verifying purchases — can also be saved (and
+      # changed later) from the admin panel's «اشتراک‌ها» tab.
+      BAZAAR_API_SECRET: ${BAZAAR_API_SECRET:-}
+      # Signs the login tokens (sign-up / login, internal/service/auth) —
+      # changing it logs everyone out.
+      JWT_SIGN_KEY: ${JWT_SIGN_KEY:?set JWT_SIGN_KEY}
+      # sms.ir, for the sign-up / password-reset codes — can also be saved
+      # (and changed later) from the admin panel's «ورود و پیامک» card.
+      SMS_IR_API_KEY: ${SMS_IR_API_KEY:-}
+      SMS_IR_OTP_TEMPLATE_ID: ${SMS_IR_OTP_TEMPLATE_ID:-}
       FREE_SOLVE_LIMIT: ${FREE_SOLVE_LIMIT:-5}
       # Fallbacks only — the admin panel's «سهمیه و محدودیت‌ها» overrides these live.
       FREE_QUOTA_PERIOD: ${FREE_QUOTA_PERIOD:-daily}

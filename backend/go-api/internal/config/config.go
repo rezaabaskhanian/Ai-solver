@@ -11,17 +11,15 @@ type RateLimit struct {
 	Burst int
 }
 
-// Billing configures the Cafe Bazaar Purchase Validator integration
-// (internal/service/billing) and the free-tier quota it gates
-// (internal/service/problem.Solve). ClientID/ClientSecret/RefreshToken
-// come from Cafe Bazaar's developer panel (Pishkhan) — see
-// mobile/MathMotion/APP.md for the manual setup this depends on.
+// Billing configures the Cafe Bazaar purchase verification
+// (internal/service/billing). ProductID is the old one-time lifetime
+// unlock SKU, still honoured for everyone who bought it; the plans for
+// sale now live in subscription_plans (admin panel). The Pishkhan API
+// token is the BAZAAR_API_SECRET setting (admin panel or .env), read on
+// every verification — see mobile/MathMotion/APP.md for the setup.
 type Billing struct {
-	PackageName  string
-	ProductID    string
-	ClientID     string
-	ClientSecret string
-	RefreshToken string
+	PackageName string
+	ProductID   string
 }
 
 // Outbound configures how this server's outbound calls to third-party AI

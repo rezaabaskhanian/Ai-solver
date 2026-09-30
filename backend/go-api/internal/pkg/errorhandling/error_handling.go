@@ -43,6 +43,16 @@ func ErrorHandling(err error, c echo.Context) error {
 			"error":   "daily_limit_reached",
 			"message": richErr.Message(),
 		})
+	case richerror.KindConflict:
+		return c.JSON(http.StatusConflict, map[string]string{
+			"error":   "conflict",
+			"message": richErr.Message(),
+		})
+	case richerror.KindUnauthorized:
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"error":   "unauthorized",
+			"message": richErr.Message(),
+		})
 	default:
 		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"error":   "internal_error",

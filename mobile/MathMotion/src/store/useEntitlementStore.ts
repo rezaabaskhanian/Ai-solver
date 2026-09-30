@@ -10,6 +10,12 @@ interface EntitlementState {
   quotaPeriod: QuotaPeriod;
   premiumScansUsed: number;
   premiumScanLimit: number;
+  // Settings' «اشتراک من» card: the code to give the operator, and which
+  // kind of Premium is active (a plan's expiry, lifetime, or unlimited).
+  userCode: string | null;
+  premiumUntil: string | null;
+  premiumLifetime: boolean;
+  isUnlimited: boolean;
   loading: boolean;
   refresh: () => Promise<void>;
 }
@@ -25,6 +31,10 @@ export const useEntitlementStore = create<EntitlementState>((set) => ({
   quotaPeriod: 'daily',
   premiumScansUsed: 0,
   premiumScanLimit: 0,
+  userCode: null,
+  premiumUntil: null,
+  premiumLifetime: false,
+  isUnlimited: false,
   loading: true,
   refresh: async () => {
     set({ loading: true });
@@ -38,6 +48,10 @@ export const useEntitlementStore = create<EntitlementState>((set) => ({
         quotaPeriod: entitlement.quota_period ?? 'lifetime',
         premiumScansUsed: entitlement.premium_scans_used ?? 0,
         premiumScanLimit: entitlement.premium_scan_limit ?? 0,
+        userCode: entitlement.user_code ?? null,
+        premiumUntil: entitlement.premium_until ?? null,
+        premiumLifetime: entitlement.premium_lifetime ?? false,
+        isUnlimited: entitlement.is_unlimited ?? false,
         loading: false,
       });
     } catch {

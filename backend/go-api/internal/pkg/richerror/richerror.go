@@ -20,6 +20,10 @@ const (
 	// A per-day cap (e.g. Premium scans) that paying won't lift — retry
 	// after the daily reset.
 	KindTooManyRequests
+	// Already exists (e.g. a phone number that's already registered).
+	KindConflict
+	// Wrong password, or a missing/expired login token.
+	KindUnauthorized
 )
 
 type RichError struct {

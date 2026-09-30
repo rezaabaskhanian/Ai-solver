@@ -288,10 +288,12 @@ curl -s http://localhost:8080/api/v1/history -H "X-Device-Id: <همون device i
   همون قانونی که همه‌جای این کدبیس رعایت شده (هر سرویس فقط زیرمجموعه‌ای که خودش لازم داره رو
   declare می‌کنه).
 
-**Credentialهای بازار** (`BAZAAR_CLIENT_ID`, `BAZAAR_CLIENT_SECRET`, `BAZAAR_REFRESH_TOKEN`) از
-پنل پیشخان (Pishkhan) می‌آیند — یک کار دستی یک‌باره که فقط خود کاربر می‌تواند انجام دهد. بدون
-آن‌ها سرور نرمال بالا می‌آید (فقط یک warning لاگ می‌شود) و سهمیه‌ی رایگان کار می‌کند؛ فقط
-`POST /billing/verify` تا تنظیم آن‌ها با یک خطای تمیز (نه panic) شکست می‌خورد — با curl تست شد.
+**توکن API پیشخان بازار** (`BAZAAR_API_SECRET` — روش جدید بازار، جایگزین OAuth قدیمی
+`BAZAAR_CLIENT_ID`/`BAZAAR_CLIENT_SECRET`/`BAZAAR_REFRESH_TOKEN`) از پیشخان ← برنامه ← «API پیشخان
+بازار» گرفته می‌شود و در تب «اشتراک‌ها»ی پنل ادمین یا `.env` ذخیره می‌شود. بدون آن سرور نرمال بالا
+می‌آید (فقط یک warning لاگ می‌شود) و سهمیه‌ی رایگان کار می‌کند؛ فقط `POST /billing/verify` با یک
+خطای تمیز شکست می‌خورد. پلن‌های زمان‌دار (ماهانه و ...)، کد کاربری و مدیریت اشتراک از پنل ادمین:
+`mobile/MathMotion/APP.md` بخش ۶.۳.
 
 تست end-to-end واقعی (Postgres محلی، `FREE_SOLVE_LIMIT=3`): سه حل موفق → `GET /entitlement`
 `free_solves_used:3` → حل چهارم `402 {"error":"quota_exceeded"}`.

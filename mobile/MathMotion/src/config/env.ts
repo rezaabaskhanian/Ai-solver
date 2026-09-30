@@ -21,7 +21,8 @@ export const API_BASE_URL =
 
 export const REQUEST_TIMEOUT_MS = 15000;
 
-// Must match the Cafe Bazaar product created in Pishkhan (the developer
-// panel) and the Go API's BAZAAR_PRODUCT_ID (defaults the same way in
-// backend/go-api/cmd/api/main.go) — see mobile/MathMotion/APP.md.
+// The old one-time lifetime unlock — no longer sold (plans like monthly
+// come from GET /api/v1/billing/plans), but still restored for everyone
+// who bought it. Must match the Go API's BAZAAR_PRODUCT_ID — see
+// mobile/MathMotion/APP.md.
 export const PREMIUM_PRODUCT_ID = 'mathmotion_premium_unlock';

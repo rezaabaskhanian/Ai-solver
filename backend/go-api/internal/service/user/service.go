@@ -8,6 +8,8 @@ import (
 
 type Repository interface {
 	EnsureUser(ctx context.Context, deviceID string) (domain.User, error)
+	// GetByID returns domain.ErrNotFound for an unknown id.
+	GetByID(ctx context.Context, id string) (domain.User, error)
 }
 
 type Service struct {

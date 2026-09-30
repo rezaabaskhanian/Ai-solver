@@ -11,6 +11,7 @@ import { GeometryScreen } from '../screens/Geometry/GeometryScreen';
 import { GuideScreen } from '../screens/Guide/GuideScreen';
 import { HistoryScreen } from '../screens/History/HistoryScreen';
 import { HomeScreen } from '../screens/Home/HomeScreen';
+import { PremiumScreen } from '../screens/Premium/PremiumScreen';
 import { ProblemInputScreen } from '../screens/ProblemInput/ProblemInputScreen';
 import { QuizScreen } from '../screens/Quiz/QuizScreen';
 import { RecognizedProblemsScreen } from '../screens/RecognizedProblems/RecognizedProblemsScreen';
@@ -93,6 +94,7 @@ export function RootNavigator() {
         component={SettingsScreen}
         options={{ title: t('settings.title') }}
       />
+      <Stack.Screen name="Premium" component={PremiumScreen} options={{ title: t('premium.title') }} />
       <Stack.Screen name="Topics" component={TopicsScreen} options={{ title: t('topics.title') }} />
       {/* Title is set by TopicScreen itself from the topic's i18n key. */}
       <Stack.Screen name="Topic" component={TopicScreen} />

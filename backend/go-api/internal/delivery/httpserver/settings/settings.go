@@ -29,6 +29,11 @@ type settingsResponse struct {
 	DeepSeekModel   string     `json:"deepseek_model"`
 	// Usage limits in effect (saved value, else .env, else default).
 	Quota quota.Config `json:"quota"`
+	// Cafe Bazaar's purchase-verification token (internal/service/billing).
+	BazaarAPISecret secretItem `json:"bazaar_api_secret"`
+	// sms.ir, for the sign-up / password-reset codes (internal/service/sms).
+	SMSIrAPIKey     secretItem `json:"sms_ir_api_key"`
+	SMSIrTemplateID string     `json:"sms_ir_otp_template_id"`
 }
 
 func maskSecret(v string) string {
@@ -58,6 +63,9 @@ func (h Handler) Get(c echo.Context) error {
 		DeepSeekAPIKey:  secret(settingskeys.KeyDeepSeekAPIKey),
 		DeepSeekModel:   h.store.Get(settingskeys.KeyDeepSeekModel),
 		Quota:           h.quota.Config(),
+		BazaarAPISecret: secret(settingskeys.KeyBazaarAPISecret),
+		SMSIrAPIKey:     secret(settingskeys.KeySMSIrAPIKey),
+		SMSIrTemplateID: h.store.Get(settingskeys.KeySMSIrTemplateID),
 	})
 }
 
@@ -104,6 +112,13 @@ func (h Handler) Update(c echo.Context) error {
 			return c.JSON(http.StatusUnprocessableEntity, map[string]string{
 				"error":   "invalid_input",
 				"message": "FREE_QUOTA_PERIOD must be daily or lifetime.",
+			})
+		}
+	case settingskeys.KeySMSIrTemplateID:
+		if n, err := strconv.Atoi(value); value != "" && (err != nil || n <= 0) {
+			return c.JSON(http.StatusUnprocessableEntity, map[string]string{
+				"error":   "invalid_input",
+				"message": "SMS_IR_OTP_TEMPLATE_ID must be the numeric template id from sms.ir.",
 			})
 		}
 	case settingskeys.KeyFreeDailyLimit, settingskeys.KeyFreeLifetimeLimit, settingskeys.KeyPremiumDailyScanLimit:

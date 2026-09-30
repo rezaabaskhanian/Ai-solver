@@ -47,6 +47,8 @@ export type RootStackParamList = {
   Guide: undefined;
   // Appearance: light/dark mode, accent color and text color.
   Settings: undefined;
+  // «اشتراک پرمیوم»: the Cafe Bazaar plans (monthly...) and the user code.
+  Premium: undefined;
 };
 
 // The side drawer wraps the whole stack as a single "Main" screen, so

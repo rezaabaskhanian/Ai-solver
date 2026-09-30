@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"mathmotion/go-api/internal/config"
 	"mathmotion/go-api/internal/delivery/httpserver"
@@ -14,15 +15,20 @@ import (
 	"mathmotion/go-api/internal/repository/migrator"
 	"mathmotion/go-api/internal/repository/postgres"
 	postgresbilling "mathmotion/go-api/internal/repository/postgres/billing"
+	postgresotp "mathmotion/go-api/internal/repository/postgres/otp"
 	postgresproblem "mathmotion/go-api/internal/repository/postgres/problem"
 	postgressettings "mathmotion/go-api/internal/repository/postgres/settings"
 	postgresusage "mathmotion/go-api/internal/repository/postgres/usage"
 	postgresuser "mathmotion/go-api/internal/repository/postgres/user"
+	accountservice "mathmotion/go-api/internal/service/account"
+	authservice "mathmotion/go-api/internal/service/auth"
 	billingservice "mathmotion/go-api/internal/service/billing"
+	otpservice "mathmotion/go-api/internal/service/otp"
 	problemservice "mathmotion/go-api/internal/service/problem"
 	proxyservice "mathmotion/go-api/internal/service/proxy"
 	quotaservice "mathmotion/go-api/internal/service/quota"
 	settingsservice "mathmotion/go-api/internal/service/settings"
+	smsservice "mathmotion/go-api/internal/service/sms"
 	userservice "mathmotion/go-api/internal/service/user"
 	visionservice "mathmotion/go-api/internal/service/vision"
 )
@@ -98,11 +104,8 @@ func main() {
 		HttpServer:    config.HttpServer{Port: getEnv("PORT", "8080")},
 		RateLimit:     config.RateLimit{RPS: 5, Burst: 10},
 		Billing: config.Billing{
-			PackageName:  getEnv("BAZAAR_PACKAGE_NAME", "com.mathmotion"),
-			ProductID:    getEnv("BAZAAR_PRODUCT_ID", "mathmotion_premium_unlock"),
-			ClientID:     getEnv("BAZAAR_CLIENT_ID", ""),
-			ClientSecret: getEnv("BAZAAR_CLIENT_SECRET", ""),
-			RefreshToken: getEnv("BAZAAR_REFRESH_TOKEN", ""),
+			PackageName: getEnv("BAZAAR_PACKAGE_NAME", "com.mathmotion"),
+			ProductID:   getEnv("BAZAAR_PRODUCT_ID", "mathmotion_premium_unlock"),
 		},
 		Outbound: config.Outbound{
 			ProxyURL: getEnv("AI_OUTBOUND_PROXY", ""),
@@ -117,12 +120,6 @@ func main() {
 			Token:        getEnv("ADMIN_TOKEN", getEnv("PROXY_ADMIN_TOKEN", "")),
 			PanelOrigins: splitCSV(getEnv("ADMIN_PANEL_ORIGINS", "http://localhost:3000")),
 		},
-	}
-
-	if cfg.Billing.ClientID == "" || cfg.Billing.ClientSecret == "" || cfg.Billing.RefreshToken == "" {
-		log.Println("warning: BAZAAR_CLIENT_ID/BAZAAR_CLIENT_SECRET/BAZAAR_REFRESH_TOKEN not set — " +
-			"the free-tier quota still applies, but POST /api/v1/billing/verify will fail until " +
-			"these are configured from Cafe Bazaar's developer panel (see mobile/MathMotion/APP.md)")
 	}
 
 	if cfg.Admin.Token == "" {
@@ -160,8 +157,36 @@ func main() {
 	// from settingsSvc on every request — editable in the admin panel.
 	quotaSvc := quotaservice.New(usageRepo, settingsSvc)
 	problemSvc := problemservice.New(problemRepo, mathEngine, quotaSvc)
-	bazaarClient := billingservice.NewBazaarClient(cfg.Billing.ClientID, cfg.Billing.ClientSecret, cfg.Billing.RefreshToken)
+	// The Pishkhan API token is read from settingsSvc on every purchase, so
+	// saving it in the admin panel works without a restart.
+	bazaarClient := billingservice.NewBazaarClient(settingsSvc, nil)
+	if !bazaarClient.Enabled() {
+		log.Println("warning: BAZAAR_API_SECRET not set — purchases can't be verified until it's " +
+			"saved in the admin panel («اشتراک‌ها») or .env (see mobile/MathMotion/APP.md)")
+	}
 	billingSvc := billingservice.New(billingRepo, bazaarClient, cfg.Billing.PackageName, cfg.Billing.ProductID)
+
+	// Accounts (sign-up / login), as in LingoFlow: JWT access + refresh
+	// tokens, and sms.ir codes for sign-up and password reset.
+	jwtSignKey := getEnv("JWT_SIGN_KEY", "")
+	if jwtSignKey == "" {
+		if os.Getenv("ENV") == "production" {
+			log.Fatal("JWT_SIGN_KEY must be set in production (a long random string: openssl rand -hex 32)")
+		}
+		jwtSignKey = "dev-only-insecure-jwt-key"
+	}
+	authSvc := authservice.New(authservice.Config{
+		SignKey:    jwtSignKey,
+		AccessTTL:  24 * time.Hour,
+		RefreshTTL: 30 * 24 * time.Hour,
+	})
+	smsClient := smsservice.NewClient(settingsSvc, nil)
+	if !smsClient.Enabled() {
+		log.Println("warning: SMS_IR_API_KEY/SMS_IR_OTP_TEMPLATE_ID not set — sign-up and password " +
+			"reset SMS codes can't be sent until they're saved in the admin panel or .env")
+	}
+	otpSvc := otpservice.New(postgresotp.New(db.Pool), smsClient)
+	accountSvc := accountservice.New(userRepo, otpSvc, authSvc)
 
 	// Vision calls (whichever provider AI_PROVIDER picks) go through
 	// internal/pkg/outboundhttp so a server whose IP the provider blocks
@@ -182,5 +207,6 @@ func main() {
 
 	proxySvc := proxyservice.New(cfg.Proxy.XrayConfigPath, cfg.Outbound.ProxyURL)
 
-	httpserver.New(cfg, userSvc, problemSvc, billingSvc, visionSvc, visionClient, proxySvc, settingsSvc, quotaSvc).Server()
+	httpserver.New(cfg, userSvc, problemSvc, billingSvc, visionSvc, visionClient, proxySvc, settingsSvc, quotaSvc,
+		accountSvc, authSvc).Server()
 }

@@ -11,7 +11,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import './src/i18n';
 import { AppDrawer } from './src/navigation/AppDrawer';
+import { AuthScreen } from './src/screens/Auth/AuthScreen';
 import { OnboardingScreen } from './src/screens/Onboarding/OnboardingScreen';
+import { useAuthStore } from './src/store/useAuthStore';
 import { useEntitlementStore } from './src/store/useEntitlementStore';
 import { useLanguageStore } from './src/store/useLanguageStore';
 import { useOnboardingStore } from './src/store/useOnboardingStore';
@@ -24,6 +26,7 @@ function App() {
   const themeHydrated = useThemeStore(state => state.hasHydrated);
   const onboardingHydrated = useOnboardingStore(state => state.hasHydrated);
   const onboardingSeen = useOnboardingStore(state => state.seen);
+  const authStatus = useAuthStore(state => state.status);
   const isDarkMode = colors.scheme === 'dark';
 
   // Navigation's own backgrounds (screen transitions, drawer scrim) and
@@ -51,13 +54,16 @@ function App() {
   }, [colors, isDarkMode]);
 
   useEffect(() => {
+    useAuthStore.getState().restore();
     useEntitlementStore.getState().refresh();
   }, []);
 
   // Wait for the persisted language, theme and onboarding flags to load
   // before rendering, so the UI doesn't flash in the wrong language or
   // colors, or show the intro to someone who already dismissed it.
-  if (!languageHydrated || !themeHydrated || !onboardingHydrated) {
+  // Also wait for a saved login to be restored, so a signed-in user
+  // doesn't see the login screen flash by.
+  if (!languageHydrated || !themeHydrated || !onboardingHydrated || authStatus === 'restoring') {
     return null;
   }
 
@@ -68,13 +74,16 @@ function App() {
           barStyle={isDarkMode ? 'light-content' : 'dark-content'}
           backgroundColor={colors.surface}
         />
-        {onboardingSeen ? (
+        {!onboardingSeen ? (
+          // First launch only; its Start button flips `seen`.
+          <OnboardingScreen />
+        ) : authStatus !== 'signedIn' ? (
+          // Login is required, as in LingoFlow: onboarding → login → app.
+          <AuthScreen />
+        ) : (
           <NavigationContainer theme={navigationTheme}>
             <AppDrawer />
           </NavigationContainer>
-        ) : (
-          // First launch only; its Start button flips `seen`.
-          <OnboardingScreen />
         )}
       </SafeAreaProvider>
     </GestureHandlerRootView>

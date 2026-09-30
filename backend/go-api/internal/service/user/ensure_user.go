@@ -20,3 +20,9 @@ func (s Service) EnsureUser(ctx context.Context, deviceID string) (domain.User, 
 	}
 	return u, nil
 }
+
+// GetUser loads the account a login token belongs to (see
+// middleware.Device). domain.ErrNotFound means it no longer exists.
+func (s Service) GetUser(ctx context.Context, id string) (domain.User, error) {
+	return s.repo.GetByID(ctx, id)
+}

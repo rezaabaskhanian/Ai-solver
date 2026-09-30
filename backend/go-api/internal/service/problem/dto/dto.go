@@ -57,6 +57,12 @@ type Entitlement struct {
 	// Premium only: scans today and the daily cap (0 = no cap).
 	PremiumScansUsed int `json:"premium_scans_used"`
 	PremiumScanLimit int `json:"premium_scan_limit"`
+	// Who this device is (shown in the app's Settings for support) and
+	// what kind of Premium it has: a plan's expiry, lifetime, or unlimited.
+	UserCode        string     `json:"user_code"`
+	PremiumUntil    *time.Time `json:"premium_until,omitempty"`
+	PremiumLifetime bool       `json:"premium_lifetime"`
+	IsUnlimited     bool       `json:"is_unlimited"`
 }
 
 // CheckResult mirrors the math engine's POST /check response — see

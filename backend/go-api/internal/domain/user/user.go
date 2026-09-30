@@ -9,16 +9,42 @@
 // otherwise mirrors Shadowing-backend on purpose.
 package user
 
-import "time"
+import (
+	"errors"
+	"time"
+)
+
+var (
+	ErrNotFound   = errors.New("user not found")
+	ErrPhoneTaken = errors.New("phone number already registered")
+)
 
 type User struct {
-	ID        string
-	DeviceID  string
-	Name      *string
-	Email     *string
-	IsPremium bool
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID       string
+	DeviceID string
+	// Code is the short id the app shows in Settings — what a user reads
+	// out to the operator so the admin panel can find them.
+	Code string
+	// Name is the nickname chosen at sign-up; Phone is set once the
+	// device's user signed up (migration 008). PasswordHash (bcrypt) never
+	// leaves the server.
+	Name         *string
+	Email        *string
+	Phone        *string
+	PasswordHash string
+	// IsPremium is the old one-time lifetime unlock; PremiumUntil is a
+	// time-limited plan (Cafe Bazaar monthly etc., or days granted from the
+	// admin panel); IsUnlimited lifts every limit. See HasPremium.
+	IsPremium    bool
+	PremiumUntil *time.Time
+	IsUnlimited  bool
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+}
+
+// HasPremium reports whether any kind of Premium is active at now.
+func (u User) HasPremium(now time.Time) bool {
+	return u.IsPremium || u.IsUnlimited || (u.PremiumUntil != nil && u.PremiumUntil.After(now))
 }
 
 func NewUser(id, deviceID string) User {

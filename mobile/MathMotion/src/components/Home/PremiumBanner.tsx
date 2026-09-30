@@ -1,20 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
-import { PREMIUM_PRODUCT_ID } from '../../config/env';
 import { useIsRTL } from '../../hooks/useIsRTL';
-import { usePurchasePremium } from '../../hooks/usePurchasePremium';
-import { translationKeyForApiError } from '../../services/api/apiError';
-import { getProductPrice, isPurchaseSupported } from '../../services/billing/poolakey';
+import { useOpenPremium } from '../../hooks/useOpenPremium';
+import { isPurchaseSupported } from '../../services/billing/poolakey';
 import { useEntitlementStore } from '../../store/useEntitlementStore';
 import { makeStyles, radius, spacing, useColors } from '../../theme';
 import { AppText } from '../common/AppText';
 import { Icon } from '../common/Icon';
 
-// The design's accent-colored "upgrade to Pro" hero card. Runs the same
-// Cafe Bazaar purchase as PaywallCard; hidden for Premium users and where
-// in-app purchase isn't available (iOS / no Bazaar build).
+// The design's accent-colored "upgrade to Pro" hero card. Opens the plan
+// picker (screens/Premium); hidden for Premium users and where in-app
+// purchase isn't available (iOS / no Bazaar build).
 // `compact` is the side drawer's one-row version (text + small button).
 export function PremiumBanner({ compact = false }: { compact?: boolean }) {
   const colors = useColors();
@@ -22,19 +20,7 @@ export function PremiumBanner({ compact = false }: { compact?: boolean }) {
   const { t } = useTranslation();
   const isRTL = useIsRTL();
   const { isPremium, loading } = useEntitlementStore();
-  const { purchase, purchasing, error } = usePurchasePremium();
-  const [price, setPrice] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!isPurchaseSupported()) {
-      return;
-    }
-    getProductPrice(PREMIUM_PRODUCT_ID).then(result => {
-      if (result) {
-        setPrice(result.price);
-      }
-    });
-  }, []);
+  const openPremium = useOpenPremium();
 
   if (loading || isPremium || !isPurchaseSupported()) {
     return null;
@@ -53,17 +39,12 @@ export function PremiumBanner({ compact = false }: { compact?: boolean }) {
         </View>
         <Pressable
           accessibilityRole="button"
-          disabled={purchasing}
-          onPress={purchase}
+          onPress={openPremium}
           style={({ pressed }) => [styles.button, styles.compactButton, pressed && styles.pressed]}
         >
-          {purchasing ? (
-            <ActivityIndicator color={DARK_TEXT} />
-          ) : (
-            <AppText size="sm" weight="bold" align="center" color={DARK_TEXT}>
-              {t('home.proActivate')}
-            </AppText>
-          )}
+          <AppText size="sm" weight="bold" align="center" color={DARK_TEXT}>
+            {t('home.proActivate')}
+          </AppText>
         </Pressable>
       </View>
     );
@@ -94,24 +75,13 @@ export function PremiumBanner({ compact = false }: { compact?: boolean }) {
 
       <Pressable
         accessibilityRole="button"
-        disabled={purchasing}
-        onPress={purchase}
+        onPress={openPremium}
         style={({ pressed }) => [styles.button, pressed && styles.pressed]}
       >
-        {purchasing ? (
-          <ActivityIndicator color={DARK_TEXT} />
-        ) : (
-          <AppText weight="bold" align="center" color={DARK_TEXT}>
-            {price ? t('home.proButtonPrice', { price }) : t('home.proButton')}
-          </AppText>
-        )}
-      </Pressable>
-
-      {error && (
-        <AppText size="sm" align="center" color={colors.onPrimary}>
-          {t(translationKeyForApiError(error), { defaultValue: error.message })}
+        <AppText weight="bold" align="center" color={DARK_TEXT}>
+          {t('home.proButton')}
         </AppText>
-      )}
+      </Pressable>
     </View>
   );
 }

@@ -1,13 +1,19 @@
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, View } from 'react-native';
 
+import { SubscriptionStatusCard } from '../../components/Billing/SubscriptionStatusCard';
 import { AppButton } from '../../components/common/AppButton';
 import { AppText } from '../../components/common/AppText';
 import { Card } from '../../components/common/Card';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 import { MathExpression } from '../../components/MathExpression/MathExpression';
 import { useIsRTL } from '../../hooks/useIsRTL';
+import type { RootStackParamList } from '../../navigation/types';
+import { useAuthStore } from '../../store/useAuthStore';
+import { useEntitlementStore } from '../../store/useEntitlementStore';
 import { useThemeStore } from '../../store/useThemeStore';
 import {
   ACCENTS,
@@ -33,10 +39,41 @@ export function SettingsScreen() {
   const isRTL = useIsRTL();
   const { mode, accent, textTone, setMode, setAccent, setTextTone, reset } =
     useThemeStore();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const isPremium = useEntitlementStore(state => state.isPremium);
+  const { user, logout } = useAuthStore();
+
+  const confirmLogout = () =>
+    Alert.alert(t('auth.logoutConfirmTitle'), t('auth.logoutConfirmBody'), [
+      { text: t('auth.cancel'), style: 'cancel' },
+      { text: t('auth.logout'), style: 'destructive', onPress: () => logout() },
+    ]);
   const rowStyle = [styles.row, isRTL && styles.rowRTL];
 
   return (
     <ScreenContainer scroll>
+      {user && (
+        <Card style={styles.section}>
+          <View style={[styles.accountRow, isRTL && styles.rowRTL]}>
+            <Icon name="account-circle" size={40} color={colors.primaryText} />
+            <View style={styles.flexOne}>
+              <AppText weight="bold">{user.nickname}</AppText>
+              <AppText size="sm" color={colors.textSecondary} style={styles.ltr}>
+                {user.phone}
+              </AppText>
+            </View>
+          </View>
+          <AppButton label={t('auth.logout')} icon="logout" variant="secondary" onPress={confirmLogout} />
+        </Card>
+      )}
+      <SubscriptionStatusCard />
+      <AppButton
+        label={t(isPremium ? 'premium.extend' : 'premium.getPremium')}
+        icon="workspace-premium"
+        variant="secondary"
+        onPress={() => navigation.navigate('Premium')}
+      />
+
       <Card style={styles.section}>
         <AppText weight="bold" size="lg">
           {t('settings.modeTitle')}
@@ -170,6 +207,17 @@ export function SettingsScreen() {
 const useStyles = makeStyles(colors =>
   StyleSheet.create({
     section: {
+      gap: spacing.md,
+    },
+    ltr: {
+      writingDirection: 'ltr',
+    },
+    flexOne: {
+      flex: 1,
+    },
+    accountRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
       gap: spacing.md,
     },
     row: {

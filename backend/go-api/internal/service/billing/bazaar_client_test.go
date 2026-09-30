@@ -2,93 +2,79 @@ package billing
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	settingskeys "mathmotion/go-api/internal/service/settings"
 )
 
-// newFakeBazaarServer stands in for Cafe Bazaar's OAuth + Purchase
-// Validator endpoints. purchaseState is returned verbatim from the
-// validate endpoint; authCalls counts how many times the auth endpoint
-// was hit, so tests can assert the access token gets cached.
-func newFakeBazaarServer(t *testing.T, purchaseState PurchaseState) (*httptest.Server, *int) {
+type fakeSettings map[string]string
+
+func (f fakeSettings) Get(key string) string { return f[key] }
+
+// newTestClient points a BazaarClient at a fake validate endpoint that
+// answers with status/body and records the auth header it received.
+func newTestClient(t *testing.T, secret string, status int, body string) (*BazaarClient, *string, *string) {
 	t.Helper()
-	authCalls := 0
-
+	var gotHeader, gotPath string
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch {
-		case strings.HasPrefix(r.URL.Path, "/auth"):
-			authCalls++
-			w.Header().Set("Content-Type", "application/json")
-			_ = json.NewEncoder(w).Encode(map[string]any{
-				"access_token": "fake-access-token",
-				"expires_in":   3600,
-			})
-		case strings.HasPrefix(r.URL.Path, "/validate"):
-			w.Header().Set("Content-Type", "application/json")
-			_ = json.NewEncoder(w).Encode(map[string]any{
-				"purchaseState": purchaseState,
-			})
-		default:
-			http.NotFound(w, r)
-		}
+		gotHeader = r.Header.Get(bazaarAuthHeader)
+		gotPath = r.URL.Path
+		w.WriteHeader(status)
+		_, _ = w.Write([]byte(body))
 	}))
-	return srv, &authCalls
+	t.Cleanup(srv.Close)
+
+	c := NewBazaarClient(fakeSettings{settingskeys.KeyBazaarAPISecret: secret}, srv.Client())
+	c.validateURL = srv.URL + "/validate"
+	return c, &gotHeader, &gotPath
 }
 
-func newTestBazaarClient(srv *httptest.Server) *BazaarClient {
-	return &BazaarClient{
-		clientID:     "client-id",
-		clientSecret: "client-secret",
-		refreshToken: "refresh-token",
-		http:         srv.Client(),
-		authURL:      srv.URL + "/auth",
-		validateURL:  srv.URL + "/validate",
-	}
-}
+func TestValidatePurchase_SendsTokenHeaderAndAcceptsPurchase(t *testing.T) {
+	c, header, path := newTestClient(t, "secret-1", http.StatusOK, `{"purchaseState": 0, "kind": "androidpublisher#inappPurchase"}`)
 
-func TestBazaarClient_ValidatePurchase_Purchased(t *testing.T) {
-	srv, _ := newFakeBazaarServer(t, PurchaseStatePurchased)
-	defer srv.Close()
-
-	client := newTestBazaarClient(srv)
-	info, err := client.ValidatePurchase(context.Background(), "com.mathmotion", "premium_unlock", "token-1")
-	if err != nil {
-		t.Fatalf("ValidatePurchase returned error: %v", err)
+	if err := c.ValidatePurchase(context.Background(), "com.mathmotion", "mathmotion_1m", "tok"); err != nil {
+		t.Fatalf("ValidatePurchase: %v", err)
 	}
-	if info.PurchaseState != PurchaseStatePurchased {
-		t.Fatalf("PurchaseState = %v, want %v", info.PurchaseState, PurchaseStatePurchased)
+	if *header != "secret-1" {
+		t.Fatalf("auth header = %q, want secret-1", *header)
+	}
+	if want := "/validate/com.mathmotion/inapp/mathmotion_1m/purchases/tok/"; *path != want {
+		t.Fatalf("path = %q, want %q", *path, want)
 	}
 }
 
-func TestBazaarClient_ValidatePurchase_Refunded(t *testing.T) {
-	srv, _ := newFakeBazaarServer(t, PurchaseStateRefunded)
-	defer srv.Close()
-
-	client := newTestBazaarClient(srv)
-	info, err := client.ValidatePurchase(context.Background(), "com.mathmotion", "premium_unlock", "token-1")
-	if err != nil {
-		t.Fatalf("ValidatePurchase returned error: %v", err)
-	}
-	if info.PurchaseState != PurchaseStateRefunded {
-		t.Fatalf("PurchaseState = %v, want %v", info.PurchaseState, PurchaseStateRefunded)
+func TestValidatePurchase_RefundedIsNotValid(t *testing.T) {
+	c, _, _ := newTestClient(t, "s", http.StatusOK, `{"purchaseState": 1}`)
+	if err := c.ValidatePurchase(context.Background(), "p", "sku", "tok"); !errors.Is(err, ErrPurchaseNotValid) {
+		t.Fatalf("err = %v, want ErrPurchaseNotValid", err)
 	}
 }
 
-func TestBazaarClient_AccessTokenIsCachedAcrossCalls(t *testing.T) {
-	srv, authCalls := newFakeBazaarServer(t, PurchaseStatePurchased)
-	defer srv.Close()
-
-	client := newTestBazaarClient(srv)
-	for i := 0; i < 3; i++ {
-		if _, err := client.ValidatePurchase(context.Background(), "com.mathmotion", "premium_unlock", "token-1"); err != nil {
-			t.Fatalf("ValidatePurchase call %d returned error: %v", i, err)
-		}
+func TestValidatePurchase_NotFoundIsNotValid(t *testing.T) {
+	c, _, _ := newTestClient(t, "s", http.StatusNotFound, `{"error": "not_found", "error_description": "The requested purchase is not found!"}`)
+	if err := c.ValidatePurchase(context.Background(), "p", "sku", "tok"); !errors.Is(err, ErrPurchaseNotValid) {
+		t.Fatalf("err = %v, want ErrPurchaseNotValid", err)
 	}
+}
 
-	if *authCalls != 1 {
-		t.Fatalf("auth endpoint called %d times, want 1 (token should be cached)", *authCalls)
+func TestValidatePurchase_OtherErrorsAreNotAVerdict(t *testing.T) {
+	c, _, _ := newTestClient(t, "s", http.StatusUnauthorized, `{"error": "invalid_credentials"}`)
+	err := c.ValidatePurchase(context.Background(), "p", "sku", "tok")
+	if err == nil || errors.Is(err, ErrPurchaseNotValid) || !strings.Contains(err.Error(), "401") {
+		t.Fatalf("err = %v, want a non-verdict error mentioning 401", err)
+	}
+}
+
+func TestValidatePurchase_NoTokenConfigured(t *testing.T) {
+	c := NewBazaarClient(fakeSettings{}, nil)
+	if c.Enabled() {
+		t.Fatal("Enabled() = true with no token")
+	}
+	if err := c.ValidatePurchase(context.Background(), "p", "sku", "tok"); !errors.Is(err, ErrNotConfigured) {
+		t.Fatalf("err = %v, want ErrNotConfigured", err)
 	}
 }

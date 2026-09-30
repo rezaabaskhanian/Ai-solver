@@ -11,10 +11,13 @@ import (
 
 type verifyRequest struct {
 	PurchaseToken string `json:"purchase_token"`
+	// The plan's Cafe Bazaar SKU; empty means the old lifetime unlock
+	// (app versions from before plans existed don't send it).
+	ProductID string `json:"product_id"`
 }
 
 // Verify handles POST /api/v1/billing/verify — confirms a Cafe Bazaar
-// purchase token server-side and grants Premium (see
+// purchase token server-side and grants what it bought (see
 // billingservice.VerifyPurchase). The client's own claim of having
 // paid is never trusted.
 func (h Handler) Verify(c echo.Context) error {
@@ -28,7 +31,7 @@ func (h Handler) Verify(c echo.Context) error {
 
 	userID := middleware.UserIDFromContext(c)
 
-	if err := h.billingSvc.VerifyPurchase(c.Request().Context(), userID, req.PurchaseToken); err != nil {
+	if err := h.billingSvc.VerifyPurchase(c.Request().Context(), userID, req.ProductID, req.PurchaseToken); err != nil {
 		return errorhandling.ErrorHandling(err, c)
 	}
 

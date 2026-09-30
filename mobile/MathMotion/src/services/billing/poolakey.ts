@@ -42,13 +42,23 @@ export async function queryOwnedPurchases(): Promise<OwnedPurchase[]> {
   return results.map(r => ({ productId: r.productId, purchaseToken: r.purchaseToken }));
 }
 
-export async function getProductPrice(productId: string): Promise<ProductPrice | null> {
+// Marks a plan purchase as used up in Bazaar once our server has granted
+// its days — otherwise Bazaar treats it as still owned and won't sell the
+// same plan again next month.
+export async function consumePurchase(purchaseToken: string): Promise<void> {
+  assertAndroid();
+  await bazaar.consumePurchase(purchaseToken);
+}
+
+// Bazaar's own display price for each product ("۱۰۰,۰۰۰ تومان"), by id —
+// the real price the user will pay. Empty when Bazaar can't be reached.
+export async function getProductPrices(productIds: string[]): Promise<Record<string, ProductPrice>> {
   try {
     assertAndroid();
-    const [detail] = await bazaar.getInAppSkuDetails([productId]);
-    return detail ? { price: detail.price } : null;
+    const details = await bazaar.getInAppSkuDetails(productIds);
+    return Object.fromEntries(details.map(d => [d.sku, { price: d.price }]));
   } catch {
-    return null;
+    return {};
   }
 }
 

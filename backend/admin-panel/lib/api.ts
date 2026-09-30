@@ -1,4 +1,4 @@
-import type { ProxyStatus, SettingsResp } from "./types";
+import type { AppUser, GrantAction, Plan, ProxyStatus, SettingsResp } from "./types";
 
 export const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
@@ -91,6 +91,40 @@ export async function connectProxy(link: string): Promise<ProxyStatus> {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ vless_link: link }),
+    })
+  );
+}
+
+// ---------- اشتراک‌ها ----------
+export async function getPlans(): Promise<Plan[]> {
+  return (await jsonOrThrow<{ plans: Plan[] }>(await authFetch("/admin/plans", { method: "GET" }))).plans;
+}
+
+export async function savePlan(plan: Omit<Plan, "id" | "purchase_count">): Promise<Plan> {
+  return jsonOrThrow<Plan>(
+    await authFetch("/admin/plans", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(plan),
+    })
+  );
+}
+
+export async function deletePlan(id: string): Promise<void> {
+  await jsonOrThrow(await authFetch(`/admin/plans/${encodeURIComponent(id)}`, { method: "DELETE" }));
+}
+
+export async function searchUsers(q: string): Promise<AppUser[]> {
+  const path = `/admin/users?q=${encodeURIComponent(q)}`;
+  return (await jsonOrThrow<{ users: AppUser[] }>(await authFetch(path, { method: "GET" }))).users;
+}
+
+export async function grantPremium(userId: string, action: GrantAction): Promise<void> {
+  await jsonOrThrow(
+    await authFetch(`/admin/users/${encodeURIComponent(userId)}/premium`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(action),
     })
   );
 }

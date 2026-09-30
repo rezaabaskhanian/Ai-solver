@@ -8,6 +8,9 @@
 //     device's whole lifetime ("lifetime").
 //   - Premium users: unlimited solves/checks, but scans — the only action
 //     that costs an AI call — have a daily cap (0 = no cap).
+//   - Unlimited users (granted from the admin panel): no limit at all. This
+//     rides on the request context (WithUnlimited, set by the Device
+//     middleware) rather than another parameter on every caller.
 package quota
 
 import (
@@ -45,6 +48,19 @@ const (
 	defaultFreeLifetimeLimit     = 5
 	defaultPremiumDailyScanLimit = 30
 )
+
+type unlimitedKey struct{}
+
+// WithUnlimited marks ctx's user as exempt from every limit.
+func WithUnlimited(ctx context.Context, unlimited bool) context.Context {
+	return context.WithValue(ctx, unlimitedKey{}, unlimited)
+}
+
+// IsUnlimited reports whether WithUnlimited(ctx, true) was set.
+func IsUnlimited(ctx context.Context) bool {
+	v, _ := ctx.Value(unlimitedKey{}).(bool)
+	return v
+}
 
 type Settings interface {
 	Get(key string) string
@@ -131,12 +147,16 @@ func (s Service) Status(ctx context.Context, userID string, isPremium bool) (Sta
 	today := s.startOfDay()
 	resets := today.AddDate(0, 0, 1)
 
-	if isPremium {
+	if isPremium || IsUnlimited(ctx) {
 		scans, err := s.repo.CountUsage(ctx, userID, []Kind{KindScan}, today)
 		if err != nil {
 			return Status{}, err
 		}
-		return Status{Period: cfg.FreePeriod, ScansUsedToday: scans, ScanLimit: cfg.PremiumDailyScanLimit, ResetsAt: &resets}, nil
+		limit := cfg.PremiumDailyScanLimit
+		if IsUnlimited(ctx) {
+			limit = 0
+		}
+		return Status{Period: cfg.FreePeriod, ScansUsedToday: scans, ScanLimit: limit, ResetsAt: &resets}, nil
 	}
 
 	limit, since := cfg.FreeLifetimeLimit, time.Time{}
@@ -157,6 +177,10 @@ func (s Service) Status(ctx context.Context, userID string, isPremium bool) (Sta
 // It's called before the engine/AI, so a rejected request costs nothing.
 func (s Service) Allow(ctx context.Context, userID string, isPremium bool, kind Kind) error {
 	const op = "quota.Allow"
+
+	if IsUnlimited(ctx) {
+		return nil
+	}
 
 	status, err := s.Status(ctx, userID, isPremium)
 	if err != nil {

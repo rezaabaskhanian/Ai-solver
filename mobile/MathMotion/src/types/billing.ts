@@ -10,6 +10,22 @@ export interface Entitlement {
   // Premium: scans used today and the daily cap (0 = no cap).
   premium_scans_used?: number;
   premium_scan_limit?: number;
+  // Who this device is (shown in Settings, for the operator to find it in
+  // the admin panel) and which kind of Premium it has.
+  user_code?: string;
+  premium_until?: string;
+  premium_lifetime?: boolean;
+  is_unlimited?: boolean;
+}
+
+// A Cafe Bazaar in-app product that adds duration_days of Premium
+// (backend/go-api/internal/service/billing.Plan).
+export interface Plan {
+  id: string;
+  name: string;
+  duration_days: number;
+  price_toman: number;
+  product_id: string;
 }
 
 export type QuotaPeriod = 'daily' | 'lifetime';

@@ -8,6 +8,7 @@ import (
 	echomw "github.com/labstack/echo/v4/middleware"
 
 	"mathmotion/go-api/internal/config"
+	accounthandler "mathmotion/go-api/internal/delivery/httpserver/account"
 	billinghandler "mathmotion/go-api/internal/delivery/httpserver/billing"
 	problemhandler "mathmotion/go-api/internal/delivery/httpserver/problem"
 	proxyhandler "mathmotion/go-api/internal/delivery/httpserver/proxy"
@@ -15,6 +16,8 @@ import (
 	visionhandler "mathmotion/go-api/internal/delivery/httpserver/vision"
 	"mathmotion/go-api/internal/delivery/middleware"
 	"mathmotion/go-api/internal/pkg/locale"
+	accountservice "mathmotion/go-api/internal/service/account"
+	authservice "mathmotion/go-api/internal/service/auth"
 	billingservice "mathmotion/go-api/internal/service/billing"
 	problemservice "mathmotion/go-api/internal/service/problem"
 	proxyservice "mathmotion/go-api/internal/service/proxy"
@@ -31,7 +34,9 @@ type Service struct {
 	visionHandler   visionhandler.Handler
 	proxyHandler    proxyhandler.Handler
 	settingsHandler settingshandler.Handler
+	accountHandler  accounthandler.Handler
 	userSvc         userservice.Service
+	authSvc         authservice.Service
 	rateLimiter     *middleware.RateLimiter
 }
 
@@ -45,6 +50,8 @@ func New(
 	proxySvc proxyservice.Service,
 	settingsSvc *settingsservice.Service,
 	quotaSvc quotaservice.Service,
+	accountSvc accountservice.Service,
+	authSvc authservice.Service,
 ) Service {
 	return Service{
 		cfg:             cfg,
@@ -53,7 +60,9 @@ func New(
 		visionHandler:   visionhandler.New(visionSvc),
 		proxyHandler:    proxyhandler.New(proxySvc, settingsSvc),
 		settingsHandler: settingshandler.New(settingsSvc, visionClient, quotaSvc),
+		accountHandler:  accounthandler.New(accountSvc),
 		userSvc:         userSvc,
+		authSvc:         authSvc,
 		rateLimiter:     middleware.NewRateLimiter(cfg.RateLimit.RPS, cfg.RateLimit.Burst),
 	}
 }
@@ -71,7 +80,7 @@ func (s Service) Server() {
 	if len(s.cfg.Admin.PanelOrigins) > 0 {
 		e.Use(echomw.CORSWithConfig(echomw.CORSConfig{
 			AllowOrigins: s.cfg.Admin.PanelOrigins,
-			AllowMethods: []string{http.MethodGet, http.MethodPost, http.MethodPut},
+			AllowMethods: []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete},
 			AllowHeaders: []string{echo.HeaderAuthorization, echo.HeaderContentType},
 		}))
 	}
@@ -83,15 +92,19 @@ func (s Service) Server() {
 	// /api/v1/* resolves a device-scoped user (no login flow in MVP —
 	// see internal/delivery/middleware/device.go) and is rate limited;
 	// /health stays outside both so liveness checks are cheap.
-	s.problemHandler.SetProblemRoutes(e, s.rateLimiter.Middleware, middleware.Device(s.userSvc))
-	s.billingHandler.SetBillingRoutes(e, s.rateLimiter.Middleware, middleware.Device(s.userSvc))
-	s.visionHandler.SetVisionRoutes(e, s.rateLimiter.Middleware, middleware.Device(s.userSvc))
+	// A login token, when sent, identifies the account instead of the device.
+	device := middleware.Device(s.userSvc, s.authSvc)
+	s.problemHandler.SetProblemRoutes(e, s.rateLimiter.Middleware, device)
+	s.billingHandler.SetBillingRoutes(e, s.rateLimiter.Middleware, device)
+	s.visionHandler.SetVisionRoutes(e, s.rateLimiter.Middleware, device)
+	s.accountHandler.SetRoutes(e, s.rateLimiter.Middleware, device)
 
 	// Operator-only (the admin panel), no device resolution or rate
 	// limiting — gated by a static bearer token instead (see middleware.Admin).
 	admin := e.Group("/admin", middleware.Admin(s.cfg.Admin.Token))
 	s.proxyHandler.SetProxyRoutes(admin)
 	s.settingsHandler.SetSettingsRoutes(admin)
+	s.billingHandler.SetAdminRoutes(admin)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", s.cfg.HttpServer.Port)))
 }

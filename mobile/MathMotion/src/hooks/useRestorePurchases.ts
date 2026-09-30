@@ -2,16 +2,20 @@ import { useEffect } from 'react';
 
 import { PREMIUM_PRODUCT_ID } from '../config/env';
 import { verifyPurchase } from '../services/api/billing';
-import { isPurchaseSupported, queryOwnedPurchases } from '../services/billing/poolakey';
+import { consumePurchase, isPurchaseSupported, queryOwnedPurchases } from '../services/billing/poolakey';
 import { useEntitlementStore } from '../store/useEntitlementStore';
 
-// There are no real accounts (device-scoped only — backend/BACKEND.md
-// §4.1), so reinstalling the app would otherwise lose Premium even
-// though the user's Cafe Bazaar account still owns the product.
-// Poolakey's queryOwnedPurchases() reads from that Bazaar account, not
-// our device_id, so replaying an already-owned token here re-links
-// Premium to whatever device_id this install has — safely idempotent
-// thanks to purchases.purchase_token being UNIQUE server-side.
+// Runs once at startup against whatever the user's Cafe Bazaar account
+// still owns:
+//
+// - The old lifetime unlock is never consumed, so it's always listed.
+//   There are no real accounts (device-scoped only — backend/BACKEND.md
+//   §4.1), so replaying its token re-links Premium to this install's
+//   device_id after a reinstall.
+// - A plan purchase is normally consumed right after it's verified
+//   (usePurchasePremium). One still listed means that step was cut short
+//   (app killed, network dropped): verify it now — the server grants its
+//   days only once per token — then consume it.
 export function useRestorePurchases(): void {
   const refresh = useEntitlementStore(state => state.refresh);
 
@@ -22,16 +26,20 @@ export function useRestorePurchases(): void {
 
     queryOwnedPurchases()
       .then(async owned => {
-        const premiumPurchase = owned.find(p => p.productId === PREMIUM_PRODUCT_ID);
-        if (!premiumPurchase) {
+        if (owned.length === 0) {
           return;
         }
-        await verifyPurchase(premiumPurchase.purchaseToken);
+        for (const p of owned) {
+          await verifyPurchase(p.productId, p.purchaseToken);
+          if (p.productId !== PREMIUM_PRODUCT_ID) {
+            await consumePurchase(p.purchaseToken).catch(() => {});
+          }
+        }
         await refresh();
       })
       .catch(() => {
         // Best-effort background sync — a failure here just means the
-        // user stays on the free tier until they purchase again.
+        // user stays on their current tier until the next launch.
       });
   }, [refresh]);
 }
