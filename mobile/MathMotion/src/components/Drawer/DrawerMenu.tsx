@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { TOPICS } from '../../content/topics';
 import { useIsRTL } from '../../hooks/useIsRTL';
 import type { RootStackParamList } from '../../navigation/types';
+import { useAuthStore } from '../../store/useAuthStore';
 import { useEntitlementStore } from '../../store/useEntitlementStore';
 import { useThemeStore } from '../../store/useThemeStore';
 import { makeStyles, radius, spacing, useColors } from '../../theme';
@@ -55,8 +56,8 @@ const LEARN_ITEMS: MenuItem[] = [
 // Layout from the Stitch "side_drawer" designs (1 = blue, 2 = lime — one
 // component, colored by the active accent): brand card, free-quota bar,
 // Pro banner, learning links, settings (night mode switch + appearance),
-// a daily tip, and a footer link to the guide. The design's profile card
-// has no backing account system, so it shows the app's own identity.
+// a daily tip, and a footer link to the guide. The profile card shows
+// the signed-in account (nickname + phone) with the plan badge.
 export function DrawerMenu({ navigation, state }: DrawerContentComponentProps) {
   const colors = useColors();
   const styles = useStyles();
@@ -64,6 +65,7 @@ export function DrawerMenu({ navigation, state }: DrawerContentComponentProps) {
   const isRTL = useIsRTL();
   const setMode = useThemeStore(s => s.setMode);
   const accent = useThemeStore(s => s.accent);
+  const user = useAuthStore(s => s.user);
   const { isPremium, freeSolvesUsed, freeSolvesLimit, quotaPeriod, loading } = useEntitlementStore();
 
   // The drawer has a single "Main" screen (the whole stack); what's
@@ -147,11 +149,11 @@ export function DrawerMenu({ navigation, state }: DrawerContentComponentProps) {
         <View style={[styles.card, ...row]}>
           <Logo size={52} />
           <View style={styles.flexOne}>
-            <AppText size="lg" weight="bold">
-              {t('common.appName')}
+            <AppText size="lg" weight="bold" numberOfLines={1}>
+              {user?.nickname?.trim() || t('common.appName')}
             </AppText>
-            <AppText size="xs" color={colors.textSecondary}>
-              {t('drawer.tagline')}
+            <AppText size="xs" color={colors.textSecondary} numberOfLines={1}>
+              {user?.phone ? t('drawer.account', { phone: user.phone }) : t('drawer.tagline')}
             </AppText>
           </View>
           {!loading && (

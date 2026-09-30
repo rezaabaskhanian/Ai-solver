@@ -110,10 +110,10 @@ const useStyles = makeStyles(colors => StyleSheet.create({
     alignSelf: 'flex-start',
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.md,
-    borderRadius: radius.sm,
+    borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
+    borderColor: colors.surfaceMuted,
+    backgroundColor: colors.surfaceMuted,
   },
   lastChip: {
     borderColor: colors.primary,

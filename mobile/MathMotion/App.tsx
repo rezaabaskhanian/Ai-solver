@@ -26,6 +26,7 @@ function App() {
   const themeHydrated = useThemeStore(state => state.hasHydrated);
   const onboardingHydrated = useOnboardingStore(state => state.hasHydrated);
   const onboardingSeen = useOnboardingStore(state => state.seen);
+  const authMode = useOnboardingStore(state => state.authMode);
   const authStatus = useAuthStore(state => state.status);
   const isDarkMode = colors.scheme === 'dark';
 
@@ -79,7 +80,7 @@ function App() {
           <OnboardingScreen />
         ) : authStatus !== 'signedIn' ? (
           // Login is required, as in LingoFlow: onboarding → login → app.
-          <AuthScreen />
+          <AuthScreen initialMode={authMode} />
         ) : (
           <NavigationContainer theme={navigationTheme}>
             <AppDrawer />

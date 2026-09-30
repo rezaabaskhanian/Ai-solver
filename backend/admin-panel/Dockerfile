@@ -6,8 +6,16 @@ FROM ${REGISTRY}/library/node:20-alpine AS builder
 
 WORKDIR /app
 
+# NPM_REGISTRY: the Liara npm mirror on the server (registry.npmjs.org
+# crawls from Iran).
+ARG NPM_REGISTRY=https://registry.npmjs.org/
+RUN npm config set registry ${NPM_REGISTRY}
+
+# The npm download cache is a BuildKit cache shared with the landing
+# (same id): a package either one downloaded isn't downloaded again.
 COPY package.json package-lock.json* ./
-RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
+RUN --mount=type=cache,id=mathmotion-npm,target=/root/.npm,sharing=locked \
+    if [ -f package-lock.json ]; then npm ci --prefer-offline; else npm install --prefer-offline; fi
 
 COPY . .
 

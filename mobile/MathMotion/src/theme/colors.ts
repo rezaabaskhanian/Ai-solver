@@ -80,15 +80,16 @@ export const ACCENTS: Record<AccentId, Record<ColorScheme, AccentShades>> = {
   lime: {
     light: {
       primary: '#A3E635',
-      primaryPressed: '#8CCF1F',
+      primaryPressed: '#84CC16',
       primaryMuted: '#ECFCCB',
       onPrimary: '#111827',
-      primaryText: '#446900',
-      neutrals: { background: '#F7FAF7', surfaceMuted: '#F2F7F1', border: '#E1EDE0' },
+      primaryText: '#3F6212',
+      // Mint surfaces of the "MathMotion AI Study System" design.
+      neutrals: { background: '#F4FBF4', surfaceMuted: '#EEF9EE', border: '#E1EDE0' },
     },
     dark: {
       primary: '#A3E635',
-      primaryPressed: '#8CCF1F',
+      primaryPressed: '#84CC16',
       primaryMuted: '#26330F',
       onPrimary: '#111827',
       primaryText: '#B5F05A',

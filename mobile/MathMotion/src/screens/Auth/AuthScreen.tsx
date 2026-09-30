@@ -39,8 +39,8 @@ function useErrorText() {
   };
 }
 
-export function AuthScreen() {
-  const [mode, setMode] = useState<Mode>('login');
+export function AuthScreen({ initialMode = 'login' }: { initialMode?: 'login' | 'register' }) {
+  const [mode, setMode] = useState<Mode>(initialMode);
 
   if (mode === 'register') {
     return <RegisterForm onBack={() => setMode('login')} />;

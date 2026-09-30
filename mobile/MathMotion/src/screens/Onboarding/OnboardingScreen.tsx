@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Linking, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppButton } from '../../components/common/AppButton';
@@ -13,13 +13,17 @@ import { makeStyles, radius, spacing, useColors } from '../../theme';
 import { Icon } from '../../components/common/Icon';
 
 const FEATURES = ['scan', 'steps', 'exam'] as const;
+const PRIVACY_URL = 'https://mathmotion.ir/privacy';
+// The hero's faint "graph paper" texture: GRID_LINES lines each way.
+const GRID_STEP = 22;
+const GRID_LINES = 24;
 
 // First-launch intro, after the Stitch "onboarding" design: brand line,
 // an illustration, the headline with the accented second line, feature
 // chips and a start button. Rendered by App.tsx instead of the navigator
 // until dismissed, so it uses no navigation hooks. The design's photos
-// are replaced by math cards drawn in the app's own style, and its
-// "log in" button is dropped (the app has no accounts).
+// are replaced by math cards drawn in the app's own style. «شروع» opens
+// sign-up and «ورود به حساب» opens login (App.tsx → AuthScreen).
 export function OnboardingScreen() {
   const colors = useColors();
   const styles = useStyles();
@@ -31,6 +35,14 @@ export function OnboardingScreen() {
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
       <ScrollView contentContainerStyle={styles.content} bounces={false}>
         <View style={styles.hero}>
+          <View style={styles.grid} pointerEvents="none">
+            {Array.from({ length: GRID_LINES }, (_, i) => (
+              <React.Fragment key={i}>
+                <View style={[styles.gridLineV, { left: i * GRID_STEP }]} />
+                <View style={[styles.gridLineH, { top: i * GRID_STEP }]} />
+              </React.Fragment>
+            ))}
+          </View>
           <View style={[styles.brand, isRTL && styles.rowRTL]}>
             <Logo size={36} />
             <AppText size="xl" weight="bold">
@@ -103,11 +115,26 @@ export function OnboardingScreen() {
           <AppButton
             label={t('onboarding.start')}
             iconEnd="arrow-forward"
-            onPress={complete}
+            onPress={() => complete('register')}
             style={styles.start}
           />
-          <AppText size="xs" align="center" color={colors.textSecondary}>
-            {t('onboarding.freeNote')}
+          <AppButton
+            label={t('onboarding.login')}
+            variant="secondary"
+            onPress={() => complete('login')}
+            style={styles.login}
+          />
+          <AppText size="xs" align="center" color={colors.textSecondary} style={styles.legal}>
+            {t('onboarding.legalPrefix')}
+            <AppText
+              size="xs"
+              color={colors.textSecondary}
+              style={styles.link}
+              onPress={() => Linking.openURL(PRIVACY_URL)}
+            >
+              {t('onboarding.legalLink')}
+            </AppText>
+            {t('onboarding.legalSuffix')}
           </AppText>
         </View>
       </ScrollView>
@@ -132,7 +159,25 @@ const useStyles = makeStyles(colors => StyleSheet.create({
     paddingTop: spacing.lg,
     paddingBottom: spacing.xl,
     paddingHorizontal: spacing.lg,
-    backgroundColor: colors.primaryMuted,
+    backgroundColor: colors.background,
+    overflow: 'hidden',
+  },
+  grid: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  gridLineV: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: StyleSheet.hairlineWidth,
+    backgroundColor: colors.border,
+  },
+  gridLineH: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: colors.border,
   },
   brand: {
     flexDirection: 'row',
@@ -274,5 +319,21 @@ const useStyles = makeStyles(colors => StyleSheet.create({
     minHeight: 56,
     borderRadius: radius.pill,
     marginTop: spacing.sm,
+    shadowColor: colors.primary,
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 4,
+  },
+  login: {
+    minHeight: 56,
+    borderRadius: radius.pill,
+    backgroundColor: colors.background,
+  },
+  legal: {
+    marginTop: spacing.xs,
+  },
+  link: {
+    textDecorationLine: 'underline',
   },
 }));

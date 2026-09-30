@@ -18,8 +18,9 @@ interface ProblemCardProps {
   caption?: string;
 }
 
-// Top of the Solution screen (Stitch "solution_steps_1"): problem-type
-// chip, the problem itself large in a tinted box, and what we're after
+// Top of the Solution screen (Stitch "solution_steps", lime style): a
+// lime-tinted card with a lime outline, the problem-type chip, and the
+// problem itself large in a white box with what we're after
 // ("Goal: find x").
 export function ProblemCard({ problem, type, caption }: ProblemCardProps) {
   const colors = useColors();
@@ -41,7 +42,7 @@ export function ProblemCard({ problem, type, caption }: ProblemCardProps) {
           <View />
         )}
         <View style={styles.sigma}>
-          <Icon name="functions" color={colors.primaryText} />
+          <Icon name="functions" color={colors.onPrimary} />
         </View>
       </View>
       <View style={styles.problemBox}>
@@ -58,6 +59,10 @@ const useStyles = makeStyles(colors => StyleSheet.create({
   card: {
     gap: spacing.md,
     padding: spacing.md,
+    borderRadius: radius.xl,
+    borderWidth: 1.5,
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryMuted,
   },
   row: {
     flexDirection: 'row',
@@ -75,13 +80,13 @@ const useStyles = makeStyles(colors => StyleSheet.create({
     paddingHorizontal: spacing.sm + 2,
     paddingVertical: spacing.xs,
     borderRadius: radius.pill,
-    backgroundColor: colors.primaryMuted,
+    backgroundColor: colors.surface,
   },
   sigma: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     borderRadius: radius.pill,
-    backgroundColor: colors.primaryMuted,
+    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -91,6 +96,6 @@ const useStyles = makeStyles(colors => StyleSheet.create({
     paddingVertical: spacing.lg,
     paddingHorizontal: spacing.md,
     borderRadius: radius.lg,
-    backgroundColor: colors.primaryMuted,
+    backgroundColor: colors.surface,
   },
 }));

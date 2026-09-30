@@ -12,7 +12,8 @@ import { Icon } from '../common/Icon';
 
 // The design's pill "search" bar: a fake input that opens the real
 // ProblemInput screen (so the keyboard and math keys live in one place),
-// plus a round camera button for Scan.
+// plus round keyboard (ProblemInput) and camera (Scan) buttons. The
+// design's mic button is left out — there's no voice input.
 export function QuickEntryBar() {
   const colors = useColors();
   const styles = useStyles();
@@ -28,10 +29,18 @@ export function QuickEntryBar() {
         onPress={() => navigation.navigate('ProblemInput')}
         style={({ pressed }) => [styles.pill, isRTL && styles.rowRTL, pressed && styles.pressed]}
       >
+        <Icon name="search" color={colors.textSecondary} />
         <AppText size="sm" color={colors.textSecondary} style={styles.flexOne} numberOfLines={1}>
           {t('home.entryPlaceholder')}
         </AppText>
-        <Icon name="keyboard" color={colors.textSecondary} />
+      </Pressable>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={t('home.typeTitle')}
+        onPress={() => navigation.navigate('ProblemInput')}
+        style={({ pressed }) => [styles.circle, pressed && styles.pressed]}
+      >
+        <Icon name="keyboard" />
       </Pressable>
       <Pressable
         accessibilityRole="button"

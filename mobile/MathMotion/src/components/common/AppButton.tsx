@@ -69,7 +69,8 @@ const styles = StyleSheet.create({
   base: {
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
-    borderRadius: radius.md,
+    // Pill buttons, as everywhere in the "MathMotion AI Study System".
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
   },

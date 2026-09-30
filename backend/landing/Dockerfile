@@ -11,8 +11,11 @@ WORKDIR /app
 ARG NPM_REGISTRY=https://registry.npmjs.org/
 RUN npm config set registry ${NPM_REGISTRY}
 
+# کش دانلود npm با پنل ادمین مشترک است (همان id): پکیجی که یکی‌شان
+# دانلود کرده، برای دیگری دوباره دانلود نمی‌شود.
 COPY package.json package-lock.json* ./
-RUN npm install
+RUN --mount=type=cache,id=mathmotion-npm,target=/root/.npm,sharing=locked \
+    npm install --prefer-offline
 
 COPY . .
 

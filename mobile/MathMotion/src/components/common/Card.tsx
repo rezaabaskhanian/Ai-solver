@@ -32,6 +32,12 @@ const useStyles = makeStyles(colors => StyleSheet.create({
     padding: spacing.lg,
     borderWidth: 1,
     borderColor: colors.border,
+    // A soft lift instead of a hard outline only.
+    shadowColor: '#0F2A12',
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 1,
   },
   pressed: {
     opacity: 0.85,

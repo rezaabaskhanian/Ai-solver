@@ -153,6 +153,7 @@ services:
       args:
         NEXT_PUBLIC_API_URL: https://${API_HOST:?set API_HOST}
         REGISTRY: ${DOCKER_REGISTRY:-docker.io}
+        NPM_REGISTRY: ${NPM_REGISTRY:-https://registry.npmjs.org/}
     container_name: mathmotion_admin_prod
     restart: unless-stopped
     depends_on:

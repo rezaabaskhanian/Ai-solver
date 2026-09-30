@@ -15,9 +15,10 @@ interface ThemeState {
   reset: () => void;
 }
 
+// Lime is the brand color of the "MathMotion AI Study System" design.
 const DEFAULTS = {
   mode: 'light' as ThemeMode,
-  accent: 'indigo' as AccentId,
+  accent: 'lime' as AccentId,
   textTone: 'default' as TextToneId,
 };
 
@@ -34,6 +35,16 @@ export const useThemeStore = create<ThemeState>()(
     {
       name: 'mathmotion.theme',
       storage: createJSONStorage(() => AsyncStorage),
+      // v1: the default accent moved from indigo to lime. A saved indigo
+      // was (almost always) just the old default, so move it along.
+      version: 1,
+      migrate: (persisted, version) => {
+        const state = persisted as Partial<ThemeState>;
+        if (version < 1 && state.accent === 'indigo') {
+          state.accent = 'lime';
+        }
+        return state as ThemeState;
+      },
       partialize: ({ mode, accent, textTone }) => ({ mode, accent, textTone }),
       onRehydrateStorage: () => () => {
         useThemeStore.setState({ hasHydrated: true });

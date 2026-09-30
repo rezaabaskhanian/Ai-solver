@@ -19,6 +19,7 @@
     "recentEmpty": "Solved problems will show up here.",
     "recentLoadError": "Couldn't load recent problems.",
     "hello": "Hi! 👋",
+    "helloName": "Hi, {{name}}! 👋",
     "headline": "Need help solving\na problem today?",
     "entryPlaceholder": "Type your problem here…",
     "proTitle": "Upgrade to MathMotion Pro",
@@ -407,6 +408,7 @@
     "guide": "How to use",
     "settings": "Appearance",
     "quickMenu": "Quick menu",
+    "account": "Phone: {{phone}}",
     "close": "Close menu",
     "planFree": "Free plan",
     "planPremium": "Premium ✓",
@@ -770,8 +772,11 @@
       "steps": "Step-by-step explanations",
       "exam": "Exam prep"
     },
-    "start": "Start learning",
-    "freeNote": "No sign-up — you get a few free solves to try it."
+    "start": "Start smart learning",
+    "login": "Log in to my account",
+    "legalPrefix": "By signing up you accept MathMotion's ",
+    "legalLink": "terms and privacy policy",
+    "legalSuffix": "."
   },
   "lessons": {
     "ui": {

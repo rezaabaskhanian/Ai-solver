@@ -26,25 +26,36 @@ export function PremiumBanner({ compact = false }: { compact?: boolean }) {
     return null;
   }
 
+  // The drawer's version is a dark green card with a lime button (the
+  // "side drawer" design), so it stands apart from the lime menu items.
   if (compact) {
     return (
       <View style={[styles.card, styles.compactCard, isRTL && styles.rowRTL]}>
+        <View style={styles.compactIcon}>
+          <Icon name="military-tech" size={22} color={colors.onPrimary} />
+        </View>
         <View style={styles.flexOne}>
-          <AppText weight="bold" color={colors.onPrimary}>
+          <AppText weight="bold" color="#FFFFFF">
             {t('home.proTitle')}
           </AppText>
-          <AppText size="xs" color={colors.onPrimary} style={styles.body}>
+          <AppText size="xs" color="#FFFFFF" style={styles.body}>
             {t('home.proBodyShort')}
           </AppText>
         </View>
         <Pressable
           accessibilityRole="button"
           onPress={openPremium}
-          style={({ pressed }) => [styles.button, styles.compactButton, pressed && styles.pressed]}
+          style={({ pressed }) => [
+            styles.button,
+            styles.compactButton,
+            isRTL && styles.rowRTL,
+            pressed && styles.pressed,
+          ]}
         >
-          <AppText size="sm" weight="bold" align="center" color={DARK_TEXT}>
+          <AppText size="sm" weight="bold" align="center" color={colors.onPrimary}>
             {t('home.proActivate')}
           </AppText>
+          <Icon name="arrow-forward" size={16} color={colors.onPrimary} directional />
         </Pressable>
       </View>
     );
@@ -105,13 +116,28 @@ const useStyles = makeStyles(colors => StyleSheet.create({
   compactCard: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: spacing.sm,
     padding: spacing.md,
     borderRadius: radius.lg,
+    backgroundColor: '#1F3A0F',
+    shadowColor: '#1F3A0F',
     elevation: 3,
   },
+  compactIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.pill,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   compactButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
     minHeight: 44,
     paddingHorizontal: spacing.md,
+    backgroundColor: colors.primary,
   },
   row: {
     flexDirection: 'row',
