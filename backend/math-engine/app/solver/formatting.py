@@ -1,3 +1,4 @@
+import math
 import re
 from typing import Sequence
 
@@ -73,6 +74,42 @@ def format_expr(expr: sympy.Expr) -> str:
     s = _STAR_BETWEEN_COEFF_AND_SYMBOL.sub("", s)
     s = _STAR_BETWEEN_SYMBOL_AND_PAREN.sub("", s)
     return s
+
+
+def format_root(root: sympy.Expr) -> str:
+    """A root the way Iranian textbooks write it: one fraction over the
+    radical, (5 + sqrt(7))/2, not sympy's 5/2 + sqrt(7)/2; a surd is
+    simplified and common factors cancelled, (6 + 2sqrt(7))/4 ->
+    (3 + sqrt(7))/2. Anything not of the form (p + k·sqrt(n))/d with
+    integers prints as format_expr would.
+    """
+    num, den = sympy.fraction(sympy.together(root))
+    const, rest = sympy.expand(num).as_coeff_add()
+    if len(rest) != 1 or not den.is_Integer or not const.is_Integer:
+        return format_expr(root)
+    k, radical = rest[0].as_coeff_Mul()
+    if not (k.is_Integer and radical.is_Pow and radical.exp == sympy.S.Half and radical.base.is_Integer):
+        return format_expr(root)
+
+    p, k, d = int(const), int(k), int(den)
+    g = math.gcd(math.gcd(p, k), d)
+    p, k, d = p // g, k // g, d // g
+    if d < 0:
+        p, k, d = -p, -k, -d
+
+    surd = f"sqrt({radical.base})"
+    term = surd if abs(k) == 1 else f"{abs(k)}{surd}"
+    if p == 0:
+        numerator = f"-{term}" if k < 0 else term
+        return numerator if d == 1 else f"{numerator}/{d}"
+    numerator = f"{p} {'-' if k < 0 else '+'} {term}"
+    return numerator if d == 1 else f"({numerator})/{d}"
+
+
+def format_roots(symbol: sympy.Symbol, roots: Sequence[sympy.Expr]) -> str:
+    """'x = 2 or x = 3' — the app shows 'or' as «یا» and lists the roots
+    as x₁, x₂. No roots (a quadratic with Δ < 0) is the empty set."""
+    return " or ".join(f"{symbol} = {format_root(r)}" for r in roots) or "∅"
 
 
 def format_eq(lhs: sympy.Expr, rhs: sympy.Expr) -> str:

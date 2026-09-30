@@ -9,6 +9,7 @@ import { AppButton } from '../../components/common/AppButton';
 import { AppText } from '../../components/common/AppText';
 import { Card } from '../../components/common/Card';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
+import { APP_VERSION } from '../../config/version';
 import { MathExpression } from '../../components/MathExpression/MathExpression';
 import { useIsRTL } from '../../hooks/useIsRTL';
 import type { RootStackParamList } from '../../navigation/types';
@@ -200,6 +201,9 @@ export function SettingsScreen() {
       </Card>
 
       <AppButton label={t('settings.reset')} variant="ghost" onPress={reset} />
+      <AppText size="xs" align="center" color={colors.textSecondary}>
+        {t('settings.version', { version: APP_VERSION })}
+      </AppText>
     </ScreenContainer>
   );
 }

@@ -31,14 +31,15 @@ export async function getRefreshToken(): Promise<string | null> {
 export async function saveTokens(tokens: AuthTokens): Promise<void> {
   cachedAccess = tokens.access_token;
   cachedRefresh = tokens.refresh_token;
-  await AsyncStorage.multiSet([
-    [ACCESS_KEY, tokens.access_token],
-    [REFRESH_KEY, tokens.refresh_token],
-  ]);
+  // AsyncStorage v3: setMany/removeMany replace the old multiSet/multiRemove.
+  await AsyncStorage.setMany({
+    [ACCESS_KEY]: tokens.access_token,
+    [REFRESH_KEY]: tokens.refresh_token,
+  });
 }
 
 export async function clearTokens(): Promise<void> {
   cachedAccess = null;
   cachedRefresh = null;
-  await AsyncStorage.multiRemove([ACCESS_KEY, REFRESH_KEY]);
+  await AsyncStorage.removeMany([ACCESS_KEY, REFRESH_KEY]);
 }

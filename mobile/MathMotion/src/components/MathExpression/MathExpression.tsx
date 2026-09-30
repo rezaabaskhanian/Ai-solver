@@ -1,9 +1,10 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 
 import { fontSize, useColors } from '../../theme';
 import { AppText } from '../common/AppText';
-import { tokenizeExpression } from './tokenize';
+import { prettifyMath, tokenizeExpression } from './tokenize';
 
 const OPERATORS = new Set(['+', '-', '*', '/', '=', '^', '(', ')']);
 
@@ -18,7 +19,8 @@ interface MathExpressionProps {
 // touch (and the Math Engine only ever produces ASCII/Latin output).
 export function MathExpression({ expression, size = 'lg', emphasize = false }: MathExpressionProps) {
   const colors = useColors();
-  const tokens = tokenizeExpression(expression);
+  const { t } = useTranslation();
+  const tokens = tokenizeExpression(prettifyMath(expression));
 
   return (
     <View style={styles.row}>
@@ -31,7 +33,8 @@ export function MathExpression({ expression, size = 'lg', emphasize = false }: M
           align="left"
           style={styles.token}
         >
-          {token}
+          {/* "x = 2 or x = 3": the word between roots reads «یا» in Persian. */}
+          {token === 'or' ? ` ${t('common.or')} ` : token}
         </AppText>
       ))}
     </View>

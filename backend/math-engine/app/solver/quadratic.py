@@ -1,6 +1,6 @@
 import sympy
 
-from .formatting import format_expr
+from .formatting import format_expr, format_roots
 from .messages import explained
 from .schemas_internal import StepData
 
@@ -10,7 +10,8 @@ def solve_quadratic(lhs: sympy.Expr, rhs: sympy.Expr, symbol: sympy.Symbol) -> t
 
     Tries factoring first (cleaner for textbook-style MVP examples like
     x^2 - 5x + 6 = 0); falls back to the quadratic formula when the
-    roots aren't rational.
+    roots aren't rational. A negative discriminant ends with «ریشه‌ی
+    حقیقی ندارد» and no roots, as school textbooks do (no complex roots).
     """
     steps: list[StepData] = []
     step_id = 1
@@ -43,9 +44,8 @@ def solve_quadratic(lhs: sympy.Expr, rhs: sympy.Expr, symbol: sympy.Symbol) -> t
         step_id += 1
 
         roots = sorted(sympy.solve(sympy.Eq(standard, 0), symbol), key=str)
-        roots_str = " or ".join(f"{symbol} = {format_expr(r)}" for r in roots)
         steps.append(StepData(
-            id=step_id, before=f"{format_expr(factored)} = 0", after=roots_str,
+            id=step_id, before=f"{format_expr(factored)} = 0", after=format_roots(symbol, roots),
             operation="zero_product_property", value=None, target="each_factor",
             **explained("zero_product"),
         ))
@@ -61,16 +61,23 @@ def solve_quadratic(lhs: sympy.Expr, rhs: sympy.Expr, symbol: sympy.Symbol) -> t
 
         discriminant = sympy.expand(b**2 - 4 * a * c)
         steps.append(StepData(
-            id=step_id, before="b² - 4ac", after=format_expr(discriminant),
+            id=step_id, before="Δ = b² - 4ac", after=f"Δ = {format_expr(discriminant)}",
             operation="compute_discriminant", value=format_expr(discriminant), target="equation",
             **explained("compute_discriminant"),
         ))
         step_id += 1
 
+        if discriminant.is_negative:
+            steps.append(StepData(
+                id=step_id, before=f"Δ = {format_expr(discriminant)}", after="Δ < 0 ⇒ ∅",
+                operation="no_real_roots", value=None, target="equation",
+                **explained("no_real_roots"),
+            ))
+            return steps, []
+
         roots = sorted(sympy.solve(sympy.Eq(standard, 0), symbol), key=str)
-        roots_str = " or ".join(f"{symbol} = {format_expr(r)}" for r in roots)
         steps.append(StepData(
-            id=step_id, before=f"{symbol} = (-b ± √(b² - 4ac)) / 2a", after=roots_str,
+            id=step_id, before=f"{symbol} = (-b ± √Δ) / 2a", after=format_roots(symbol, roots),
             operation="compute_roots", value=None, target="equation",
             **explained("compute_roots"),
         ))

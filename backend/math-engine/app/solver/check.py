@@ -5,7 +5,7 @@ import sympy
 from sympy.parsing.sympy_parser import parse_expr
 
 from .expression import solve_expression
-from .formatting import format_expr
+from .formatting import format_expr, format_roots
 from .linear import solve_linear
 from .normalize import normalize_input
 from .parser import _TRANSFORMATIONS, ParseError
@@ -124,7 +124,7 @@ def check_student_work(
             correct_answer = f"{symbol} = {format_expr(final_value)}"
         else:
             _, roots = solve_quadratic(lhs, rhs, symbol)
-            correct_answer = " or ".join(f"{symbol} = {format_expr(r)}" for r in roots)
+            correct_answer = format_roots(symbol, roots)
         last_lhs, last_rhs = lhs, rhs
     else:
         _, simplified = solve_expression(expr)

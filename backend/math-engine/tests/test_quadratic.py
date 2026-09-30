@@ -41,3 +41,18 @@ def test_irrational_roots_use_quadratic_formula_path():
 def test_perfect_square_has_repeated_root():
     parsed, steps, roots = _solve("x^2 - 4x + 4 = 0")
     assert all(format_expr(r) == "2" for r in roots)
+
+
+def test_negative_discriminant_has_no_real_roots():
+    _, steps, roots = _solve("x^2 - 5x + 8 = 0")
+    assert roots == []
+    assert steps[-1].operation == "no_real_roots"
+    assert steps[-1].after == "Δ < 0 ⇒ ∅"
+
+
+def test_irrational_roots_print_as_one_fraction():
+    from app.solver.formatting import format_roots
+    parsed, _, roots = _solve("x^2 - 3x + 1/2 = 0")
+    assert format_roots(parsed.symbol, roots) == "x = (3 - sqrt(7))/2 or x = (3 + sqrt(7))/2"
+    parsed, _, roots = _solve("x^2 - 4x + 1 = 0")
+    assert format_roots(parsed.symbol, roots) == "x = 2 - sqrt(3) or x = 2 + sqrt(3)"

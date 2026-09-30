@@ -469,6 +469,31 @@ Jest) گرفته بود.
   - `backend/math-engine/tests/test_topic_examples.py` همه‌ی نمونه‌ها را از همین فایل می‌خواند و حل
     می‌کند؛ مثال جدیدی که engine نفهمد، همان‌جا fail می‌شود.
 
+## ۱۴.۱ نسخه و انتشار در کافه‌بازار
+
+- **نسخه فقط یک جا:** `"version"` در `package.json` (الان `1.0.0`). `android/app/build.gradle`
+  از همان `versionName` را می‌سازد و `versionCode = major*10000 + minor*100 + patch`
+  (۱.۰.۰ → ۱۰۰۰۰، ۱.۰.۱ → ۱۰۰۰۱). در تنظیمات اپ هم نمایش داده می‌شود (`src/config/version.ts`).
+  برای هر آپدیت بازار فقط این عدد را بالا ببر — بازار versionCode تکراری/کمتر را قبول نمی‌کند.
+- **کلید امضا (یک بار):**
+  ```bash
+  keytool -genkeypair -v -storetype PKCS12 -keystore ~/mathmotion-upload.keystore \
+    -alias mathmotion -keyalg RSA -keysize 2048 -validity 10000
+  ```
+  و در `~/.gradle/gradle.properties` (نه داخل پروژه):
+  ```
+  MATHMOTION_UPLOAD_STORE_FILE=/Users/<you>/mathmotion-upload.keystore
+  MATHMOTION_UPLOAD_STORE_PASSWORD=...
+  MATHMOTION_UPLOAD_KEY_ALIAS=mathmotion
+  MATHMOTION_UPLOAD_KEY_PASSWORD=...
+  ```
+  این فایل و رمزها را جای امن بک‌آپ بگیر: بدون همین کلید، آپدیت بعدی در بازار ممکن نیست.
+- **ساخت:** `cd android && ./gradlew assembleRelease` →
+  `android/app/build/outputs/apk/release/app-release.apk` (بازار APK یا AAB هر دو را می‌پذیرد؛
+  `./gradlew bundleRelease` → `app-release.aab`).
+- **آیکون فروشگاه ۵۱۲×۵۱۲:** `.design/store-icon-512.png` (ریشه‌ی ریپو). آیکون‌های لانچر در
+  `android/app/src/main/res/mipmap-*` هستند.
+
 ## ۱۵. وضعیت فعلی
 
 | مورد | وضعیت |

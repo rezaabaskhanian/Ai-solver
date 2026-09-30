@@ -120,7 +120,7 @@ export function SolutionScreen({ route, navigation }: Props) {
 
           {view === 'player' ? <StepViewer steps={result.steps} /> : <StepList steps={result.steps} />}
 
-          <FinalAnswerCard answer={result.answer} verified={result.verified} />
+          <FinalAnswerCard answer={result.answer} verified={result.verified} type={result.type} />
         </View>
       </ViewShot>
 

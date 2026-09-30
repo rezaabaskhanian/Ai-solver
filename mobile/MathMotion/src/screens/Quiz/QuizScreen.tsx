@@ -78,7 +78,7 @@ export function QuizScreen({ route, navigation }: Props) {
               {t('quiz.complete')}
             </AppText>
           </View>
-          <FinalAnswerCard answer={result.answer} verified={result.verified} />
+          <FinalAnswerCard answer={result.answer} verified={result.verified} type={result.type} />
           <AppButton label={t('solution.done')} variant="primary" icon="home" onPress={() => navigation.popToTop()} />
         </View>
       ) : (

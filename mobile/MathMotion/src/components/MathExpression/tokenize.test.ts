@@ -1,4 +1,4 @@
-import { tokenizeExpression } from './tokenize';
+import { prettifyMath, splitRoots, tokenizeExpression } from './tokenize';
 
 describe('tokenizeExpression', () => {
   it('splits numbers, letters, and operators into separate tokens', () => {
@@ -32,5 +32,17 @@ describe('tokenizeExpression', () => {
 
   it('falls back to the whole string when nothing matches', () => {
     expect(tokenizeExpression('   ')).toEqual(['   ']);
+  });
+});
+
+describe('prettifyMath / splitRoots', () => {
+  it('writes square roots with the radical sign', () => {
+    expect(prettifyMath('(3 + sqrt(7))/2')).toBe('(3 + √7)/2');
+    expect(prettifyMath('sqrt(x + 1)')).toBe('√(x + 1)');
+  });
+
+  it('numbers several roots x₁, x₂', () => {
+    expect(splitRoots('x = 2 or x = 3')).toEqual(['x₁ = 2', 'x₂ = 3']);
+    expect(splitRoots('x = 6')).toEqual(['x = 6']);
   });
 });

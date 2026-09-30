@@ -62,6 +62,10 @@ MESSAGES: dict[str, dict[str, str]] = {
         "en": "Compute the discriminant.",
         "fa": "دلتا (مبیّن) را حساب می‌کنیم.",
     },
+    "no_real_roots": {
+        "en": "The discriminant is negative, so the equation has no real roots.",
+        "fa": "چون دلتا منفی است، معادله ریشه‌ی حقیقی ندارد.",
+    },
     "compute_roots": {
         "en": "Substitute a, b, c and the discriminant to compute the roots.",
         "fa": "a، b، c و دلتا را جای‌گذاری می‌کنیم تا ریشه‌ها به دست بیایند.",

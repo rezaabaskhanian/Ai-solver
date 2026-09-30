@@ -84,7 +84,7 @@ export function ArSolutionScreen({ route, navigation }: Props) {
       <View style={styles.overlay}>
         {isLast ? (
           <>
-            <FinalAnswerCard answer={result.answer} verified={result.verified} />
+            <FinalAnswerCard answer={result.answer} verified={result.verified} type={result.type} />
             <AppButton
               label={t('solution.done')}
               variant="primary"

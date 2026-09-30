@@ -3,21 +3,25 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 
 import { useIsRTL } from '../../hooks/useIsRTL';
+import type { ProblemType } from '../../types/problem';
 import { makeStyles, radius, spacing, useColors } from '../../theme';
 import { AppText } from '../common/AppText';
 import { MathExpression } from '../MathExpression/MathExpression';
+import { splitRoots } from '../MathExpression/tokenize';
 import { VerifiedBadge } from './VerifiedBadge';
 import { Icon } from '../common/Icon';
 
 interface FinalAnswerCardProps {
   answer: string;
   verified: boolean;
+  // For the "no real roots" line under an empty (∅) quadratic answer.
+  type?: ProblemType;
 }
 
 // Stitch "solution_steps" final-answer card: success-tinted when the
 // Math Engine verified the answer by substituting it back (PRD section
 // 19), neutral otherwise.
-export function FinalAnswerCard({ answer, verified }: FinalAnswerCardProps) {
+export function FinalAnswerCard({ answer, verified, type }: FinalAnswerCardProps) {
   const colors = useColors();
   const styles = useStyles();
   const { t } = useTranslation();
@@ -35,8 +39,15 @@ export function FinalAnswerCard({ answer, verified }: FinalAnswerCardProps) {
       </View>
       <View style={styles.inner}>
         <View style={[styles.answerBox, verified && styles.answerBoxVerified]}>
-          <MathExpression expression={answer} size="xl" emphasize />
+          {splitRoots(answer).map(line => (
+            <MathExpression key={line} expression={line} size="xl" emphasize />
+          ))}
         </View>
+        {answer === '∅' && type === 'quadratic_equation' && (
+          <AppText weight="medium" align="center">
+            {t('solution.emptyAnswer')}
+          </AppText>
+        )}
         {verified && (
           <AppText size="xs" align="center" color={colors.textSecondary}>
             {t('solution.verifiedHint')}
@@ -80,6 +91,8 @@ const useStyles = makeStyles(colors => StyleSheet.create({
   },
   answerBox: {
     alignSelf: 'center',
+    alignItems: 'center',
+    gap: spacing.xs,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.lg,
     borderRadius: radius.md,

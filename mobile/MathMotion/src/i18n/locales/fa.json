@@ -1,5 +1,6 @@
 {
   "common": {
+    "or": "یا",
     "appName": "مث‌موشن",
     "retry": "تلاش مجدد",
     "cancel": "لغو",
@@ -102,6 +103,7 @@
     }
   },
   "solution": {
+    "emptyAnswer": "مجموعه‌ی جواب تهی است — معادله ریشه‌ی حقیقی ندارد.",
     "title": "راه‌حل",
     "verified": "اعتبارسنجی‌شده",
     "notVerified": "بررسی نشده",
@@ -131,6 +133,7 @@
       "apply_quadratic_formula": "فرمول درجه‌دو",
       "compute_discriminant": "محاسبه دلتا",
       "compute_roots": "محاسبه ریشه‌ها",
+      "no_real_roots": "بدون ریشه‌ی حقیقی",
       "sum_rule": "قاعده جمع",
       "combine": "ترکیب جمله‌ها",
       "constant_rule": "قاعده مقدار ثابت",
@@ -760,7 +763,8 @@
     "previewBody": "این یک متن نمونه است تا رنگ‌ها را ببینی.",
     "previewSecondary": "متن توضیحی با رنگ ملایم‌تر",
     "previewButton": "حل کن",
-    "reset": "بازگشت به پیش‌فرض"
+    "reset": "بازگشت به پیش‌فرض",
+    "version": "نسخه‌ی {{version}}"
   },
   "onboarding": {
     "tagline": "یادگیری تعاملی ریاضی مدرسه، قدم‌به‌قدم",

@@ -1,5 +1,6 @@
 {
   "common": {
+    "or": "or",
     "appName": "MathMotion",
     "retry": "Retry",
     "cancel": "Cancel",
@@ -102,6 +103,7 @@
     }
   },
   "solution": {
+    "emptyAnswer": "The solution set is empty — no real roots.",
     "title": "Solution",
     "verified": "Verified",
     "notVerified": "Not verified",
@@ -131,6 +133,7 @@
       "apply_quadratic_formula": "Quadratic formula",
       "compute_discriminant": "Discriminant",
       "compute_roots": "Compute roots",
+      "no_real_roots": "No real roots",
       "sum_rule": "Sum rule",
       "combine": "Combine terms",
       "constant_rule": "Constant rule",
@@ -760,7 +763,8 @@
     "previewBody": "This is sample text so you can see the colors.",
     "previewSecondary": "Secondary text in a softer color",
     "previewButton": "Solve",
-    "reset": "Reset to default"
+    "reset": "Reset to default",
+    "version": "Version {{version}}"
   },
   "onboarding": {
     "tagline": "Interactive school math, step by step",

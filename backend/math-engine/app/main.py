@@ -16,7 +16,7 @@ from .schemas import (
 from .solver.check import UnsupportedForCheck, check_student_work
 from .solver.derivative import DerivativeUnsupported, solve_derivative_problem
 from .solver.expression import solve_expression
-from .solver.formatting import format_expr
+from .solver.formatting import format_expr, format_roots
 from .solver.geometry import GeometryError, solve_geometry, verify_geometry
 from .solver.graphs import GraphError, solve_graph, verify_graph
 from .solver.integral import IntegrationUnsupported, solve_definite_integral, solve_integral
@@ -101,10 +101,11 @@ def solve(req: SolveRequest):
 
     elif parsed.problem_type == "quadratic_equation":
         step_data, roots = solve_quadratic(parsed.lhs, parsed.rhs, parsed.symbol)
+        # No roots only when Δ < 0, which the solver computed exactly.
         verified = all(
             verify_equation_root(parsed.lhs, parsed.rhs, parsed.symbol, r) for r in roots
-        ) if roots else False
-        answer = " or ".join(f"{parsed.symbol} = {format_expr(r)}" for r in roots)
+        )
+        answer = format_roots(parsed.symbol, roots)
 
     elif parsed.problem_type in ("expression", "arithmetic", "trig_expression"):
         step_data, result = solve_expression(parsed.expr)
