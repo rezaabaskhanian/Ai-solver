@@ -137,6 +137,41 @@ android {
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
         }
     }
+
+    // Compress the native .so libraries inside the APK (AGP stores them
+    // uncompressed by default). Cuts the download size roughly in half;
+    // the libs are extracted once at install time.
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging true
+        }
+    }
+
+    // One APK per architecture instead of a single fat one — distribution is
+    // via Cafe Bazaar, not Play (where an AAB would do this automatically).
+    // universalApk=false: no extra all-architectures APK is built.
+    splits {
+        abi {
+            reset()
+            enable true
+            universalApk false
+            include "armeabi-v7a", "arm64-v8a"
+        }
+    }
+
+    // Each architecture's APK gets its own versionCode (e.g. 1001 and 1002),
+    // since the store rejects two APKs with the same one. The file name
+    // carries the version: MathMotion-v1.0.0-1-arm64-v8a-release.apk
+    def abiCodes = ["armeabi-v7a": 1, "arm64-v8a": 2]
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            def abi = output.getFilter("ABI")
+            if (abi != null) {
+                output.versionCodeOverride = variant.versionCode * 1000 + abiCodes.get(abi)
+            }
+            outputFileName = "MathMotion-v${variant.versionName}-${variant.versionCode}-${abi ?: "universal"}-${variant.buildType.name}.apk"
+        }
+    }
 }
 
 dependencies {

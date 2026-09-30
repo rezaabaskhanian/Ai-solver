@@ -52,6 +52,8 @@ export function LessonView({ topicId, lesson }: Props) {
 
       {open && (
         <>
+          {lesson.intro ? <AppText size="sm">{t(k('intro'))}</AppText> : null}
+
           <SectionTitle icon="lightbulb-outline" label={t('lessons.ui.concepts')} />
           {lesson.concepts.map(concept => (
             <View key={concept.key} style={styles.block}>
@@ -83,7 +85,7 @@ export function LessonView({ topicId, lesson }: Props) {
                   <View style={styles.flexOne}>
                     <MathExpression expression={step.math} size="md" />
                     {step.key ? (
-                      <AppText size="xs" color={colors.textSecondary}>
+                      <AppText size="sm" color={colors.textSecondary}>
                         {t(k(`steps.${step.key}`))}
                       </AppText>
                     ) : null}

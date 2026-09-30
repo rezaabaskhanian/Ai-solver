@@ -35,6 +35,8 @@ export interface LessonMistake {
 }
 
 export interface Lesson {
+  // An overview paragraph (lessons.<topic>.intro) shown above the ideas.
+  intro?: boolean;
   concepts: LessonConcept[];
   examples: LessonExample[];
   mistakes: LessonMistake[];
@@ -42,6 +44,7 @@ export interface Lesson {
 
 export const LESSONS: Partial<Record<TopicId, Lesson>> = {
   limit: {
+    intro: true,
     concepts: [
       { key: 'meaning', formula: 'lim(x→a) f(x) = L' },
       { key: 'substitute', formula: 'lim(x→3) (2x + 1) = 7' },
@@ -71,6 +74,16 @@ export const LESSONS: Partial<Record<TopicId, Lesson>> = {
           { math: '1/(2 + 2) = 1/4', key: 'conjugate4' },
         ],
         answer: '1/4',
+      },
+      {
+        key: 'atInfinity',
+        problem: 'lim(x→∞) (2x^2 + 1)/(x^2 - 3)',
+        steps: [
+          { math: '(2x^2 + 1)/(x^2 - 3) → ∞/∞', key: 'atInfinity1' },
+          { math: '(2x^2)/(x^2)', key: 'atInfinity2' },
+          { math: '2x^2/x^2 = 2/1 = 2', key: 'atInfinity3' },
+        ],
+        answer: '2',
       },
     ],
     mistakes: [

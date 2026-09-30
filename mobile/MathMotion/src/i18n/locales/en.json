@@ -827,31 +827,36 @@
       "hide": "Hide the lesson"
     },
     "limit": {
+      "intro": "The limit is one of the basic ideas of calculus. Derivatives and continuity are built on it. A limit asks: \"as x gets very close to a number, where does the function's value go?\" It is about approaching, not arriving. So a limit can exist even where the function itself is not defined.\n\nFor any limit problem, follow this roadmap:\n1. Substitute the number into the function.\n2. If you get an ordinary number, that is the answer.\n3. If you get 0/0, simplify (factor or use the conjugate) and substitute again.\n4. If you get a nonzero number over 0, check the left and right limits separately.\n5. If x goes to infinity, compare the highest powers of the numerator and denominator.",
       "concepts": {
-        "meaning": "A limit asks what value the function approaches as x gets closer and closer to a — x itself never equals a.",
-        "substitute": "Always substitute first. If the function is defined there (polynomials are), the limit is just its value.",
-        "zeroOverZero": "Getting 0/0 means an indeterminate form: factor and cancel the common factor, or multiply by the conjugate when there is a root.",
-        "infinite": "A nonzero number over 0 means the function blows up. Check the left and right limits; if they differ, the limit does not exist.",
-        "atInfinity": "As x goes to infinity, only the highest-power terms of a polynomial fraction matter."
+        "meaning": "Take the function \"2x + 1\" and let x approach 3. Plugging in 2.9, 2.99 and 2.999 gives 6.8, 6.98 and 6.998. From the other side, 3.1 and 3.01 give 7.2 and 7.02. Both sides approach 7, so the limit is 7.\n\nImportant: x approaches a but never equals a. The function's value at a itself does not matter, only its behaviour around a.",
+        "substitute": "Always try substitution first: put the number x approaches in place of x. If the function is defined and continuous there, the limit is simply its value. Polynomials, sine and cosine, and fractions whose denominator is not 0 at that point all behave this way.\n\nIn the formula below, put 3 in place of x: 2 times 3 plus 1 is 7, and you are done. In many test questions this first step already gives the answer.",
+        "zeroOverZero": "Sometimes substitution gives 0/0. This is an indeterminate form: you do not know the answer yet and must simplify. When the numerator and denominator are both 0, they share a factor that vanishes at that point. Your job is to find that factor and cancel it.\n\nThere are two main methods:\n• Factoring: for polynomials, factor the numerator and denominator (identities or common factors) and cancel the common factor.\n• Conjugate: when there is a root, multiply top and bottom by the conjugate of the root expression to clear the root.\nAfter simplifying, substitute again.",
+        "infinite": "If substitution gives a nonzero number over 0, it is not indeterminate. The function is unbounded and goes to +∞ or −∞. To find the sign, check the left limit (x approaching from smaller numbers) and the right limit (from larger numbers) separately.\n\nFor example, with \"1 over x\", as x approaches 0 from the right (0.1, 0.01, …) the values are 10, 100, … and go to +∞. From the left (−0.1, −0.01, …) they go to −∞. The two sides differ, so the limit at 0 does not exist; only the one-sided limits do.",
+        "atInfinity": "As x goes to infinity, the highest-power term of a polynomial fraction grows much faster than the others, which become negligible next to it. So keep only the highest power of the numerator and of the denominator.\n\nThree cases:\n• Equal powers: the answer is the leading coefficient of the numerator over that of the denominator.\n• Higher power in the denominator: the answer is 0.\n• Higher power in the numerator: the answer is +∞ or −∞."
       },
       "examples": {
-        "factor": "Resolving 0/0 by factoring",
-        "conjugate": "Resolving 0/0 with the conjugate"
+        "factor": "Example 1: resolving 0/0 by factoring",
+        "conjugate": "Example 2: resolving 0/0 with the conjugate",
+        "atInfinity": "Example 3: a limit at infinity"
       },
       "steps": {
-        "factor1": "Substituting gives an indeterminate form, so simplify first.",
-        "factor2": "Factor the numerator (difference of squares).",
-        "factor3": "Cancel the common factor — allowed because x approaches 2 but never equals it.",
-        "factor4": "Now substitution works.",
-        "conjugate1": "Indeterminate again.",
-        "conjugate2": "Multiply top and bottom by the conjugate of the numerator to clear the root.",
-        "conjugate3": "Cancel the common factor.",
-        "conjugate4": "Substitute."
+        "factor1": "Following the roadmap, substitute 2 first. The numerator is 4 − 4 = 0 and the denominator 2 − 2 = 0. That is 0/0, an indeterminate form, so we cannot answer yet. We need to simplify.",
+        "factor2": "The numerator \"x squared minus 4\" is a difference of squares, so it equals (x − 2)(x + 2). Now the factor (x − 2) appears on top and bottom. It is the factor that made both parts 0.",
+        "factor3": "Cancel the common factor (x − 2). This is allowed because x approaches 2 but never equals it, so x − 2 is never 0. The expression becomes x + 2.",
+        "factor4": "Substitute again. There is no denominator to become 0 now: 2 + 2 = 4. So the limit is 4.",
+        "conjugate1": "Substitute 4: the square root of 4 is 2, so the numerator is 2 − 2 = 0 and the denominator 4 − 4 = 0. It is 0/0 again. This time the numerator has a root, which ordinary factoring will not remove, so use the conjugate.",
+        "conjugate2": "The conjugate of \"√x − 2\" is \"√x + 2\". Multiply top and bottom by it. This does not change the fraction, since we are really multiplying by 1. By the difference of squares, the numerator becomes x − 4 and the root disappears. The denominator becomes (x − 4)(√x + 2).",
+        "conjugate3": "Now (x − 4) is on top and bottom, so cancel it. As before, this is allowed because x never equals 4 exactly. Only 1 is left in the numerator.",
+        "conjugate4": "Substitute 4 again. The square root of 4 is 2, so the denominator is 2 + 2 = 4. The limit is 1/4.",
+        "atInfinity1": "As x grows very large, the numerator and denominator both go to infinity. ∞/∞ is indeterminate too and need not be 1, so look closer.",
+        "atInfinity2": "When x is huge (say one million), 2x² is two trillion, and the 1 next to it is negligible. So is the −3 in the denominator. Keep only the highest powers: 2x² on top and x² below.",
+        "atInfinity3": "x² cancels from top and bottom, leaving the coefficients: 2 over 1 is 2. The powers were equal, so the answer is the ratio of the leading coefficients."
       },
       "mistakes": {
-        "zeroOverZero": "Treating 0/0 as 0 or 1. It is not an answer — it tells you to simplify.",
-        "infinityOverInfinity": "Infinity over infinity is indeterminate too and need not be 1 — compare the highest powers.",
-        "sides": "Not checking both sides when the denominator becomes 0. Here the right limit is +∞ and the left −∞, so the limit does not exist."
+        "zeroOverZero": "Treating 0/0 as 0 or 1. 0/0 is not a number and not the answer. It only signals that the expression is not simplified yet. In Example 1 the real answer was 4, neither 0 nor 1. Whenever you hit it, factor or use the conjugate.",
+        "infinityOverInfinity": "Treating ∞/∞ as 1. Two infinities need not grow at the same rate. In the example below the numerator is about twice the denominator, so the answer is 2, not 1. Always compare the highest powers.",
+        "sides": "Checking only one side when the denominator becomes 0 and saying \"the limit is infinity\". For \"1 over (x − 1)\", approaching 1 from the right (e.g. 1.01) the denominator is a small positive number and the function goes to +∞. From the left (e.g. 0.99) it is negative and the function goes to −∞. The two sides differ, so the limit does not exist."
       }
     },
     "logarithm": {

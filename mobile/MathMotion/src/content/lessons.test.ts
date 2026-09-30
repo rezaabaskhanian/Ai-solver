@@ -23,6 +23,7 @@ describe('lessons', () => {
   it('have Persian and English text for every key', () => {
     const keys: string[] = [];
     entries.forEach(([id, lesson]) => {
+      if (lesson!.intro) keys.push(`lessons.${id}.intro`);
       lesson!.concepts.forEach(c => keys.push(`lessons.${id}.concepts.${c.key}`));
       lesson!.examples.forEach(e => {
         keys.push(`lessons.${id}.examples.${e.key}`);

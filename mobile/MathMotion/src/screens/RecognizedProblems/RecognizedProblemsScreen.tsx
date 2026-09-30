@@ -15,6 +15,7 @@ import { toApiError, translationKeyForApiError } from '../../services/api/apiErr
 import { solveProblem } from '../../services/api/problems';
 import { useEntitlementStore } from '../../store/useEntitlementStore';
 import { makeStyles, radius, spacing, useColors } from '../../theme';
+import { isArSupported } from '../../utils/arSupport';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RecognizedProblems'>;
 
@@ -40,7 +41,11 @@ export function RecognizedProblemsScreen({ route, navigation }: Props) {
     try {
       const result = await solveProblem(problem);
       refreshEntitlement();
-      navigation.navigate('ArSolution', { photoUri, problem, result });
+      if (await isArSupported()) {
+        navigation.navigate('ArSolution', { photoUri, problem, result });
+      } else {
+        navigation.navigate('Solution', { problem, result });
+      }
     } catch (err) {
       const apiError = toApiError(err);
       if (apiError.code === 'quota_exceeded') {

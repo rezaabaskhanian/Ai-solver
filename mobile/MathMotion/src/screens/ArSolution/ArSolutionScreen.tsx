@@ -47,7 +47,8 @@ export function ArSolutionScreen({ route, navigation }: Props) {
   useEffect(() => {
     ViroARTrackingTargets.createTargets({
       [targetName]: {
-        source: { uri: photoUri },
+        // The camera gives a bare path; Viro, like Image, needs a file:// URI.
+        source: { uri: photoUri.startsWith('file://') ? photoUri : `file://${photoUri}` },
         orientation: 'Up',
         physicalWidth: TARGET_PHYSICAL_WIDTH_METERS,
         type: 'Image',
