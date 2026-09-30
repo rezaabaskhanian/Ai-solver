@@ -46,7 +46,7 @@ func (s Service) Solve(ctx context.Context, userID string, isPremium bool, rawIn
 
 	problemID, err := s.repo.SaveProblemAndSolution(
 		ctx, userID, rawInput, result.Problem, result.Type,
-		result.Answer, result.Verified, steps,
+		result.Answer, result.Verified, steps, result.Plot,
 	)
 	if err != nil {
 		return dto.SolveResult{}, richerror.New(richerror.Op(op)).WithErr(err).
@@ -63,5 +63,6 @@ func (s Service) Solve(ctx context.Context, userID string, isPremium bool, rawIn
 		Verified:  result.Verified,
 		Type:      result.Type,
 		Steps:     dtoSteps,
+		Plot:      result.Plot,
 	}, nil
 }

@@ -26,6 +26,33 @@ const recognitionPrompt = `You will be shown a photo that may contain one or mor
 	`integrate(expr, x), limit lim(x->a) expr (lim(x->oo) for infinity, lim(x->0+) / lim(x->0-) ` +
 	`for one-sided limits), log with base b log_b(expr), a log written without a base log(expr), ` +
 	`natural log ln(expr). ` +
+	// Iranian textbooks (حسابان / ریاضی) mostly state the operation in
+	// Persian words or with y'/f'(x) rather than d/dx — the math engine
+	// only understands the forms above, so every such problem has to be
+	// rewritten into them here.
+	`Problems may be written in Persian, as in Iranian school textbooks. Never output Persian ` +
+	`words: turn the instruction into the notation above and keep only the math. ` +
+	`Derivatives: y', f'(x), dy/dx, «مشتق ... را بیابید / حساب کنید», «مشتق تابع ...» all mean ` +
+	`d/dx(expr), where expr is the function itself — e.g. "y = x^3 , y' = ?" or «مشتق تابع ` +
+	`f(x) = x^3 را بیابید» becomes d/dx(x^3); output only that line, not the function's ` +
+	`definition. A derivative with respect to another variable («نسبت به t») uses d/dt(expr). ` +
+	`Integrals: ∫ f(x) dx, «انتگرال ... را حساب کنید», «انتگرال نامعین», «تابع اولیه ... را ` +
+	`بیابید» all mean integrate(expr, x). ` +
+	`Limits: «حد ... وقتی x به a میل می‌کند», «x → a», lim with a under it all mean ` +
+	`lim(x->a) expr; «حد راست» / x→a+ is lim(x->a+), «حد چپ» / x→a- is lim(x->a-), «بی‌نهایت» ` +
+	`is oo. ` +
+	`Plotting a function («نمودار تابع ... را رسم کنید», «رسم نمودار», «نمودار ... را بکشید»): ` +
+	`plot(expr), e.g. plot(x^2 - 4); with a stated range («در بازه‌ی [-2, 3]») ` +
+	`plot(expr, x, -2, 3). ` +
+	`Equations («معادله را حل کنید», «ریشه‌های معادله») are written as the equation only, and ` +
+	`«ساده کنید» / «مقدار عبارت» as the expression only. ` +
+	`Second derivative (y'', f''(x), d²y/dx², «مشتق دوم»): d^2/dx^2(expr). ` +
+	`Derivative at a point (f'(2), y' at x=2, «مشتق ... در x = 2», «شیب خط مماس در x = 2»): ` +
+	`d/dx(expr)|x=2, and d^2/dx^2(expr)|x=2 for a second derivative at a point. ` +
+	`Definite integral with bounds a (bottom) and b (top) («انتگرال معین», «از a تا b»): ` +
+	`integrate(expr, x, a, b). ` +
+	`If the photo shows only a bare expression such as x^3 with no ` +
+	`instruction, transcribe just the expression — never guess an operation. ` +
 	`Sets: define each set, then the question, separated by commas, e.g. A={1,2,3}, B={2,3,4}, A∪B ` +
 	`(∪ union, ∩ intersection, - difference, A' complement with U={...} defined, n(A) number of ` +
 	`elements). Vectors: [x, y], points A(1, 2), the vector between points AB, length |AB|. ` +

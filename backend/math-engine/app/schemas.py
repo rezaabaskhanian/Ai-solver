@@ -35,6 +35,9 @@ class SolveResponse(BaseModel):
     verified: bool
     type: str
     steps: list[Step]
+    # "function_plot" only: the sampled curve and its marked points
+    # (solver/plot.py) for the app to draw.
+    plot: Optional[dict] = None
 
 
 class ErrorResponse(BaseModel):

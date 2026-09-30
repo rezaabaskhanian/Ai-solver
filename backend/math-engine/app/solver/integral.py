@@ -18,12 +18,14 @@ class IntegrationUnsupported(Exception):
         self.message = message
 
 
-def solve_integral(expr: sympy.Expr, symbol: sympy.Symbol) -> tuple[list[StepData], sympy.Expr]:
+def solve_integral(expr: sympy.Expr, symbol: sympy.Symbol,
+                   add_constant: bool = True) -> tuple[list[StepData], sympy.Expr]:
     """Generate textbook-style integration steps: split into additive
     terms (sum rule), name the rule applied to each term (constant/
     reverse-power/log/trig), combine, then add the constant of
-    integration. Same "sympy is the source of truth, steps are for
-    narration" philosophy as derivative.py.
+    integration (skipped for a definite integral, where it cancels).
+    Same "sympy is the source of truth, steps are for narration"
+    philosophy as derivative.py.
     """
     steps: list[StepData] = []
     step_id = 1
@@ -63,13 +65,76 @@ def solve_integral(expr: sympy.Expr, symbol: sympy.Symbol) -> tuple[list[StepDat
         ))
         step_id += 1
 
-    steps.append(StepData(
-        id=step_id, before=format_expr(result), after=f"{format_expr(result)} + C",
-        operation="add_constant", value=None, target="expression",
-        **explained("integral_add_constant"),
-    ))
+    if add_constant:
+        steps.append(StepData(
+            id=step_id, before=format_expr(result), after=f"{format_expr(result)} + C",
+            operation="add_constant", value=None, target="expression",
+            **explained("integral_add_constant"),
+        ))
 
     return steps, result
+
+
+def solve_definite_integral(expr: sympy.Expr, symbol: sympy.Symbol, lower: sympy.Expr,
+                            upper: sympy.Expr) -> tuple[list[StepData], sympy.Expr]:
+    """∫_a^b f dx the textbook way: find an antiderivative F with the
+    same steps as solve_integral, then F(b) - F(a). sympy's own definite
+    integral is the source of truth; when it disagrees with F(b) - F(a)
+    (f isn't continuous on [a, b], e.g. 1/x from -1 to 1) the
+    Newton–Leibniz steps would be wrong, so that's rejected too."""
+    steps, antiderivative = solve_integral(expr, symbol, add_constant=False)
+
+    exact = sympy.integrate(expr, (symbol, lower, upper))
+    if exact.has(sympy.Integral) or not (exact.is_real and exact.is_finite):
+        raise IntegrationUnsupported(
+            f"The integral of '{format_expr(expr)}' from {format_expr(lower)} to "
+            f"{format_expr(upper)} doesn't have a finite value."
+        )
+    at_upper = _at_bound(antiderivative, symbol, upper, "-")
+    at_lower = _at_bound(antiderivative, symbol, lower, "+")
+    if at_upper is None or at_lower is None or sympy.simplify(at_upper - at_lower - exact) != 0:
+        raise IntegrationUnsupported(
+            f"'{format_expr(expr)}' isn't continuous between {format_expr(lower)} and "
+            f"{format_expr(upper)}, so F(b) - F(a) can't be used."
+        )
+
+    difference = f"({format_expr(at_upper)}) - ({format_expr(at_lower)})"
+    step_id = len(steps) + 1
+    steps.append(StepData(
+        id=step_id,
+        before=f"[{format_expr(antiderivative)}]_{_bound_text(lower)}^{_bound_text(upper)}",
+        after=difference, operation="evaluate_bounds", value=None, target="expression",
+        **explained("definite_evaluate_bounds", lower=format_expr(lower), upper=format_expr(upper)),
+    ))
+    steps.append(StepData(
+        id=step_id + 1, before=difference, after=format_expr(exact),
+        operation="simplify", value=None, target="expression",
+        **explained("definite_result"),
+    ))
+    return steps, exact
+
+
+def _at_bound(antiderivative: sympy.Expr, symbol: sympy.Symbol, bound: sympy.Expr,
+              side: str) -> sympy.Expr | None:
+    """F at a bound — approached from inside the interval when F isn't
+    defined right at it (x·ln(x) at 0, anything at ±∞). None if that
+    isn't a finite number."""
+    value = None
+    if bound.is_finite:
+        value = sympy.simplify(antiderivative.subs(symbol, bound))
+    if value is None or not (value.is_real and value.is_finite):
+        try:
+            # At ±∞ there's only one way to approach (same as limit.py).
+            value = (sympy.limit(antiderivative, symbol, bound, side) if bound.is_finite
+                     else sympy.limit(antiderivative, symbol, bound))
+        except Exception:
+            return None
+    return value if value.is_real and value.is_finite else None
+
+
+def _bound_text(bound: sympy.Expr) -> str:
+    text = format_expr(bound)
+    return text if len(text) == 1 else f"{{{text}}}"
 
 
 def _integrate_term(term: sympy.Expr, symbol: sympy.Symbol, step_id: int) -> tuple[sympy.Expr, StepData]:

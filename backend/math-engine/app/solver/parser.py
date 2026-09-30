@@ -16,6 +16,7 @@ from .functions import LogB, symbolic_logs, to_real_logs
 from .geometry import GeometryError, looks_like_geometry, parse_geometry_problem
 from .graphs import GraphError, looks_like_graph, parse_graph_problem
 from .normalize import normalize_input
+from .plot import PlotProblem
 from .sets import SetsError, looks_like_sets, parse_set_problem
 from .vectors import VectorError, looks_like_vectors, parse_vector_problem
 
@@ -31,9 +32,35 @@ _TRANSFORMATIONS = standard_transformations + (
 # which would silently skip step generation entirely. Matching first and
 # only parsing the extracted inner expression avoids that.
 _D_DX_PATTERN = re.compile(r"^d/d([a-zA-Z])\((.+)\)$")
-_DIFF_CALL_PATTERN = re.compile(r"^(?:diff|derivative)\((.+),([a-zA-Z]\w*)\)$")
+# Second derivative: d^2/dx^2(...) (normalize turns d²/dx² into this), d2/dx2(...).
+_D2_DX2_PATTERN = re.compile(r"^d\^?2/d([a-zA-Z])\^?2\((.+)\)$")
+_DIFF_CALL_PATTERN = re.compile(r"^(?:diff|derivative)\((.+),([a-zA-Z]\w*)(?:,([12]))?\)$")
+# A derivative evaluated at a point, written the textbook way: d/dx(...)|x=2.
+_AT_POINT_PATTERN = re.compile(r"^(.+)\|_?\{?([a-zA-Z])=([^{}|=]+)\}?$")
+# f(x)=x^3, f'(2) / f''(x) and y=x^3, y'' — how Iranian textbooks ask for
+# derivatives. The primes are counted; the point is optional. No braces or
+# brackets in the function: "A={1,2}, U={...}, A'" is a set complement.
+_FUNC_PRIME_PATTERN = re.compile(
+    r"^([a-zA-Z])\(([a-zA-Z])\)=([^{}\[\]]+),\1('{1,2})(?:\(([^()]+)\))?$"
+)
+_Y_PRIME_PATTERN = re.compile(r"^([a-zA-Z])=([^{}\[\]]+),\1('{1,2})(?:\(([^()]+)\))?$")
+# رسم نمودار: plot(x^2), plot(1/x, x, -5, 5), or just the function on its
+# own — y = x^2 - 4 / f(x) = sin(x) (which isn't an equation to solve:
+# it has two variables).
+_PLOT_CALL_PATTERN = re.compile(r"^plot\((.+)\)$")
+_PLOT_Y_PATTERN = re.compile(r"^y=([^{}\[\]=]+)$")
+_PLOT_FUNC_PATTERN = re.compile(r"^[a-zA-Z]\(([a-zA-Z])\)=([^{}\[\]=]+)$")
 _INTEGRAL_SIGN_PATTERN = re.compile(r"^∫(.+)d([a-zA-Z])$")
-_INTEGRAL_CALL_PATTERN = re.compile(r"^(?:integrate|integral)\((.+),([a-zA-Z]\w*)\)$")
+_INTEGRAL_CALL_PATTERN = re.compile(
+    r"^(?:integrate|integral)\((.+),([a-zA-Z]\w*)(?:,([^,]+),([^,]+))?\)$"
+)
+# ∫_0^1 x^2 dx, ∫_{0}^{pi} sin(x) dx. Matched on the spaced (not compact)
+# text: an unbraced upper bound is a single number, so "∫_0^2 3x dx" keeps
+# its 3 — "∫_0^23x dx" would read as 23, hence braces for anything longer.
+_BOUND = r"\{[^{}]+\}|\([^()]+\)|-?(?:\d+(?:\.\d+)?|pi|oo)"
+_DEFINITE_SIGN_PATTERN = re.compile(
+    rf"^∫\s*_\s*({_BOUND})\s*\^\s*({_BOUND})\s*(.+?)\s*d\s*([a-zA-Z])\s*$"
+)
 # lim(x->2)(...), lim_(x->0+)..., lim_{x->oo}... and limit(expr, x, 2).
 # Matched before parsing for the same reason as d/dx: sympy would
 # evaluate limit(...) on the spot.
@@ -72,14 +99,64 @@ _MAX_OCR_CORRECTION_POSITIONS = 4
 _OCR_CORRECTION_CONFIDENCE = 0.6
 
 
-def _match_derivative(compact: str) -> Optional[tuple[str, str]]:
+def _match_plain_derivative(compact: str) -> Optional[tuple[str, str, int]]:
+    """(inner expression, variable, order) for d/dx(...), d^2/dx^2(...),
+    diff(..., x[, 2]) — nested d/dx(d/dx(...)) counts as a second
+    derivative."""
+    m = _D2_DX2_PATTERN.match(compact)
+    if m:
+        return m.group(2), m.group(1), 2
     m = _D_DX_PATTERN.match(compact)
     if m:
-        return m.group(2), m.group(1)
+        inner, var = m.group(2), m.group(1)
+        nested = _D_DX_PATTERN.match(inner)
+        if nested and nested.group(1) == var:
+            return nested.group(2), var, 2
+        return inner, var, 1
     m = _DIFF_CALL_PATTERN.match(compact)
     if m:
-        return m.group(1), m.group(2)
+        return m.group(1), m.group(2), int(m.group(3) or 1)
     return None
+
+
+def _match_derivative(compact: str) -> Optional[tuple[str, Optional[str], int, Optional[str]]]:
+    """(inner expression, variable, order, point text or None). The
+    variable is None for y=..., y' — it's then the expression's own."""
+    m = _FUNC_PRIME_PATTERN.match(compact)
+    if m:
+        var, point = m.group(2), m.group(5)
+        return m.group(3), var, len(m.group(4)), (None if point in (None, var) else point)
+    m = _Y_PRIME_PATTERN.match(compact)
+    if m:
+        # y'(x) names the variable itself; anything else is the point.
+        point = m.group(4)
+        if point and re.fullmatch(r"[a-zA-Z]", point):
+            return m.group(2), point, len(m.group(3)), None
+        return m.group(2), None, len(m.group(3)), point
+
+    plain = _match_plain_derivative(compact)
+    if plain:
+        return (*plain, None)
+    m = _AT_POINT_PATTERN.match(compact)
+    if m:
+        plain = _match_plain_derivative(m.group(1))
+        if plain and plain[1] == m.group(2):
+            return (*plain, m.group(3))
+    return None
+
+
+def _parse_point(text: str, what: str) -> sympy.Expr:
+    """A number (or ±∞) a derivative is evaluated at / an integral runs to."""
+    text = text.strip()
+    if text.startswith("{") and text.endswith("}"):
+        text = text[1:-1]
+    sign, name = (-1, text[1:]) if text.startswith("-") else (1, text.lstrip("+"))
+    if name.lower() in _INFINITY_NAMES:
+        return sign * sympy.oo
+    point = _parse_side(text)
+    if point.free_symbols or not point.is_real:
+        raise ParseError(f"'{text}' is not a number {what}")
+    return point
 
 
 def _match_limit(compact: str) -> Optional[tuple[str, str, str]]:
@@ -172,13 +249,58 @@ def _rewrite_logs(text: str) -> str:
         out.append(f"logb({arg},{base})")
 
 
-def _match_integral(compact: str) -> Optional[tuple[str, str]]:
+def _match_integral(normalized: str, compact: str) -> Optional[tuple[str, str, Optional[tuple[str, str]]]]:
+    """(integrand, variable, (lower, upper) text or None when indefinite)."""
+    m = _DEFINITE_SIGN_PATTERN.match(normalized)
+    if m:
+        return m.group(3), m.group(4), (m.group(1), m.group(2))
     m = _INTEGRAL_SIGN_PATTERN.match(compact)
     if m:
-        return m.group(1), m.group(2)
+        return m.group(1), m.group(2), None
     m = _INTEGRAL_CALL_PATTERN.match(compact)
     if m:
-        return m.group(1), m.group(2)
+        bounds = (m.group(3), m.group(4)) if m.group(3) else None
+        return m.group(1), m.group(2), bounds
+    return None
+
+
+def _match_plot(compact: str) -> Optional[PlotProblem]:
+    m = _PLOT_CALL_PATTERN.match(compact)
+    if m:
+        args = _split_top_level_commas(m.group(1))
+        if len(args) not in (1, 2, 4):
+            raise ParseError("Write it like plot(x^2) or plot(x^2, x, -5, 5)")
+        expr = to_real_logs(_parse_side(args[0]))
+        if len(args) == 1:
+            free = sorted(expr.free_symbols, key=str)
+            if len(free) > 1:
+                raise ParseError("Only functions of one variable can be plotted")
+            return PlotProblem(expr, free[0] if free else sympy.Symbol("x"))
+        symbol = sympy.Symbol(args[1])
+        if expr.free_symbols - {symbol}:
+            raise ParseError("Only functions of one variable can be plotted")
+        x_range = None
+        if len(args) == 4:
+            x_range = tuple(_parse_point(a, "a plot range can start or end at") for a in args[2:])
+            if not all(v.is_finite for v in x_range):
+                raise ParseError("A plot range must be finite")
+        return PlotProblem(expr, symbol, x_range)
+
+    m = _PLOT_FUNC_PATTERN.match(compact)
+    if m:
+        symbol = sympy.Symbol(m.group(1))
+        expr = to_real_logs(_parse_side(m.group(2)))
+        if expr.free_symbols - {symbol}:
+            raise ParseError("Only functions of one variable can be plotted")
+        return PlotProblem(expr, symbol)
+
+    m = _PLOT_Y_PATTERN.match(compact)
+    if m:
+        expr = to_real_logs(_parse_side(m.group(1)))
+        free = expr.free_symbols
+        # y = 5 stays an equation in y; y = 2x + 1 is a function of x.
+        if len(free) == 1 and sympy.Symbol("y") not in free:
+            return PlotProblem(expr, next(iter(free)))
     return None
 
 
@@ -203,6 +325,11 @@ class ParsedProblem:
     # side ("+-" two-sided, "+" from the right, "-" from the left).
     limit_point: Optional[sympy.Expr] = None
     limit_dir: Optional[str] = None
+    # "derivative": 1 or 2, and the point it's evaluated at (f'(2)) if any.
+    derivative_order: int = 1
+    derivative_at: Optional[sympy.Expr] = None
+    # "integral": (lower, upper) for a definite integral, None otherwise.
+    integral_bounds: Optional[tuple[sympy.Expr, sympy.Expr]] = None
     # Set for "set_operation" (sets.SetProblem) and "vector"
     # (vectors.VectorProblem): these aren't sympy expressions.
     structure: Optional[Any] = None
@@ -260,19 +387,35 @@ def _parse_core(normalized: str) -> _CoreParse:
     # sympy's real log (to_real_logs) so diff/integrate/limit just work.
     derivative_match = _match_derivative(compact)
     if derivative_match:
-        inner_text, var_name = derivative_match
+        inner_text, var_name, order, point_text = derivative_match
         expr = _parse_side(inner_text)
+        if var_name is None:
+            free = sorted(expr.free_symbols, key=str)
+            var_name = str(free[0]) if len(free) == 1 else "x"
         symbol = sympy.Symbol(var_name)
-        display = f"d/d{var_name}[{format_expr(expr)}]"
-        return display, "derivative", symbol, None, None, to_real_logs(expr), {}
+        operator = f"d/d{var_name}" if order == 1 else f"d²/d{var_name}²"
+        display = f"{operator}[{format_expr(expr)}]"
+        extra: dict[str, Any] = {"derivative_order": order}
+        if point_text is not None:
+            point = _parse_point(point_text, "a derivative can be evaluated at")
+            if not point.is_finite:
+                raise ParseError("A derivative can only be evaluated at a finite point")
+            display += f" | {var_name} = {format_expr(point)}"
+            extra["derivative_at"] = point
+        return display, "derivative", symbol, None, None, to_real_logs(expr), extra
 
-    integral_match = _match_integral(compact)
+    integral_match = _match_integral(normalized, compact)
     if integral_match:
-        inner_text, var_name = integral_match
+        inner_text, var_name, bounds_text = integral_match
         expr = _parse_side(inner_text)
         symbol = sympy.Symbol(var_name)
-        display = f"∫{format_expr(expr)} d{var_name}"
-        return display, "integral", symbol, None, None, to_real_logs(expr), {}
+        if bounds_text is None:
+            display = f"∫{format_expr(expr)} d{var_name}"
+            return display, "integral", symbol, None, None, to_real_logs(expr), {}
+        lower, upper = (_parse_point(b, "an integral can run to") for b in bounds_text)
+        display = f"∫[{format_expr(lower)}→{format_expr(upper)}] {format_expr(expr)} d{var_name}"
+        extra = {"integral_bounds": (lower, upper)}
+        return display, "integral", symbol, None, None, to_real_logs(expr), extra
 
     limit_match = _match_limit(compact)
     if limit_match:
@@ -286,6 +429,10 @@ def _parse_core(normalized: str) -> _CoreParse:
         display = f"lim({var_name}→{format_expr(point)}{side}) {format_expr(expr)}"
         extra = {"limit_point": point, "limit_dir": direction}
         return display, "limit", symbol, None, None, to_real_logs(expr), extra
+
+    plot = _match_plot(compact)
+    if plot:
+        return plot.display, "function_plot", plot.symbol, None, None, None, {"structure": plot}
 
     # Sets and vectors have their own small grammars ({...}, [...]) —
     # checked after lim_{x->a}, whose braces aren't a set.

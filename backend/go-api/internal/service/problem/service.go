@@ -2,6 +2,7 @@ package problemservice
 
 import (
 	"context"
+	"encoding/json"
 
 	domain "mathmotion/go-api/internal/domain/problem"
 	"mathmotion/go-api/internal/service/problem/dto"
@@ -14,6 +15,7 @@ type Repository interface {
 		userID, rawInput, normalizedExpression, problemType, answer string,
 		verified bool,
 		steps []domain.Step,
+		plot json.RawMessage,
 	) (problemID string, err error)
 
 	ListHistory(ctx context.Context, userID string, limit, offset int) ([]dto.HistoryItem, error)

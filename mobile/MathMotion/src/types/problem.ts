@@ -17,6 +17,7 @@ export type ProblemType =
   | 'vector'
   | 'geometry'
   | 'graph'
+  | 'function_plot'
   | (string & {});
 
 export interface ParseResult {
@@ -35,6 +36,27 @@ export interface SolutionStep {
   explanation: string;
 }
 
+// A "function_plot" answer's curve (backend/math-engine/app/solver/plot.py).
+// `points` are [x, y] samples; y is null where the line must break (an
+// asymptote, a jump, or where the function isn't defined).
+export interface PlotFeature {
+  kind: 'root' | 'y_intercept' | 'max' | 'min';
+  x: number;
+  y: number;
+  label: string;
+}
+
+export interface PlotData {
+  x_min: number;
+  x_max: number;
+  y_min: number;
+  y_max: number;
+  points: [number, number | null][];
+  features: PlotFeature[];
+  vertical_asymptotes: number[];
+  horizontal_asymptotes: number[];
+}
+
 // Note: the backend's SolveResult (backend/go-api/internal/service/problem/dto)
 // does not echo the problem string back — the caller already has the raw
 // input it sent, so the Solution screen receives it via navigation params
@@ -45,6 +67,7 @@ export interface SolveResult {
   verified: boolean;
   type: ProblemType;
   steps: SolutionStep[];
+  plot?: PlotData | null;
 }
 
 // Includes the full step breakdown (not just the final answer) so
@@ -58,6 +81,7 @@ export interface HistoryItem {
   answer: string;
   verified: boolean;
   steps: SolutionStep[];
+  plot?: PlotData | null;
   created_at: string;
 }
 

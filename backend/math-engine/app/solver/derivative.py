@@ -1,3 +1,6 @@
+from dataclasses import replace
+from typing import Optional
+
 import sympy
 
 from .formatting import format_expr, join_signed_terms
@@ -5,6 +8,51 @@ from .messages import explained
 from .schemas_internal import StepData
 
 _TRIG_FUNCTIONS = (sympy.sin, sympy.cos, sympy.tan)
+
+
+class DerivativeUnsupported(Exception):
+    """f'(a) where f or its derivative isn't defined at a (1/x at 0,
+    sqrt(x) at 0...) — caught in main.py and surfaced as a clean 422."""
+
+    def __init__(self, message: str):
+        super().__init__(message)
+        self.message = message
+
+
+def solve_derivative_problem(expr: sympy.Expr, symbol: sympy.Symbol, order: int = 1,
+                             at: Optional[sympy.Expr] = None) -> tuple[list[StepData], sympy.Expr]:
+    """y', y'' and f'(a) the way حسابان works them: find y' term by term
+    (solve_derivative); for y'' differentiate that result once more with
+    the same steps; for f'(a) substitute the point into the final
+    derivative. Returns the steps and the derivative (or its value at
+    `at`)."""
+    steps, result = solve_derivative(expr, symbol)
+
+    if order == 2:
+        first = format_expr(result)
+        steps.append(StepData(
+            id=0, before=f"y' = {first}", after=f"y'' = d/d{symbol}[{first}]",
+            operation="differentiate_again", value=None, target="expression",
+            **explained("derivative_second"),
+        ))
+        again, result = solve_derivative(result, symbol)
+        steps += again
+
+    if at is not None:
+        value = sympy.simplify(result.subs(symbol, at))
+        defined = sympy.simplify(expr.subs(symbol, at))
+        if not all(v.is_real and v.is_finite for v in (value, defined)):
+            raise DerivativeUnsupported(
+                f"The derivative of '{format_expr(expr)}' isn't defined at {symbol} = {format_expr(at)}."
+            )
+        steps.append(StepData(
+            id=0, before=format_expr(result), after=format_expr(value),
+            operation="substitute_point", value=format_expr(at), target="expression",
+            **explained("derivative_at_point", symbol=symbol, point=format_expr(at)),
+        ))
+        result = value
+
+    return [replace(step, id=i) for i, step in enumerate(steps, start=1)], result
 
 
 def solve_derivative(expr: sympy.Expr, symbol: sympy.Symbol) -> tuple[list[StepData], sympy.Expr]:

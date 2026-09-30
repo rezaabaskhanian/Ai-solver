@@ -6,6 +6,7 @@ import Share from 'react-native-share';
 import ViewShot from 'react-native-view-shot';
 
 import { FinalAnswerCard } from '../../components/Solution/FinalAnswerCard';
+import { PlotChart } from '../../components/Solution/PlotChart';
 import { ProblemCard } from '../../components/Solution/ProblemCard';
 import { StepList } from '../../components/Solution/StepList';
 import { AppButton } from '../../components/common/AppButton';
@@ -88,6 +89,8 @@ export function SolutionScreen({ route, navigation }: Props) {
       <ViewShot ref={viewShotRef} options={{ format: 'png', quality: 0.9 }}>
         <View style={styles.shareable}>
           <ProblemCard problem={problem} type={result.type} />
+
+          {result.plot && <PlotChart plot={result.plot} />}
 
           {hasSteps && (
             <View style={[styles.toggle, isRTL && styles.rowRTL]}>

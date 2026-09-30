@@ -17,6 +17,11 @@ _SYMBOL_REPLACEMENTS = {
     "،": ",",  # Persian comma, e.g. A={۱،۲،۳}
     "→": "->",  # limits: lim(x→2)
     "∞": "oo",  # sympy's infinity
+    # Primes for y' / f''(x) — phone keyboards' smart quotes and the math
+    # prime characters all mean the plain apostrophe parser.py reads.
+    "’": "'",
+    "′": "'",
+    "″": "''",
 }
 
 # Persian (۰-۹) and Arabic-Indic (٠-٩) digits: a Persian phone keyboard

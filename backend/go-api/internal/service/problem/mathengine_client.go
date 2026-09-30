@@ -53,6 +53,8 @@ type engineSolveResult struct {
 	Verified bool         `json:"verified"`
 	Type     string       `json:"type"`
 	Steps    []engineStep `json:"steps"`
+	// Only for "function_plot": passed through to the app untouched.
+	Plot json.RawMessage `json:"plot,omitempty"`
 }
 
 type engineCheckResult struct {

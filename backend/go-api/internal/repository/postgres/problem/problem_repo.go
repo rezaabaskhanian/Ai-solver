@@ -25,7 +25,9 @@ type HistoryItemRow struct {
 	Answer      string        `json:"answer"`
 	Verified    bool          `json:"verified"`
 	Steps       []domain.Step `json:"steps"`
-	CreatedAt   time.Time     `json:"created_at"`
+	// Set only for "function_plot" problems (the curve to draw).
+	Plot      json.RawMessage `json:"plot,omitempty"`
+	CreatedAt time.Time       `json:"created_at"`
 }
 
 // SaveProblemAndSolution implements [problemservice.Repository].
@@ -34,6 +36,7 @@ func (r DB) SaveProblemAndSolution(
 	userID, rawInput, normalizedExpression, problemType, answer string,
 	verified bool,
 	steps []domain.Step,
+	plot json.RawMessage,
 ) (string, error) {
 	stepsJSON, err := json.Marshal(steps)
 	if err != nil {
@@ -55,10 +58,15 @@ func (r DB) SaveProblemAndSolution(
 		return "", fmt.Errorf("inserting problem: %w", err)
 	}
 
+	// A nil RawMessage must reach postgres as NULL, not as the JSON text "null".
+	var plotJSON []byte
+	if len(plot) > 0 {
+		plotJSON = plot
+	}
 	_, err = tx.Exec(ctx, `
-		INSERT INTO solutions (id, problem_id, answer, verified, steps)
-		VALUES ($1, $2, $3, $4, $5)
-	`, uuid.NewString(), problemID, answer, verified, stepsJSON)
+		INSERT INTO solutions (id, problem_id, answer, verified, steps, plot)
+		VALUES ($1, $2, $3, $4, $5, $6)
+	`, uuid.NewString(), problemID, answer, verified, stepsJSON, plotJSON)
 	if err != nil {
 		return "", fmt.Errorf("inserting solution: %w", err)
 	}
@@ -73,10 +81,10 @@ func (r DB) SaveProblemAndSolution(
 // ListHistory implements [problemservice.Repository].
 func (r DB) ListHistory(ctx context.Context, userID string, limit, offset int) ([]HistoryItemRow, error) {
 	rows, err := r.conn.Query(ctx, `
-		SELECT p.id, p.normalized_expression, p.problem_type, s.answer, s.verified, s.steps, p.created_at
+		SELECT p.id, p.normalized_expression, p.problem_type, s.answer, s.verified, s.steps, s.plot, p.created_at
 		FROM problems p
 		JOIN LATERAL (
-			SELECT answer, verified, steps
+			SELECT answer, verified, steps, plot
 			FROM solutions
 			WHERE problem_id = p.id
 			ORDER BY created_at DESC
@@ -94,12 +102,15 @@ func (r DB) ListHistory(ctx context.Context, userID string, limit, offset int) (
 	items := []HistoryItemRow{}
 	for rows.Next() {
 		var item HistoryItemRow
-		var stepsJSON []byte
-		if err := rows.Scan(&item.ProblemID, &item.Problem, &item.ProblemType, &item.Answer, &item.Verified, &stepsJSON, &item.CreatedAt); err != nil {
+		var stepsJSON, plotJSON []byte
+		if err := rows.Scan(&item.ProblemID, &item.Problem, &item.ProblemType, &item.Answer, &item.Verified, &stepsJSON, &plotJSON, &item.CreatedAt); err != nil {
 			return nil, fmt.Errorf("scanning history row: %w", err)
 		}
 		if err := json.Unmarshal(stepsJSON, &item.Steps); err != nil {
 			return nil, fmt.Errorf("unmarshaling steps: %w", err)
+		}
+		if len(plotJSON) > 0 {
+			item.Plot = plotJSON
 		}
 		items = append(items, item)
 	}

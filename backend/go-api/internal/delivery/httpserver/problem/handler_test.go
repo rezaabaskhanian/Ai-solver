@@ -27,6 +27,7 @@ func (f *fakeRepo) SaveProblemAndSolution(
 	userID, rawInput, normalizedExpression, problemType, answer string,
 	verified bool,
 	steps []domain.Step,
+	plot json.RawMessage,
 ) (string, error) {
 	return f.saveProblemID, nil
 }

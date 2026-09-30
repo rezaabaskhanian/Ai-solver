@@ -91,6 +91,13 @@
       "calculus": "Calculus",
       "limitLog": "Limits & logs",
       "setsVectors": "Sets & vectors"
+    },
+    "tabHints": {
+      "general": "Write equations with \"=\". Use xⁿ for powers, e.g. x^2 is x squared. To plot a function, write y = and then the function.",
+      "trig": "Put the angle in parentheses, e.g. sin(x). Tap π for pi.",
+      "calculus": "Derivative: tap d/dx and type the function inside the parentheses. Second derivative or a derivative at a point: define the function, then use the f′ key to write f''(x) or f'(2). Integral: tap ∫ dx and type the function between ∫ and dx; for a definite integral write the bounds like ∫_0^1.",
+      "limitLog": "Limit: tap lim, type the value x approaches after →, then the function after the parenthesis. Logs: log is base 10, log₂ is base 2.",
+      "setsVectors": "Define each set, separate with commas, then write the question. Write vectors inside [ , ]."
     }
   },
   "solution": {
@@ -202,6 +209,7 @@
       "vector": "Goal: compute the vector",
       "geometry": "Goal: compute with a geometry formula",
       "graph": "Goal: count the edges and degrees of the graph",
+      "function_plot": "Goal: plot the function",
       "default": "Goal: solve the problem"
     }
   },
@@ -248,7 +256,18 @@
     "set_operation": "Sets",
     "vector": "Vectors",
     "geometry": "Geometry",
-    "graph": "Graphs"
+    "graph": "Graphs",
+    "function_plot": "Plot"
+  },
+  "plot": {
+    "features": {
+      "root": "Meets the x-axis",
+      "y_intercept": "Meets the y-axis",
+      "max": "Maximum",
+      "min": "Minimum"
+    },
+    "verticalAsymptote": "Vertical asymptote",
+    "horizontalAsymptote": "Horizontal asymptote"
   },
   "errors": {
     "couldNotUnderstand": "We couldn't understand this problem. Please check your equation.",

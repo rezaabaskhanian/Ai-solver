@@ -14,12 +14,12 @@ from .schemas import (
     Step,
 )
 from .solver.check import UnsupportedForCheck, check_student_work
-from .solver.derivative import solve_derivative
+from .solver.derivative import DerivativeUnsupported, solve_derivative_problem
 from .solver.expression import solve_expression
 from .solver.formatting import format_expr
 from .solver.geometry import GeometryError, solve_geometry, verify_geometry
 from .solver.graphs import GraphError, solve_graph, verify_graph
-from .solver.integral import IntegrationUnsupported, solve_integral
+from .solver.integral import IntegrationUnsupported, solve_definite_integral, solve_integral
 from .solver.limit import LimitUnsupported, format_limit_value, solve_limit
 from .solver.linear import solve_linear
 from .solver.logarithm import (
@@ -30,12 +30,19 @@ from .solver.logarithm import (
 )
 from .solver.messages import normalize_lang
 from .solver.parser import ParseError, parse_problem
+from .solver.plot import PlotError, solve_plot, verify_plot
 from .solver.practice import UnsupportedPracticeType, generate_practice_problem
 from .solver.quadratic import solve_quadratic
 from .solver.schemas_internal import StepData
 from .solver.sets import SetsError, solve_sets, verify_sets
 from .solver.vectors import VectorError, solve_vector, verify_vector
-from .solver.verify import verify_equation_root, verify_integral, verify_limit
+from .solver.verify import (
+    verify_definite_integral,
+    verify_derivative_at,
+    verify_equation_root,
+    verify_integral,
+    verify_limit,
+)
 
 app = FastAPI(title="MathMotion Math Engine", version="0.1.0")
 
@@ -86,6 +93,7 @@ def solve(req: SolveRequest):
             content={"error": "parse_error", "message": exc.message},
         )
 
+    plot = None
     if parsed.problem_type == "linear_equation":
         step_data, final_value = solve_linear(parsed.lhs, parsed.rhs, parsed.symbol)
         verified = verify_equation_root(parsed.lhs, parsed.rhs, parsed.symbol, final_value)
@@ -110,11 +118,28 @@ def solve(req: SolveRequest):
         answer = "True" if is_true else "False"
 
     elif parsed.problem_type == "derivative":
-        step_data, result = solve_derivative(parsed.expr, parsed.symbol)
+        try:
+            step_data, result = solve_derivative_problem(
+                parsed.expr, parsed.symbol, parsed.derivative_order, parsed.derivative_at,
+            )
+        except DerivativeUnsupported as exc:
+            return _unsupported(exc.message)
         # sympy.diff is an exact, deterministic transform (not a guessed
         # root), so there's nothing independent left to verify against —
-        # unlike solve_linear/solve_quadratic's candidate roots.
-        verified = True
+        # unlike solve_linear/solve_quadratic's candidate roots. A value at
+        # a point (f'(2)) is a number, though, and gets a numeric check.
+        verified = parsed.derivative_at is None or verify_derivative_at(
+            parsed.expr, parsed.symbol, parsed.derivative_at, parsed.derivative_order, result,
+        )
+        answer = format_expr(result)
+
+    elif parsed.problem_type == "integral" and parsed.integral_bounds is not None:
+        lower, upper = parsed.integral_bounds
+        try:
+            step_data, result = solve_definite_integral(parsed.expr, parsed.symbol, lower, upper)
+        except IntegrationUnsupported as exc:
+            return _unsupported(exc.message)
+        verified = verify_definite_integral(parsed.expr, parsed.symbol, lower, upper, result)
         answer = format_expr(result)
 
     elif parsed.problem_type == "integral":
@@ -159,6 +184,13 @@ def solve(req: SolveRequest):
             return _unsupported(exc.message)
         verified = verify_graph(parsed.structure, value)
 
+    elif parsed.problem_type == "function_plot":
+        try:
+            step_data, answer, plot = solve_plot(parsed.structure)
+        except PlotError as exc:
+            return _unsupported(exc.message)
+        verified = verify_plot(parsed.structure, plot)
+
     elif parsed.problem_type == "vector":
         try:
             step_data, answer, value = solve_vector(parsed.structure)
@@ -200,7 +232,7 @@ def solve(req: SolveRequest):
 
     return SolveResponse(
         problem=parsed.display, answer=answer, verified=verified,
-        type=parsed.problem_type, steps=steps,
+        type=parsed.problem_type, steps=steps, plot=plot,
     )
 
 

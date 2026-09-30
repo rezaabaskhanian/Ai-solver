@@ -97,6 +97,14 @@ MESSAGES: dict[str, dict[str, str]] = {
         "fa": "قواعد مشتق‌گیری را به کار می‌بریم.",
     },
     # integral.py
+    "derivative_second": {
+        "en": "Differentiate the first derivative once more to get the second derivative.",
+        "fa": "از مشتق اول یک بار دیگر مشتق می‌گیریم تا مشتق دوم به دست آید.",
+    },
+    "derivative_at_point": {
+        "en": "Substitute {symbol} = {point} into the derivative.",
+        "fa": "{assign} را در مشتق جای‌گذاری می‌کنیم.",
+    },
     "integral_sum_rule": {
         "en": "Integrate each term separately (sum rule).",
         "fa": "از هر جمله جداگانه انتگرال می‌گیریم (قاعده‌ی جمع).",
@@ -130,6 +138,59 @@ MESSAGES: dict[str, dict[str, str]] = {
         "fa": "قواعد انتگرال‌گیری را به کار می‌بریم.",
     },
     # limit.py
+    "definite_evaluate_bounds": {
+        "en": "Evaluate the antiderivative at the bounds, F({upper}) - F({lower}); the constant C cancels out.",
+        "fa": "پادمشتق را در دو کران حساب می‌کنیم: {formula}؛ ثابت C از بین می‌رود.",
+    },
+    "definite_result": {
+        "en": "Simplify: this is the value of the definite integral.",
+        "fa": "ساده می‌کنیم؛ این مقدار انتگرال معین است.",
+    },
+    # plot.py
+    "plot_y_intercept": {
+        "en": "Where the curve meets the y-axis: substitute {symbol} = 0.",
+        "fa": "محل برخورد نمودار با محور yها: {assign} را جای‌گذاری می‌کنیم.",
+    },
+    "plot_no_y_intercept": {
+        "en": "The function isn't defined at {symbol} = 0, so the curve doesn't meet the y-axis.",
+        "fa": "تابع در {assign} تعریف نشده است، پس نمودار محور yها را قطع نمی‌کند.",
+    },
+    "plot_roots": {
+        "en": "Where the curve meets the x-axis: solve y = 0.",
+        "fa": "محل برخورد نمودار با محور xها: معادله‌ی {eq} را حل می‌کنیم.",
+    },
+    "plot_no_roots": {
+        "en": "y = 0 has no solution here, so the curve doesn't meet the x-axis.",
+        "fa": "معادله‌ی {eq} این‌جا جوابی ندارد، پس نمودار محور xها را قطع نمی‌کند.",
+    },
+    "plot_critical": {
+        "en": "Find where the slope is zero: set the derivative y' equal to 0.",
+        "fa": "نقطه‌هایی که شیب نمودار صفر است: مشتق را برابر صفر قرار می‌دهیم ({eq}).",
+    },
+    "plot_no_critical": {
+        "en": "The derivative is never 0, so the function has no maximum or minimum.",
+        "fa": "مشتق هیچ‌جا صفر نمی‌شود، پس تابع ماکزیمم یا مینیمم ندارد.",
+    },
+    "plot_max": {
+        "en": "The slope changes from positive to negative here, so this point is a (local) maximum.",
+        "fa": "این‌جا شیب از مثبت به منفی تغییر می‌کند، پس این نقطه ماکزیمم (نسبی) است.",
+    },
+    "plot_min": {
+        "en": "The slope changes from negative to positive here, so this point is a (local) minimum.",
+        "fa": "این‌جا شیب از منفی به مثبت تغییر می‌کند، پس این نقطه مینیمم (نسبی) است.",
+    },
+    "plot_vertical_asymptote": {
+        "en": "Near {symbol} = {value} the function goes to infinity: a vertical asymptote.",
+        "fa": "نزدیک {assign} تابع به بی‌نهایت می‌رود؛ این خط مجانب قائم است.",
+    },
+    "plot_horizontal_asymptote": {
+        "en": "As {symbol} goes to ±∞ the function approaches {value}: the horizontal asymptote y = {value}.",
+        "fa": "وقتی {arrow}، تابع به {value} نزدیک می‌شود؛ خط {line} مجانب افقی است.",
+    },
+    "plot_draw": {
+        "en": "Mark these points on the coordinate plane and join them with a smooth curve.",
+        "fa": "این نقطه‌ها را روی دستگاه مختصات مشخص می‌کنیم و با یک منحنی هموار به هم وصل می‌کنیم.",
+    },
     "limit_substitute": {
         "en": "Substitute {symbol} = {point}: the function is defined there, so the limit is its value.",
         "fa": "{assign} را جای‌گذاری می‌کنیم؛ تابع در این نقطه تعریف شده است، پس حد برابر همین مقدار است.",
@@ -371,6 +432,16 @@ _DERIVED_FA_PARAMS = {
     "standard_form": lambda p: {"form": "ax^2 + bx + c = 0"},
     "integral_constant_rule": lambda p: {"form": f"c·{p['symbol']}"},
     "integral_log_rule": lambda p: {"form": f"1/{p['symbol']}", "result": f"ln|{p['symbol']}|"},
+    "derivative_at_point": lambda p: {"assign": f"{p['symbol']} = {p['point']}"},
+    "plot_y_intercept": lambda p: {"assign": f"{p['symbol']} = 0"},
+    "plot_no_y_intercept": lambda p: {"assign": f"{p['symbol']} = 0"},
+    "plot_roots": lambda p: {"eq": "y = 0"},
+    "plot_no_roots": lambda p: {"eq": "y = 0"},
+    "plot_critical": lambda p: {"eq": "y' = 0"},
+    "plot_vertical_asymptote": lambda p: {"assign": f"{p['symbol']} = {p['value']}"},
+    "plot_horizontal_asymptote": lambda p: {"arrow": f"{p['symbol']} → ±∞",
+                                            "line": f"y = {p['value']}"},
+    "definite_evaluate_bounds": lambda p: {"formula": f"F({p['upper']}) - F({p['lower']})"},
     "limit_substitute": lambda p: {"assign": f"{p['symbol']} = {p['point']}"},
     "limit_zero_over_zero": lambda p: {"assign": f"{p['symbol']} = {p['point']}", "form": "0/0"},
     "limit_cancel": lambda p: {"neq": f"{p['symbol']} ≠ {p['point']}"},

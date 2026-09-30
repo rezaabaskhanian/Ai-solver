@@ -4,6 +4,7 @@
 package dto
 
 import (
+	"encoding/json"
 	"time"
 
 	postgresproblem "mathmotion/go-api/internal/repository/postgres/problem"
@@ -31,6 +32,8 @@ type SolveResult struct {
 	Verified  bool   `json:"verified"`
 	Type      string `json:"type"`
 	Steps     []Step `json:"steps"`
+	// The curve to draw for a "function_plot" problem; omitted otherwise.
+	Plot json.RawMessage `json:"plot,omitempty"`
 }
 
 // HistoryItem is the flattened problem+solution shape the mobile
@@ -61,11 +64,11 @@ type Entitlement struct {
 // NextStepHint reuses Step: it's either "what you should have done
 // instead" (status == incorrect) or "what to do next" (correct_so_far).
 type CheckResult struct {
-	Status          string  `json:"status"`
+	Status          string   `json:"status"`
 	StepStatuses    []string `json:"step_statuses"`
-	FirstErrorIndex *int    `json:"first_error_index"`
-	NextStepHint    *Step   `json:"next_step_hint,omitempty"`
-	CorrectAnswer   string  `json:"correct_answer"`
+	FirstErrorIndex *int     `json:"first_error_index"`
+	NextStepHint    *Step    `json:"next_step_hint,omitempty"`
+	CorrectAnswer   string   `json:"correct_answer"`
 }
 
 // PracticeResult is a freshly generated, unsolved problem of the

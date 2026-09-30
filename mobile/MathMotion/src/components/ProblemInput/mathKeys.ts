@@ -34,6 +34,8 @@ export const MATH_KEYS: MathKey[] = [
   { id: 'pi', label: 'π', insert: 'pi' },
   { id: 'derivative', label: 'd/dx', insert: 'd/dx()', cursor: 5, tone: 'calculus' },
   { id: 'integral', label: '∫ dx', insert: '∫ dx', cursor: 1, tone: 'calculus' },
+  // f'(2) / y'' — the prime a phone keyboard buries (or turns into ’).
+  { id: 'prime', label: "f′", insert: "'", tone: 'calculus' },
   // Cursor lands on the point: the student types it, then the expression
   // after the closing parenthesis.
   { id: 'limit', label: 'lim', insert: 'lim(x→)', cursor: 6, tone: 'calculus' },
@@ -63,13 +65,24 @@ export const MATH_KEY_TABS: {
     keys: ['x', 'square', 'power', 'sqrt', 'parens', 'equals', 'plus', 'minus', 'times', 'divide', 'pi', 'derivative'],
   },
   { id: 'trig', keys: ['sin', 'cos', 'tan', 'pi', 'x', 'square', 'parens', 'equals', 'plus', 'minus', 'times', 'divide'] },
-  { id: 'calculus', keys: ['derivative', 'integral', 'x', 'square', 'power', 'sqrt', 'parens', 'sin', 'cos', 'plus', 'minus', 'times'] },
+  { id: 'calculus', keys: ['derivative', 'integral', 'prime', 'x', 'square', 'power', 'sqrt', 'parens', 'sin', 'cos', 'plus', 'minus', 'times'] },
   { id: 'limitLog', keys: ['limit', 'infinity', 'log', 'log2', 'ln', 'x', 'power', 'sqrt', 'parens', 'equals', 'plus', 'minus', 'divide'] },
   {
     id: 'setsVectors',
     keys: ['setBraces', 'union', 'intersection', 'minus', 'complement', 'emptySet', 'count', 'equals', 'comma', 'vector', 'length', 'plus', 'parens'],
   },
 ];
+
+// Shown under the active tab next to its how-to-write hint
+// (problemInput.tabHints.*), so students see the exact notation each
+// tab's keys build before they have to guess it.
+export const TAB_EXAMPLES: Record<(typeof MATH_KEY_TABS)[number]['id'], string[]> = {
+  general: ['2x+5=17', 'x^2-5x+6=0', 'y=x^2-4'],
+  trig: ['sin(x)^2+cos(x)^2', 'tan(x)*cos(x)'],
+  calculus: ['d/dx(x^3+2x)', "f(x)=x^3, f''(x)", "f(x)=x^3, f'(2)", '∫ 2x dx', '∫_0^1 x^2 dx'],
+  limitLog: ['lim(x→2)(x^2-4)/(x-2)', 'log_2(x)+log_2(x-2)=3'],
+  setsVectors: ['A={1,2,3}, B={2,3,4}, A∪B', '[2, 3] + [1, -4]'],
+};
 
 export function mathKeyById(id: string): MathKey | undefined {
   return MATH_KEYS.find(k => k.id === id);
@@ -119,4 +132,5 @@ export const EXAMPLE_PROBLEMS: string[] = [
   'log_2(x)+log_2(x-2)=3',
   'A={1,2,3}, B={2,3,4}, A∪B',
   '[2, 3] + [1, -4]',
+  'y=x^3-3x',
 ];

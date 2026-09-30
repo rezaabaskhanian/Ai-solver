@@ -24,6 +24,38 @@ def verify_integral(expr: sympy.Expr, symbol: sympy.Symbol, antiderivative: symp
         return False
 
 
+def verify_derivative_at(expr: sympy.Expr, symbol: sympy.Symbol, point: sympy.Expr,
+                         order: int, value: sympy.Expr) -> bool:
+    """Check f'(a) / f''(a) with a central finite difference at 50-digit
+    precision — independent of sympy.diff, like verify_limit's samples."""
+    try:
+        h = sympy.Rational(1, 10**6)
+
+        def f(t: sympy.Expr) -> sympy.Expr:
+            return sympy.N(expr.subs(symbol, t), 50)
+
+        if order == 1:
+            approx = (f(point + h) - f(point - h)) / (2 * h)
+        else:
+            approx = (f(point + h) - 2 * f(point) + f(point - h)) / h**2
+        approx = complex(sympy.N(approx, 30))
+        expected = float(value)
+        return abs(approx.imag) < 1e-9 and abs(approx.real - expected) <= 1e-4 * (1 + abs(expected))
+    except Exception:
+        return False
+
+
+def verify_definite_integral(expr: sympy.Expr, symbol: sympy.Symbol, lower: sympy.Expr,
+                             upper: sympy.Expr, value: sympy.Expr) -> bool:
+    """Numeric quadrature of the integral against the exact value."""
+    try:
+        approx = complex(sympy.Integral(expr, (symbol, lower, upper)).evalf(30))
+        expected = float(value)
+        return abs(approx.imag) < 1e-9 and abs(approx.real - expected) <= 1e-6 * (1 + abs(expected))
+    except Exception:
+        return False
+
+
 def verify_limit(expr: sympy.Expr, symbol: sympy.Symbol, point: sympy.Expr,
                  sides: dict[str, sympy.Expr]) -> bool:
     """Check each one-sided limit sympy.limit gave by actually evaluating

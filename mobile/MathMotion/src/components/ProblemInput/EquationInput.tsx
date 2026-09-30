@@ -11,6 +11,7 @@ import {
   EXAMPLE_PROBLEMS,
   MATH_KEY_TABS,
   mathKeyById,
+  TAB_EXAMPLES,
   type MathKey,
   type Selection,
 } from './mathKeys';
@@ -142,21 +143,44 @@ export function EquationInput({ value, onChangeText, autoFocus }: EquationInputP
           <AppText size="xs" color={colors.textSecondary} style={styles.flexOne}>
             {t('problemInput.keypadTitle')}
           </AppText>
-          <View style={[styles.tabs, isRTL && styles.rowRTL]}>
-            {MATH_KEY_TABS.map(({ id }) => (
-              <Pressable
-                key={id}
-                accessibilityRole="button"
-                accessibilityState={{ selected: id === tab }}
-                onPress={() => setTab(id)}
-                style={[styles.tab, id === tab && styles.tabActive]}
+        </View>
+        {/* Own full-width row: five tabs don't fit beside the title. */}
+        <View style={[styles.tabs, isRTL && styles.tabsRTL]}>
+          {MATH_KEY_TABS.map(({ id }) => (
+            <Pressable
+              key={id}
+              accessibilityRole="button"
+              accessibilityState={{ selected: id === tab }}
+              onPress={() => setTab(id)}
+              style={[styles.tab, id === tab && styles.tabActive]}
+            >
+              <AppText
+                size="xs"
+                weight="medium"
+                align="center"
+                color={id === tab ? colors.primaryText : colors.textSecondary}
               >
-                <AppText
-                  size="xs"
-                  weight="medium"
-                  color={id === tab ? colors.primaryText : colors.textSecondary}
-                >
-                  {t(`problemInput.tabs.${id}`)}
+                {t(`problemInput.tabs.${id}`)}
+              </AppText>
+            </Pressable>
+          ))}
+        </View>
+
+        {/* How to write this tab's problems, with tappable examples. */}
+        <View style={styles.hint}>
+          <AppText size="xs" color={colors.textSecondary}>
+            {t(`problemInput.tabHints.${tab}`)}
+          </AppText>
+          <View style={[styles.hintExamples, isRTL && styles.tabsRTL]}>
+            {TAB_EXAMPLES[tab].map(example => (
+              <Pressable
+                key={example}
+                onPress={() => handleExample(example)}
+                style={({ pressed }) => [styles.hintChip, pressed && styles.pressed]}
+                accessibilityRole="button"
+              >
+                <AppText size="sm" weight="medium" color={colors.primaryText} style={styles.ltrText}>
+                  {example}
                 </AppText>
               </Pressable>
             ))}
@@ -188,11 +212,17 @@ export function EquationInput({ value, onChangeText, autoFocus }: EquationInputP
               </AppText>
             </Pressable>
           ))}
+          {/* Fill the last row so its keys keep the same width as the rest. */}
+          {Array.from({ length: (KEYS_PER_ROW - (keys.length % KEYS_PER_ROW)) % KEYS_PER_ROW }, (_, i) => (
+            <View key={`filler-${i}`} style={[styles.key, styles.keyFiller]} />
+          ))}
         </View>
       </View>
     </View>
   );
 }
+
+const KEYS_PER_ROW = 4;
 
 const useStyles = makeStyles(colors => StyleSheet.create({
   container: {
@@ -265,18 +295,43 @@ const useStyles = makeStyles(colors => StyleSheet.create({
   },
   tabs: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 3,
     padding: 3,
     borderRadius: radius.sm,
     backgroundColor: colors.surfaceMuted,
   },
+  tabsRTL: {
+    flexDirection: 'row-reverse',
+  },
   tab: {
+    flexGrow: 1,
     minHeight: 32,
+    alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.sm,
     borderRadius: radius.sm - 2,
   },
   tabActive: {
     backgroundColor: colors.surface,
+  },
+  hint: {
+    gap: spacing.xs,
+    padding: spacing.sm,
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
+  },
+  hintExamples: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+  },
+  hintChip: {
+    minHeight: 36,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.sm,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surfaceMuted,
   },
   grid: {
     flexDirection: 'row',
@@ -293,6 +348,9 @@ const useStyles = makeStyles(colors => StyleSheet.create({
     justifyContent: 'center',
     borderRadius: radius.md,
     backgroundColor: colors.surface,
+  },
+  keyFiller: {
+    backgroundColor: 'transparent',
   },
   keyOperator: {
     backgroundColor: colors.surfaceMuted,

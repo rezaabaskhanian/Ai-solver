@@ -41,6 +41,7 @@ export function HistoryItemCard({ item, compact = false }: HistoryItemCardProps)
         verified: item.verified,
         type: item.problem_type,
         steps: item.steps,
+        plot: item.plot,
       },
     });
 
