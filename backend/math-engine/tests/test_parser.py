@@ -145,7 +145,7 @@ def test_ambiguous_ocr_correction_is_not_guessed():
 
 
 def test_ocr_correction_does_not_mask_unrelated_parse_errors():
-    # No confusable letters at all -- the cubic-degree error must still
-    # surface exactly as before the correction fallback was added.
+    # No confusable letters at all -- the unsupported-degree error must
+    # still surface exactly as before the correction fallback was added.
     with pytest.raises(ParseError):
-        parse_problem("x^3 - 1 = 0")
+        parse_problem("x^5 - 1 = 0")

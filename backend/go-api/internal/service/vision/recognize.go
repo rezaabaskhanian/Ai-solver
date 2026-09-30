@@ -6,6 +6,7 @@ import (
 
 	"mathmotion/go-api/internal/pkg/errmesg"
 	"mathmotion/go-api/internal/pkg/richerror"
+	"mathmotion/go-api/internal/service/aiusage"
 	"mathmotion/go-api/internal/service/quota"
 )
 
@@ -24,10 +25,17 @@ func (s Service) RecognizeEquations(ctx context.Context, userID string, isPremiu
 		return nil, err
 	}
 
-	problems, err := s.client.RecognizeEquations(ctx, imageBase64, mediaType)
+	problems, usage, err := s.client.RecognizeWithUsage(ctx, imageBase64, mediaType)
 	if err == nil || IsNotRecognized(err) {
 		if recErr := s.quota.Record(ctx, userID, quota.KindScan); recErr != nil {
 			log.Printf("%s: recording usage: %v", op, recErr)
+		}
+		if s.usage != nil {
+			s.usage.Record(ctx, aiusage.Entry{
+				UserID: userID, Feature: "scan", Provider: usage.Provider, Model: usage.Model,
+				InputTokens: usage.InputTokens, OutputTokens: usage.OutputTokens,
+				CostUSD: usage.CostUSD, CostReported: usage.CostReported,
+			})
 		}
 	}
 	if err != nil {

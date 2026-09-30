@@ -7,6 +7,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 
+	"mathmotion/go-api/internal/service/aiusage"
 	"mathmotion/go-api/internal/service/quota"
 	settingskeys "mathmotion/go-api/internal/service/settings"
 )
@@ -34,6 +35,9 @@ type settingsResponse struct {
 	// sms.ir, for the sign-up / password-reset codes (internal/service/sms).
 	SMSIrAPIKey     secretItem `json:"sms_ir_api_key"`
 	SMSIrTemplateID string     `json:"sms_ir_otp_template_id"`
+	// AI cost report (internal/service/aiusage).
+	AITokenPricing string `json:"ai_token_pricing"`
+	USDTomanRate   string `json:"usd_toman_rate"`
 }
 
 func maskSecret(v string) string {
@@ -66,6 +70,8 @@ func (h Handler) Get(c echo.Context) error {
 		BazaarAPISecret: secret(settingskeys.KeyBazaarAPISecret),
 		SMSIrAPIKey:     secret(settingskeys.KeySMSIrAPIKey),
 		SMSIrTemplateID: h.store.Get(settingskeys.KeySMSIrTemplateID),
+		AITokenPricing:  h.store.Get(settingskeys.KeyAITokenPricing),
+		USDTomanRate:    h.store.Get(settingskeys.KeyUSDTomanRate),
 	})
 }
 
@@ -119,6 +125,20 @@ func (h Handler) Update(c echo.Context) error {
 			return c.JSON(http.StatusUnprocessableEntity, map[string]string{
 				"error":   "invalid_input",
 				"message": "SMS_IR_OTP_TEMPLATE_ID must be the numeric template id from sms.ir.",
+			})
+		}
+	case settingskeys.KeyAITokenPricing:
+		if value != "" && !aiusage.ValidPricingJSON(value) {
+			return c.JSON(http.StatusUnprocessableEntity, map[string]string{
+				"error":   "invalid_input",
+				"message": `AI_TOKEN_PRICING must be JSON like {"anthropic":{"input_per_1m":3,"output_per_1m":15}}.`,
+			})
+		}
+	case settingskeys.KeyUSDTomanRate:
+		if n, err := strconv.Atoi(value); value != "" && (err != nil || n <= 0) {
+			return c.JSON(http.StatusUnprocessableEntity, map[string]string{
+				"error":   "invalid_input",
+				"message": "USD_TOMAN_RATE must be a whole number of toman per dollar.",
 			})
 		}
 	case settingskeys.KeyFreeDailyLimit, settingskeys.KeyFreeLifetimeLimit, settingskeys.KeyPremiumDailyScanLimit:

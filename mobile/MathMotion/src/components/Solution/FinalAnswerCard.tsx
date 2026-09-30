@@ -14,7 +14,7 @@ import { Icon } from '../common/Icon';
 interface FinalAnswerCardProps {
   answer: string;
   verified: boolean;
-  // For the "no real roots" line under an empty (∅) quadratic answer.
+  // For the "no real roots" line under an empty (∅) quadratic/biquadratic answer.
   type?: ProblemType;
 }
 
@@ -43,9 +43,14 @@ export function FinalAnswerCard({ answer, verified, type }: FinalAnswerCardProps
             <MathExpression key={line} expression={line} size="xl" emphasize />
           ))}
         </View>
-        {answer === '∅' && type === 'quadratic_equation' && (
+        {answer === '∅' && (type === 'quadratic_equation' || type === 'biquadratic_equation') && (
           <AppText weight="medium" align="center">
             {t('solution.emptyAnswer')}
+          </AppText>
+        )}
+        {answer === '∅' && type === 'linear_system' && (
+          <AppText weight="medium" align="center">
+            {t('solution.emptySystem')}
           </AppText>
         )}
         {verified && (

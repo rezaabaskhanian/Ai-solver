@@ -4,6 +4,9 @@
 export type ProblemType =
   | 'linear_equation'
   | 'quadratic_equation'
+  | 'cubic_equation'
+  | 'biquadratic_equation'
+  | 'linear_system'
   | 'expression'
   | 'arithmetic'
   | 'arithmetic_equation'

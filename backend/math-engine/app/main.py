@@ -33,6 +33,9 @@ from .solver.parser import ParseError, parse_problem
 from .solver.plot import PlotError, solve_plot, verify_plot
 from .solver.practice import UnsupportedPracticeType, generate_practice_problem
 from .solver.quadratic import solve_quadratic
+from .solver.cubic import CubicUnsupported, solve_cubic
+from .solver.biquadratic import solve_biquadratic
+from .solver.linear_system import solve_linear_system, verify_linear_system
 from .solver.schemas_internal import StepData
 from .solver.sets import SetsError, solve_sets, verify_sets
 from .solver.vectors import VectorError, solve_vector, verify_vector
@@ -102,6 +105,28 @@ def solve(req: SolveRequest):
     elif parsed.problem_type == "quadratic_equation":
         step_data, roots = solve_quadratic(parsed.lhs, parsed.rhs, parsed.symbol)
         # No roots only when Δ < 0, which the solver computed exactly.
+        verified = all(
+            verify_equation_root(parsed.lhs, parsed.rhs, parsed.symbol, r) for r in roots
+        )
+        answer = format_roots(parsed.symbol, roots)
+
+    elif parsed.problem_type == "cubic_equation":
+        try:
+            step_data, roots = solve_cubic(parsed.lhs, parsed.rhs, parsed.symbol)
+        except CubicUnsupported as exc:
+            return _unsupported(exc.message)
+        verified = all(
+            verify_equation_root(parsed.lhs, parsed.rhs, parsed.symbol, r) for r in roots
+        )
+        answer = format_roots(parsed.symbol, roots)
+
+    elif parsed.problem_type == "linear_system":
+        step_data, answer, solution = solve_linear_system(parsed.structure)
+        verified = verify_linear_system(parsed.structure, solution)
+
+    elif parsed.problem_type == "biquadratic_equation":
+        step_data, roots = solve_biquadratic(parsed.lhs, parsed.rhs, parsed.symbol)
+        # Empty only when every t = x^2 was negative, which the steps show.
         verified = all(
             verify_equation_root(parsed.lhs, parsed.rhs, parsed.symbol, r) for r in roots
         )

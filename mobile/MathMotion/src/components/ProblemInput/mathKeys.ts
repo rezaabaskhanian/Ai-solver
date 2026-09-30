@@ -124,6 +124,9 @@ export function deleteBackward(value: string, selection: Selection): { value: st
 export const EXAMPLE_PROBLEMS: string[] = [
   '2x+5=17',
   'x^2-5x+6=0',
+  'x^3-6x^2+11x-6=0',
+  'x^4-5x^2+4=0',
+  '2x+y=5, x-y=1',
   '2(x+3)-x',
   'sin(x)^2+cos(x)^2',
   'd/dx(x^3+2x)',

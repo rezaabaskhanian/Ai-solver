@@ -18,6 +18,48 @@ export interface SettingsResp {
   bazaar_api_secret: SecretItem;
   sms_ir_api_key: SecretItem;
   sms_ir_otp_template_id: string;
+  ai_token_pricing: string;
+  usd_toman_rate: string;
+}
+
+// ---------- هزینه‌ی هوش مصنوعی (GET /admin/ai-usage) ----------
+export interface AIUsageTotals {
+  calls: number;
+  input_tokens: number;
+  output_tokens: number;
+  cost_usd: number;
+}
+
+export interface AIUsageDay extends AIUsageTotals {
+  date: string;
+}
+
+export interface AIUsageModel extends AIUsageTotals {
+  provider: string;
+  model: string;
+}
+
+export interface AIUsageCall {
+  created_at: string;
+  user_id: string;
+  feature: string;
+  provider: string;
+  model: string;
+  input_tokens: number;
+  output_tokens: number;
+  cost_usd: number;
+  // false: the provider reported the exact charge (OpenRouter).
+  cost_estimated: boolean;
+}
+
+export interface AIUsageReport {
+  period_days: number;
+  usd_toman_rate: number;
+  all_time: AIUsageTotals;
+  period: AIUsageTotals;
+  daily: AIUsageDay[];
+  models: AIUsageModel[];
+  recent: AIUsageCall[];
 }
 
 // A Cafe Bazaar in-app product that adds duration_days of Premium

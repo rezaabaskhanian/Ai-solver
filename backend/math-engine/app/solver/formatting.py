@@ -83,6 +83,14 @@ def format_root(root: sympy.Expr) -> str:
     (3 + sqrt(7))/2. Anything not of the form (p + k·sqrt(n))/d with
     integers prints as format_expr would.
     """
+    # A real cube root (x^3 = 2 -> ∛2), which sympy prints as 2^(1/3).
+    sign, magnitude = ("-", -root) if root.could_extract_minus_sign() else ("", root)
+    if magnitude.is_Pow and magnitude.exp == sympy.Rational(1, 3) and magnitude.base.is_Integer:
+        return f"{sign}∛{magnitude.base}"
+    # A root of a non-integer, e.g. x^2 = 2 + sqrt(3) -> sqrt(2 + sqrt(3)).
+    if magnitude.is_Pow and magnitude.exp == sympy.S.Half and not magnitude.base.is_Integer:
+        return f"{sign}sqrt({format_root(magnitude.base)})"
+
     num, den = sympy.fraction(sympy.together(root))
     const, rest = sympy.expand(num).as_coeff_add()
     if len(rest) != 1 or not den.is_Integer or not const.is_Integer:

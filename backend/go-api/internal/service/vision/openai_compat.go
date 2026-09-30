@@ -35,6 +35,12 @@ type chatRequest struct {
 	Model     string        `json:"model"`
 	Messages  []chatMessage `json:"messages"`
 	MaxTokens int           `json:"max_tokens"`
+	// OpenRouter only: asks for usage.cost (the exact charge) in the reply.
+	Usage *chatUsageRequest `json:"usage,omitempty"`
+}
+
+type chatUsageRequest struct {
+	Include bool `json:"include"`
 }
 
 type chatResponse struct {
@@ -43,13 +49,24 @@ type chatResponse struct {
 			Content string `json:"content"`
 		} `json:"message"`
 	} `json:"choices"`
+	Usage *struct {
+		PromptTokens     int      `json:"prompt_tokens"`
+		CompletionTokens int      `json:"completion_tokens"`
+		Cost             *float64 `json:"cost"` // OpenRouter: dollars charged
+	} `json:"usage,omitempty"`
 	Error *struct {
 		Message string `json:"message"`
 	} `json:"error,omitempty"`
 }
 
-func (c *Client) callOpenAICompatible(ctx context.Context, baseURL, apiKey, model, imageBase64, mediaType string) (string, error) {
+func (c *Client) callOpenAICompatible(ctx context.Context, baseURL, apiKey, model, imageBase64, mediaType string) (string, Usage, error) {
+	usage := Usage{Model: model}
+	var usageRequest *chatUsageRequest
+	if baseURL == c.openRouterURL {
+		usageRequest = &chatUsageRequest{Include: true}
+	}
 	body, err := json.Marshal(chatRequest{
+		Usage:     usageRequest,
 		Model:     model,
 		MaxTokens: maxOutputTokens,
 		Messages: []chatMessage{{
@@ -61,43 +78,50 @@ func (c *Client) callOpenAICompatible(ctx context.Context, baseURL, apiKey, mode
 		}},
 	})
 	if err != nil {
-		return "", fmt.Errorf("marshaling chat request: %w", err)
+		return "", usage, fmt.Errorf("marshaling chat request: %w", err)
 	}
 
 	url := strings.TrimRight(baseURL, "/") + "/chat/completions"
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
-		return "", fmt.Errorf("building chat request: %w", err)
+		return "", usage, fmt.Errorf("building chat request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+apiKey)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return "", err
+		return "", usage, err
 	}
 	defer resp.Body.Close()
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", fmt.Errorf("reading chat response: %w", err)
+		return "", usage, fmt.Errorf("reading chat response: %w", err)
 	}
 
 	var parsed chatResponse
 	if err := json.Unmarshal(respBody, &parsed); err != nil {
-		return "", fmt.Errorf("unparsable response (status %d): %s", resp.StatusCode, truncate(string(respBody), 300))
+		return "", usage, fmt.Errorf("unparsable response (status %d): %s", resp.StatusCode, truncate(string(respBody), 300))
 	}
 	if resp.StatusCode != http.StatusOK {
 		msg := truncate(string(respBody), 300)
 		if parsed.Error != nil && parsed.Error.Message != "" {
 			msg = parsed.Error.Message
 		}
-		return "", fmt.Errorf("status %d: %s", resp.StatusCode, msg)
+		return "", usage, fmt.Errorf("status %d: %s", resp.StatusCode, msg)
+	}
+	if parsed.Usage != nil {
+		usage.InputTokens = parsed.Usage.PromptTokens
+		usage.OutputTokens = parsed.Usage.CompletionTokens
+		if parsed.Usage.Cost != nil {
+			usage.CostUSD, usage.CostReported = *parsed.Usage.Cost, true
+		}
 	}
 	if len(parsed.Choices) == 0 {
-		return "", fmt.Errorf("response had no choices")
+		return "", usage, fmt.Errorf("response had no choices")
 	}
-	return parsed.Choices[0].Message.Content, nil
+	return parsed.Choices[0].Message.Content, usage, nil
 }
 
 func truncate(s string, n int) string {

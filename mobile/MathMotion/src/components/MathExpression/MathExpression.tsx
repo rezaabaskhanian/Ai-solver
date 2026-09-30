@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { fontSize, useColors } from '../../theme';
 import { AppText } from '../common/AppText';
-import { prettifyMath, tokenizeExpression } from './tokenize';
+import { prettifyMath, tokenizeExpression, withExponents } from './tokenize';
 
 const OPERATORS = new Set(['+', '-', '*', '/', '=', '^', '(', ')']);
 
@@ -20,23 +20,38 @@ interface MathExpressionProps {
 export function MathExpression({ expression, size = 'lg', emphasize = false }: MathExpressionProps) {
   const colors = useColors();
   const { t } = useTranslation();
-  const tokens = tokenizeExpression(prettifyMath(expression));
+  const pieces = withExponents(tokenizeExpression(prettifyMath(expression)));
+  const baseSize = typeof size === 'number' ? size : fontSize[size];
 
   return (
     <View style={styles.row}>
-      {tokens.map((token, index) => (
-        <AppText
-          key={`${token}-${index}`}
-          size={size}
-          weight={emphasize ? 'bold' : 'regular'}
-          color={OPERATORS.has(token) ? colors.textSecondary : colors.textPrimary}
-          align="left"
-          style={styles.token}
-        >
-          {/* "x = 2 or x = 3": the word between roots reads «یا» in Persian. */}
-          {token === 'or' ? ` ${t('common.or')} ` : token}
-        </AppText>
-      ))}
+      {pieces.map((piece, index) =>
+        piece.sup ? (
+          // Exponent: ~60% size, lifted off the baseline — a real x².
+          <AppText
+            key={`sup-${piece.text}-${index}`}
+            size={Math.round(baseSize * 0.6)}
+            weight={emphasize ? 'bold' : 'medium'}
+            color={colors.textPrimary}
+            align="left"
+            style={[styles.sup, { top: -Math.round(baseSize * 0.45) }]}
+          >
+            {piece.text}
+          </AppText>
+        ) : (
+          <AppText
+            key={`${piece.text}-${index}`}
+            size={size}
+            weight={emphasize ? 'bold' : 'regular'}
+            color={OPERATORS.has(piece.text) ? colors.textSecondary : colors.textPrimary}
+            align="left"
+            style={styles.token}
+          >
+            {/* "x = 2 or x = 3": the word between roots reads «یا» in Persian. */}
+            {piece.text === 'or' ? ` ${t('common.or')} ` : piece.text}
+          </AppText>
+        ),
+      )}
     </View>
   );
 }
@@ -49,6 +64,12 @@ const styles = StyleSheet.create({
   },
   token: {
     marginHorizontal: 1,
+    writingDirection: 'ltr',
+  },
+  sup: {
+    position: 'relative',
+    marginLeft: 1,
+    marginRight: 2,
     writingDirection: 'ltr',
   },
 });

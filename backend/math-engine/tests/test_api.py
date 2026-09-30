@@ -44,7 +44,7 @@ def test_solve_quadratic_equation():
 
 
 def test_solve_unsupported_degree_returns_422():
-    resp = client.post("/solve", json={"problem": "x^3 - 1 = 0"})
+    resp = client.post("/solve", json={"problem": "x^5 - 1 = 0"})
     assert resp.status_code == 422
     assert resp.json()["error"] == "parse_error"
 

@@ -28,7 +28,8 @@ def test_every_message_renders_in_every_language(key):
     params = {"value": "5", "symbol": "x", "func": "sin(x)", "point": "2",
               "base": "2", "root": "x = -2", "left": "A", "right": "B", "set": "A",
               "n": "2", "count": "4", "quantity": "n(A ∪ B)", "start": "A", "end": "B",
-              "k": "3", "shape": "circle", "p": "6", "d": "3", "lower": "0", "upper": "1"}
+              "k": "3", "shape": "circle", "p": "6", "d": "3", "lower": "0", "upper": "1", "factor": "x",
+              "m1": "2", "m2": "3", "var": "y", "known": "x", "which": "1", "other": "x", "m": "3"}
     for lang in SUPPORTED_LANGS:
         text = render(key, lang, **params)
         assert text and "{" not in text

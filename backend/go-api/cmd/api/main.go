@@ -14,6 +14,7 @@ import (
 	"mathmotion/go-api/internal/pkg/outboundhttp"
 	"mathmotion/go-api/internal/repository/migrator"
 	"mathmotion/go-api/internal/repository/postgres"
+	postgresaiusage "mathmotion/go-api/internal/repository/postgres/aiusage"
 	postgresbilling "mathmotion/go-api/internal/repository/postgres/billing"
 	postgreslanding "mathmotion/go-api/internal/repository/postgres/landing"
 	postgresotp "mathmotion/go-api/internal/repository/postgres/otp"
@@ -22,6 +23,7 @@ import (
 	postgresusage "mathmotion/go-api/internal/repository/postgres/usage"
 	postgresuser "mathmotion/go-api/internal/repository/postgres/user"
 	accountservice "mathmotion/go-api/internal/service/account"
+	aiusageservice "mathmotion/go-api/internal/service/aiusage"
 	authservice "mathmotion/go-api/internal/service/auth"
 	billingservice "mathmotion/go-api/internal/service/billing"
 	landingservice "mathmotion/go-api/internal/service/landing"
@@ -200,7 +202,9 @@ func main() {
 		log.Fatalf("building outbound http client: %v", err)
 	}
 	visionClient := visionservice.NewClient(settingsSvc, outboundClient)
-	visionSvc := visionservice.New(visionClient, quotaSvc)
+	// Every scan's cost → the admin panel's «هزینه‌ی هوش مصنوعی» report.
+	aiUsageSvc := aiusageservice.New(postgresaiusage.New(db.Pool), settingsSvc)
+	visionSvc := visionservice.New(visionClient, quotaSvc).WithUsageRecorder(aiUsageSvc)
 	if !visionClient.Enabled() {
 		log.Printf("warning: no API key for AI provider %q — POST /api/v1/problems/recognize "+
 			"(camera-based Scan Problem) will fail until one is set from the admin panel or .env",
@@ -215,5 +219,5 @@ func main() {
 	uploadDir := getEnv("UPLOAD_DIR", "uploads")
 
 	httpserver.New(cfg, userSvc, problemSvc, billingSvc, visionSvc, visionClient, proxySvc, settingsSvc, quotaSvc,
-		accountSvc, authSvc, landingSvc, uploadDir).Server()
+		accountSvc, authSvc, landingSvc, aiUsageSvc, uploadDir).Server()
 }

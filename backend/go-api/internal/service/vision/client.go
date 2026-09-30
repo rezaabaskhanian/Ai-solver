@@ -56,6 +56,8 @@ const recognitionPrompt = `You will be shown a photo that may contain one or mor
 	`Sets: define each set, then the question, separated by commas, e.g. A={1,2,3}, B={2,3,4}, A∪B ` +
 	`(∪ union, ∩ intersection, - difference, A' complement with U={...} defined, n(A) number of ` +
 	`elements). Vectors: [x, y], points A(1, 2), the vector between points AB, length |AB|. ` +
+	`A system of equations (two equations joined by a brace, دستگاه معادلات) is ONE problem: ` +
+	`write both equations on one line separated by a comma, e.g. 2x+y=5, x-y=1. ` +
 	`Respond with the transcriptions only, one problem per line: no numbering, no explanation, ` +
 	`no commentary, no markdown formatting. If there is no legible math problem in the image, ` +
 	`respond with exactly: NONE`
@@ -157,36 +159,60 @@ func (c *Client) settingOr(key, fallback string) string {
 	return fallback
 }
 
+// Usage is what one recognition call consumed, for the admin panel's AI
+// cost report (internal/service/aiusage). CostUSD is set only when the
+// provider reports its own charge (OpenRouter's usage.cost).
+type Usage struct {
+	Provider     string
+	Model        string
+	InputTokens  int
+	OutputTokens int
+	CostUSD      float64
+	CostReported bool
+}
+
 func (c *Client) RecognizeEquations(ctx context.Context, imageBase64, mediaType string) ([]string, error) {
+	problems, _, err := c.RecognizeWithUsage(ctx, imageBase64, mediaType)
+	return problems, err
+}
+
+// RecognizeWithUsage is RecognizeEquations plus what the call cost. The
+// usage is filled whenever the provider answered — also for a "nothing
+// legible" reply, which is still billed.
+func (c *Client) RecognizeWithUsage(ctx context.Context, imageBase64, mediaType string) ([]string, Usage, error) {
 	provider := c.ActiveProvider()
 	apiKey := c.settings.Get(apiKeySetting(provider))
 	if apiKey == "" {
-		return nil, fmt.Errorf("%s is not configured (set it from the admin panel or .env)", apiKeySetting(provider))
+		return nil, Usage{Provider: provider}, fmt.Errorf("%s is not configured (set it from the admin panel or .env)", apiKeySetting(provider))
 	}
 
 	var (
-		text string
-		err  error
+		text  string
+		usage Usage
+		err   error
 	)
 	switch provider {
 	case ProviderOpenRouter:
-		text, err = c.callOpenAICompatible(ctx, c.openRouterURL, apiKey,
+		text, usage, err = c.callOpenAICompatible(ctx, c.openRouterURL, apiKey,
 			c.settingOr(settingskeys.KeyOpenRouterModel, defaultOpenRouterModel), imageBase64, mediaType)
 	case ProviderDeepSeek:
-		text, err = c.callOpenAICompatible(ctx, c.deepSeekURL, apiKey,
+		text, usage, err = c.callOpenAICompatible(ctx, c.deepSeekURL, apiKey,
 			c.settingOr(settingskeys.KeyDeepSeekModel, defaultDeepSeekModel), imageBase64, mediaType)
 	default:
-		text, err = c.callAnthropic(ctx, apiKey,
+		text, usage, err = c.callAnthropic(ctx, apiKey,
 			c.settingOr(settingskeys.KeyClaudeModel, defaultClaudeModel), imageBase64, mediaType)
 	}
+	usage.Provider = provider
 	if err != nil {
-		return nil, fmt.Errorf("calling %s vision: %w", provider, err)
+		return nil, usage, fmt.Errorf("calling %s vision: %w", provider, err)
 	}
 
-	return parseProblems(text)
+	problems, err := parseProblems(text)
+	return problems, usage, err
 }
 
-func (c *Client) callAnthropic(ctx context.Context, apiKey, model, imageBase64, mediaType string) (string, error) {
+func (c *Client) callAnthropic(ctx context.Context, apiKey, model, imageBase64, mediaType string) (string, Usage, error) {
+	usage := Usage{Model: model}
 	opts := append([]option.RequestOption{
 		option.WithAPIKey(apiKey),
 		option.WithHTTPClient(c.httpClient),
@@ -204,8 +230,10 @@ func (c *Client) callAnthropic(ctx context.Context, apiKey, model, imageBase64, 
 		},
 	})
 	if err != nil {
-		return "", err
+		return "", usage, err
 	}
+	usage.InputTokens = int(resp.Usage.InputTokens)
+	usage.OutputTokens = int(resp.Usage.OutputTokens)
 
 	var text strings.Builder
 	for _, block := range resp.Content {
@@ -213,7 +241,7 @@ func (c *Client) callAnthropic(ctx context.Context, apiKey, model, imageBase64, 
 			text.WriteString(b.Text)
 		}
 	}
-	return text.String(), nil
+	return text.String(), usage, nil
 }
 
 // parseProblems turns the model's one-problem-per-line reply into a list,

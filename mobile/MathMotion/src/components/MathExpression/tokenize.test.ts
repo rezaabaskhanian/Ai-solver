@@ -1,4 +1,4 @@
-import { prettifyMath, splitRoots, tokenizeExpression } from './tokenize';
+import { prettifyMath, splitRoots, superscriptDigits, tokenizeExpression, withExponents } from './tokenize';
 
 describe('tokenizeExpression', () => {
   it('splits numbers, letters, and operators into separate tokens', () => {
@@ -44,5 +44,23 @@ describe('prettifyMath / splitRoots', () => {
   it('numbers several roots x₁, x₂', () => {
     expect(splitRoots('x = 2 or x = 3')).toEqual(['x₁ = 2', 'x₂ = 3']);
     expect(splitRoots('x = 6')).toEqual(['x = 6']);
+    expect(splitRoots('x = 2, y = 1')).toEqual(['x = 2', 'y = 1']);
+  });
+});
+
+describe('exponents', () => {
+  it('folds "^" and its exponent into one raised piece', () => {
+    expect(withExponents(tokenizeExpression('x^2 + 1'))).toEqual([
+      { text: 'x' },
+      { text: '2', sup: true },
+      { text: '+' },
+      { text: '1' },
+    ]);
+    expect(withExponents(tokenizeExpression('e^(2x)'))).toEqual([{ text: 'e' }, { text: '2x', sup: true }]);
+    expect(withExponents(tokenizeExpression('x^-1'))).toEqual([{ text: 'x' }, { text: '-1', sup: true }]);
+  });
+
+  it('uses Unicode superscripts in plain text', () => {
+    expect(superscriptDigits('x^2 - 4x^10')).toBe('x² - 4x¹⁰');
   });
 });

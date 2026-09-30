@@ -62,6 +62,114 @@ MESSAGES: dict[str, dict[str, str]] = {
         "en": "Compute the discriminant.",
         "fa": "دلتا (مبیّن) را حساب می‌کنیم.",
     },
+    "system_standard_form": {
+        "en": "Write both equations in the form ax + by = c.",
+        "fa": "هر دو معادله را به شکل {form} می‌نویسیم.",
+    },
+    "method_elimination": {
+        "en": "Method 1 — elimination: combine the equations so one unknown cancels.",
+        "fa": "روش اول — حذفی: دو معادله را طوری ضرب و جمع می‌کنیم که یکی از مجهول‌ها حذف شود.",
+    },
+    "elim_multiply": {
+        "en": "Multiply the first equation by {m1} and the second by {m2}, so {var} has the same size of coefficient in both.",
+        "fa": "معادله‌ی اول را در {m1} و معادله‌ی دوم را در {m2} ضرب می‌کنیم تا ضریب {var} در هر دو هم‌اندازه شود.",
+    },
+    "elim_multiply_one": {
+        "en": "Multiply equation ({which}) by {m}, so {var} has the same size of coefficient in both.",
+        "fa": "معادله‌ی ({which}) را در {m} ضرب می‌کنیم تا ضریب {var} در هر دو معادله هم‌اندازه شود.",
+    },
+    "elim_add": {
+        "en": "Add the two equations: {var} cancels out.",
+        "fa": "دو معادله را با هم جمع می‌کنیم؛ {var} حذف می‌شود.",
+    },
+    "elim_subtract": {
+        "en": "Subtract the second equation from the first: {var} cancels out.",
+        "fa": "معادله‌ی دوم را از اولی کم می‌کنیم؛ {var} حذف می‌شود.",
+    },
+    "solve_one_variable": {
+        "en": "Solve the one-unknown equation.",
+        "fa": "معادله‌ی یک‌مجهولی را حل می‌کنیم.",
+    },
+    "back_substitute_value": {
+        "en": "Put {known} = {value} back in to find {var}.",
+        "fa": "مقدار {assign} را جای‌گذاری می‌کنیم تا {var} به دست بیاید.",
+    },
+    "method_substitution": {
+        "en": "Method 2 — substitution: find one unknown from one equation and put it into the other.",
+        "fa": "روش دوم — جایگزینی: یک مجهول را از یک معادله پیدا می‌کنیم و در معادله‌ی دیگر می‌گذاریم.",
+    },
+    "subst_isolate": {
+        "en": "From equation ({which}), write {var} in terms of {other}.",
+        "fa": "از معادله‌ی ({which})، {var} را برحسب {other} می‌نویسیم.",
+    },
+    "subst_replace": {
+        "en": "Replace {var} in the other equation with this expression.",
+        "fa": "این عبارت را به جای {var} در معادله‌ی دیگر می‌گذاریم.",
+    },
+    "subst_simplify": {
+        "en": "Expand and simplify.",
+        "fa": "پرانتزها را باز و عبارت را ساده می‌کنیم.",
+    },
+    "system_answer": {
+        "en": "Both methods give the same answer.",
+        "fa": "هر دو روش به یک جواب می‌رسند.",
+    },
+    "system_no_solution": {
+        "en": "We reached a false equality, so the system has no solution (the lines are parallel).",
+        "fa": "به یک تساوی نادرست رسیدیم، پس دستگاه جواب ندارد (دو خط موازی‌اند).",
+    },
+    "system_infinite": {
+        "en": "We reached 0 = 0, so the system has infinitely many solutions (the same line).",
+        "fa": "به تساوی همیشه‌درست رسیدیم، پس دستگاه بی‌شمار جواب دارد (دو خط بر هم منطبق‌اند).",
+    },
+    "biquadratic_standard_form": {
+        "en": "Move every term to one side (ax^4 + bx^2 + c = 0).",
+        "fa": "همه‌ی جمله‌ها را به یک طرف می‌بریم تا طرف دیگر صفر شود.",
+    },
+    "biquadratic_substitute": {
+        "en": "Only even powers appear, so substitute t = {symbol}^2: the equation becomes quadratic in t.",
+        "fa": "فقط توان‌های زوج داریم؛ با تغییر متغیر {assign} معادله نسبت به t درجه‌دو می‌شود.",
+    },
+    "biquadratic_back": {
+        "en": "Go back to {symbol}: {symbol}^2 = t, so take the square root (±).",
+        "fa": "به متغیر اصلی برمی‌گردیم و از دو طرف جذر می‌گیریم (مثبت و منفی).",
+    },
+    "biquadratic_negative_square": {
+        "en": "A square can't be negative, so this t gives no real roots.",
+        "fa": "مربع هیچ عددی منفی نمی‌شود، پس این مقدار t جوابی نمی‌دهد.",
+    },
+    "cubic_standard_form": {
+        "en": "Move every term to one side (ax^3 + bx^2 + cx + d = 0).",
+        "fa": "همه‌ی جمله‌ها را به یک طرف می‌بریم تا طرف دیگر صفر شود.",
+    },
+    "cubic_isolate_cube": {
+        "en": "Only the cube term has the unknown, so isolate it.",
+        "fa": "مجهول فقط در جمله‌ی مکعب هست، پس آن را تنها می‌کنیم.",
+    },
+    "cubic_cube_root": {
+        "en": "Take the cube root of both sides (a cube root of a negative number is allowed).",
+        "fa": "از دو طرف ریشه‌ی سوم می‌گیریم (ریشه‌ی سوم عدد منفی هم تعریف شده است).",
+    },
+    "cubic_common_factor": {
+        "en": "There's no constant term, so factor out {factor}.",
+        "fa": "معادله جمله‌ی ثابت ندارد، پس {factor} را فاکتور می‌گیریم.",
+    },
+    "cubic_rational_root": {
+        "en": "Try the divisors of the constant term: {symbol} = {root} makes the left side zero, so it's a root.",
+        "fa": "مقسوم‌علیه‌های جمله‌ی ثابت را امتحان می‌کنیم: به ازای {assign} عبارت صفر می‌شود، پس یکی از ریشه‌هاست.",
+    },
+    "cubic_divide": {
+        "en": "Divide by {factor} to split the cubic into a linear and a quadratic factor.",
+        "fa": "عبارت را بر {factor} تقسیم می‌کنیم تا به حاصل‌ضرب یک عامل درجه‌یک و یک عامل درجه‌دو برسیم.",
+    },
+    "cubic_linear_factor": {
+        "en": "Set the remaining linear factor to zero.",
+        "fa": "عامل درجه‌یک باقی‌مانده را برابر صفر قرار می‌دهیم.",
+    },
+    "cubic_collect_roots": {
+        "en": "Collect all the roots of the equation.",
+        "fa": "همه‌ی ریشه‌های معادله را کنار هم می‌نویسیم.",
+    },
     "no_real_roots": {
         "en": "The discriminant is negative, so the equation has no real roots.",
         "fa": "چون دلتا منفی است، معادله ریشه‌ی حقیقی ندارد.",
@@ -434,6 +542,10 @@ _GEO_FA = {
 # both languages always describe the same step.
 _DERIVED_FA_PARAMS = {
     "standard_form": lambda p: {"form": "ax^2 + bx + c = 0"},
+    "cubic_rational_root": lambda p: {"assign": f"{p['symbol']} = {p['root']}"},
+    "biquadratic_substitute": lambda p: {"assign": f"t = {p['symbol']}^2"},
+    "system_standard_form": lambda p: {"form": "ax + by = c"},
+    "back_substitute_value": lambda p: {"assign": f"{p['known']} = {p['value']}"},
     "integral_constant_rule": lambda p: {"form": f"c·{p['symbol']}"},
     "integral_log_rule": lambda p: {"form": f"1/{p['symbol']}", "result": f"ln|{p['symbol']}|"},
     "derivative_at_point": lambda p: {"assign": f"{p['symbol']} = {p['point']}"},

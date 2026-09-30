@@ -12,7 +12,7 @@ import { AppText } from '../common/AppText';
 import { Badge } from '../common/Badge';
 import { Card } from '../common/Card';
 import { MathExpression } from '../MathExpression/MathExpression';
-import { prettifyMath } from '../MathExpression/tokenize';
+import { prettifyMath, superscriptDigits } from '../MathExpression/tokenize';
 import { formatRelativeDate } from './formatRelativeDate';
 import { Icon } from '../common/Icon';
 
@@ -61,7 +61,7 @@ export function HistoryItemCard({ item, compact = false }: HistoryItemCardProps)
             {/* Plain text, not MathExpression: answers can hold symbols
                 (±, √) its tokenizer would drop. */}
             <AppText size="xs" weight="medium" color={colors.primaryText} style={styles.ltr}>
-              {prettifyMath(item.answer).replace(/ or /g, ` ${t('common.or')} `)}
+              {superscriptDigits(prettifyMath(item.answer)).replace(/ or /g, ` ${t('common.or')} `)}
             </AppText>
           </View>
         </View>

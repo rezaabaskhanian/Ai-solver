@@ -47,6 +47,12 @@ const (
 	// (with a CODE parameter) defined in the sms.ir panel.
 	KeySMSIrAPIKey     = "SMS_IR_API_KEY"
 	KeySMSIrTemplateID = "SMS_IR_OTP_TEMPLATE_ID"
+
+	// AI cost report (internal/service/aiusage): dollars per million
+	// tokens per provider, JSON — only used for providers that don't report
+	// their own charge (OpenRouter does) — and the dollar→toman rate.
+	KeyAITokenPricing = "AI_TOKEN_PRICING"
+	KeyUSDTomanRate   = "USD_TOMAN_RATE"
 )
 
 // EditableKeys is what PUT /admin/settings accepts.
@@ -67,6 +73,9 @@ var EditableKeys = map[string]bool{
 	KeyBazaarAPISecret: true,
 	KeySMSIrAPIKey:     true,
 	KeySMSIrTemplateID: true,
+
+	KeyAITokenPricing: true,
+	KeyUSDTomanRate:   true,
 }
 
 type Repository interface {

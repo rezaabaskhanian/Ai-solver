@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { clearToken, getToken } from "@/lib/api";
+import AIUsagePanel from "./AIUsagePanel";
 import AIPanel from "./AIPanel";
 import ProxyPanel from "./ProxyPanel";
 import QuotaPanel from "./QuotaPanel";
 import SubscriptionPanel from "./SubscriptionPanel";
 import LandingPanel from "./LandingPanel";
 
-type Tab = "ai" | "quota" | "subscriptions" | "landing" | "proxy";
+type Tab = "ai" | "ai-usage" | "quota" | "subscriptions" | "landing" | "proxy";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -49,6 +50,9 @@ export default function DashboardPage() {
           <button className={`sidebar-link ${tab === "ai" ? "active" : ""}`} onClick={() => setTab("ai")}>
             هوش مصنوعی
           </button>
+          <button className={`sidebar-link ${tab === "ai-usage" ? "active" : ""}`} onClick={() => setTab("ai-usage")}>
+            هزینه‌ی هوش مصنوعی
+          </button>
           <button className={`sidebar-link ${tab === "quota" ? "active" : ""}`} onClick={() => setTab("quota")}>
             سهمیه و محدودیت‌ها
           </button>
@@ -75,6 +79,7 @@ export default function DashboardPage() {
 
       <main className="container">
         {tab === "ai" && <AIPanel notify={notify} />}
+        {tab === "ai-usage" && <AIUsagePanel notify={notify} />}
         {tab === "quota" && <QuotaPanel notify={notify} />}
         {tab === "subscriptions" && <SubscriptionPanel notify={notify} />}
         {tab === "landing" && <LandingPanel notify={notify} />}

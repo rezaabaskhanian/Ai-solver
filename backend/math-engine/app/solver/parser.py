@@ -11,6 +11,8 @@ from sympy.parsing.sympy_parser import (
     parse_expr,
 )
 
+from .biquadratic import is_biquadratic
+from .linear_system import SystemError_, parse_linear_system
 from .formatting import format_eq, format_expr
 from .functions import LogB, symbolic_logs, to_real_logs
 from .geometry import GeometryError, looks_like_geometry, parse_geometry_problem
@@ -335,7 +337,7 @@ class ParsedProblem:
     structure: Optional[Any] = None
 
 
-_SUPPORTED_EQUATION_TYPES = {"linear_equation", "quadratic_equation"}
+_SUPPORTED_EQUATION_TYPES = {"linear_equation", "quadratic_equation", "cubic_equation", "biquadratic_equation"}
 
 
 def _parse_side(text: str) -> sympy.Expr:
@@ -450,6 +452,18 @@ def _parse_core(normalized: str) -> _CoreParse:
             raise ParseError(exc.message) from exc
         return problem.display, "vector", None, None, None, None, {"structure": problem}
 
+    # Two equations separated by "," / ";" / a new line: a linear system
+    # (2x + y = 5, x - y = 1).
+    pieces = [p for chunk in re.split(r"[;\n،]", normalized) for p in _split_top_level_commas(chunk)]
+    pieces = [p for p in pieces if p.strip()]
+    if len(pieces) == 2 and all(p.count("=") == 1 for p in pieces):
+        sides = [(_parse_side(a), _parse_side(b)) for a, b in (p.split("=") for p in pieces)]
+        try:
+            system = parse_linear_system(sides)
+        except SystemError_ as exc:
+            raise ParseError(exc.message) from exc
+        return system.display, "linear_system", None, None, None, None, {"structure": system}
+
     parts = normalized.split("=")
     if len(parts) > 2:
         raise ParseError("Only one '=' is supported per equation")
@@ -493,10 +507,14 @@ def _parse_core(normalized: str) -> _CoreParse:
             problem_type = "linear_equation"
         elif degree == 2:
             problem_type = "quadratic_equation"
+        elif degree == 3:
+            problem_type = "cubic_equation"
+        elif degree == 4 and is_biquadratic(poly, symbol):
+            problem_type = "biquadratic_equation"
         else:
             raise ParseError(
                 f"Equations of degree {degree} are not supported yet "
-                "(MVP covers linear and quadratic equations)"
+                "(linear, quadratic, cubic and biquadratic ax^4 + bx^2 + c = 0 equations are)"
             )
 
         return display, problem_type, symbol, lhs, rhs, None, {}

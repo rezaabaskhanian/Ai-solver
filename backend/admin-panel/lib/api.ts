@@ -1,4 +1,5 @@
 import type {
+  AIUsageReport,
   AppUser,
   GrantAction,
   LandingFAQ,
@@ -89,6 +90,11 @@ export async function updateSetting(key: string, value: string): Promise<void> {
       body: JSON.stringify({ key, value }),
     })
   );
+}
+
+// ---------- هزینه‌ی هوش مصنوعی ----------
+export async function getAIUsageReport(days = 30): Promise<AIUsageReport> {
+  return jsonOrThrow<AIUsageReport>(await authFetch(`/admin/ai-usage?days=${days}`, { method: "GET" }));
 }
 
 // ---------- پراکسی Xray (vless) ----------
