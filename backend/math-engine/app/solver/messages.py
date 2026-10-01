@@ -22,8 +22,8 @@ _PDI = "⁩"
 MESSAGES: dict[str, dict[str, str]] = {
     # linear.py
     "expand": {
-        "en": "Expand the parentheses.",
-        "fa": "پرانتزها را باز می‌کنیم.",
+        "en": "Expand the parentheses: multiply the number in front of each bracket by every term inside it (a minus sign in front flips the sign of every term inside).",
+        "fa": "پرانتزها را باز می‌کنیم: عددِ پشت هر پرانتز را در تک‌تک جمله‌های داخل آن ضرب می‌کنیم (اگر پشت پرانتز منفی باشد، علامت همه‌ی جمله‌های داخلش عوض می‌شود).",
     },
     "subtract_both_sides": {
         "en": "Subtract {value} from both sides.",
@@ -41,10 +41,34 @@ MESSAGES: dict[str, dict[str, str]] = {
         "en": "Multiply both sides by {value}.",
         "fa": "هر دو طرف را در {value} ضرب می‌کنیم.",
     },
+    "lin_var_subtract": {
+        "en": "Gather the {symbol} terms on the left: subtract {value} from both sides, so it cancels on the right ({cancel}). Doing the same to both sides keeps the equation balanced.",
+        "fa": "جمله‌های دارای {symbol} را در سمت چپ جمع می‌کنیم: {value} را از هر دو طرف کم می‌کنیم تا در سمت راست حذف شود ({cancel}). چون با هر دو طرف یک کار را می‌کنیم، تساوی به هم نمی‌خورد.",
+    },
+    "lin_var_add": {
+        "en": "Gather the {symbol} terms on the left: add {value} to both sides, so {term} cancels on the right ({cancel}). Doing the same to both sides keeps the equation balanced.",
+        "fa": "جمله‌های دارای {symbol} را در سمت چپ جمع می‌کنیم: {value} را به هر دو طرف اضافه می‌کنیم تا {term} در سمت راست حذف شود ({cancel}). چون با هر دو طرف یک کار را می‌کنیم، تساوی به هم نمی‌خورد.",
+    },
+    "lin_const_subtract": {
+        "en": "To get {symbol} on its own, remove the number {value} from the left: subtract {value} from both sides ({cancel}). Whatever we do to one side we must do to the other.",
+        "fa": "برای این‌که {symbol} تنها بماند، عدد {value} را از سمت چپ حذف می‌کنیم: از هر دو طرف {value} کم می‌کنیم ({cancel}). هر کاری با یک طرف تساوی بکنیم، باید با طرف دیگر هم بکنیم.",
+    },
+    "lin_const_add": {
+        "en": "To get {symbol} on its own, remove {term} from the left: add {value} to both sides ({cancel}). Whatever we do to one side we must do to the other.",
+        "fa": "برای این‌که {symbol} تنها بماند، {term} را از سمت چپ حذف می‌کنیم: {value} را به هر دو طرف اضافه می‌کنیم ({cancel}). هر کاری با یک طرف تساوی بکنیم، باید با طرف دیگر هم بکنیم.",
+    },
+    "lin_divide": {
+        "en": "{symbol} is multiplied by {value}; dividing is the opposite of multiplying, so divide both sides by {value} ({cancel}).",
+        "fa": "{symbol} در {value} ضرب شده است؛ عکسِ ضرب، تقسیم است، پس هر دو طرف را بر {value} تقسیم می‌کنیم ({cancel}).",
+    },
+    "lin_multiply": {
+        "en": "The coefficient of {symbol} is the fraction {coeff}; multiply both sides by its reciprocal {value}, so the coefficient becomes 1 ({cancel}).",
+        "fa": "ضریب {symbol} کسر {coeff} است؛ هر دو طرف را در معکوس آن یعنی {value} ضرب می‌کنیم تا ضریب {symbol} یک شود ({cancel}).",
+    },
     # quadratic.py
     "standard_form": {
-        "en": "Rewrite the equation in standard form (ax^2 + bx + c = 0).",
-        "fa": "معادله را به شکل استاندارد {form} می‌نویسیم.",
+        "en": "Move every term to the left so the right side is 0 (a term changes sign when it crosses the = sign). Only in the standard form ax^2 + bx + c = 0 can we factor or use the formula.",
+        "fa": "همه‌ی جمله‌ها را به سمت چپ می‌بریم تا سمت راست صفر شود (هر جمله‌ای که از یک طرف تساوی به طرف دیگر برود، علامتش عوض می‌شود). فقط در شکل استاندارد {form} می‌توانیم تجزیه کنیم یا از فرمول استفاده کنیم.",
     },
     "factor": {
         "en": "Factor the left-hand side.",
@@ -68,13 +92,17 @@ MESSAGES: dict[str, dict[str, str]] = {
         "en": "If a product is zero, at least one factor must be zero.",
         "fa": "اگر حاصل‌ضرب صفر باشد، دست‌کم یکی از عامل‌ها صفر است.",
     },
+    "zero_product_each": {
+        "en": "If a product is zero, at least one factor must be zero. So set each bracket to zero separately — {eq1} or {eq2} — and solve each one.",
+        "fa": "اگر حاصل‌ضرب چند عامل صفر باشد، دست‌کم یکی از آن‌ها صفر است. پس هر عامل را جدا برابر صفر می‌گذاریم — {eq1} یا {eq2} — و هر کدام را حل می‌کنیم.",
+    },
     "apply_quadratic_formula": {
-        "en": "Identify a, b, c and apply the quadratic formula.",
-        "fa": "مقدار a، b و c را مشخص می‌کنیم و فرمول معادله‌ی درجه‌دو را به کار می‌بریم.",
+        "en": "Use the quadratic formula, which works for every quadratic equation. First write the coefficients with their signs: {coeffs}.",
+        "fa": "از فرمول کلی معادله‌ی درجه‌دو استفاده می‌کنیم که برای همه‌ی معادله‌های درجه‌دو کار می‌کند. اول ضریب‌ها را با علامتشان می‌نویسیم: {coeffs}.",
     },
     "compute_discriminant": {
-        "en": "Compute the discriminant.",
-        "fa": "دلتا (مبیّن) را حساب می‌کنیم.",
+        "en": "Compute the discriminant: {calc}. It tells us how many solutions there are: positive → two, zero → one, negative → no real solution.",
+        "fa": "دلتا (مبیّن) را حساب می‌کنیم: {calc}. دلتا تعداد جواب‌ها را نشان می‌دهد: مثبت ← دو جواب، صفر ← یک جواب، منفی ← جواب حقیقی ندارد.",
     },
     "system_standard_form": {
         "en": "Write both equations in the form ax + by = c.",
@@ -101,8 +129,8 @@ MESSAGES: dict[str, dict[str, str]] = {
         "fa": "معادله‌ی دوم را از اولی کم می‌کنیم؛ {var} حذف می‌شود.",
     },
     "solve_one_variable": {
-        "en": "Solve the one-unknown equation.",
-        "fa": "معادله‌ی یک‌مجهولی را حل می‌کنیم.",
+        "en": "Now there is only one unknown: solve it like a simple linear equation (divide both sides by its coefficient).",
+        "fa": "حالا فقط یک مجهول داریم؛ مثل یک معادله‌ی درجه‌یک ساده حلش می‌کنیم (دو طرف را بر ضریب مجهول تقسیم می‌کنیم).",
     },
     "back_substitute_value": {
         "en": "Put {known} = {value} back in to find {var}.",
@@ -137,65 +165,73 @@ MESSAGES: dict[str, dict[str, str]] = {
         "fa": "به تساوی همیشه‌درست رسیدیم، پس دستگاه بی‌شمار جواب دارد (دو خط بر هم منطبق‌اند).",
     },
     "biquadratic_standard_form": {
-        "en": "Move every term to one side (ax^4 + bx^2 + c = 0).",
-        "fa": "همه‌ی جمله‌ها را به یک طرف می‌بریم تا طرف دیگر صفر شود.",
+        "en": "Move every term to one side so the other side is 0 (a term changes sign when it crosses the = sign).",
+        "fa": "همه‌ی جمله‌ها را به یک طرف می‌بریم تا طرف دیگر صفر شود (هر جمله‌ای که از یک طرف به طرف دیگر برود، علامتش عوض می‌شود).",
     },
     "biquadratic_substitute": {
-        "en": "Only even powers appear, so substitute t = {symbol}^2: the equation becomes quadratic in t.",
-        "fa": "فقط توان‌های زوج داریم؛ با تغییر متغیر {assign} معادله نسبت به t درجه‌دو می‌شود.",
+        "en": "Only even powers appear, and {symbol}^4 = ({symbol}^2)^2. So call t = {symbol}^2: the equation becomes an ordinary quadratic in t.",
+        "fa": "فقط توان‌های زوج داریم و {pow4}. پس با تغییر متغیر {assign} معادله نسبت به t یک معادله‌ی درجه‌دو معمولی می‌شود که بلدیم حلش کنیم.",
     },
     "biquadratic_back": {
-        "en": "Go back to {symbol}: {symbol}^2 = t, so take the square root (±).",
-        "fa": "به متغیر اصلی برمی‌گردیم و از دو طرف جذر می‌گیریم (مثبت و منفی).",
+        "en": "Go back to {symbol}: {symbol}^2 = {value}. Take the square root of both sides — both a positive and a negative number square to {value}, so there are two answers (±).",
+        "fa": "به متغیر اصلی برمی‌گردیم: {assign}. از دو طرف جذر می‌گیریم؛ چون هم عدد مثبت و هم عدد منفی به توان دو مثبت می‌شوند، دو جواب (±) داریم.",
+    },
+    "biquadratic_back_zero": {
+        "en": "Go back to {symbol}: {symbol}^2 = 0 only when {symbol} = 0.",
+        "fa": "به متغیر اصلی برمی‌گردیم: {assign} فقط وقتی درست است که {zero} باشد.",
     },
     "biquadratic_negative_square": {
-        "en": "A square can't be negative, so this t gives no real roots.",
-        "fa": "مربع هیچ عددی منفی نمی‌شود، پس این مقدار t جوابی نمی‌دهد.",
+        "en": "{symbol}^2 = {value} is impossible: no real number squared is negative, so this value of t gives no answer.",
+        "fa": "{assign} ممکن نیست، چون مربع هیچ عدد حقیقی منفی نمی‌شود؛ پس این مقدار t جوابی نمی‌دهد.",
     },
     "cubic_standard_form": {
-        "en": "Move every term to one side (ax^3 + bx^2 + cx + d = 0).",
-        "fa": "همه‌ی جمله‌ها را به یک طرف می‌بریم تا طرف دیگر صفر شود.",
+        "en": "Move every term to one side so the other side is 0 (a term changes sign when it crosses the = sign).",
+        "fa": "همه‌ی جمله‌ها را به یک طرف می‌بریم تا طرف دیگر صفر شود (هر جمله‌ای که از یک طرف به طرف دیگر برود، علامتش عوض می‌شود).",
     },
     "cubic_isolate_cube": {
-        "en": "Only the cube term has the unknown, so isolate it.",
-        "fa": "مجهول فقط در جمله‌ی مکعب هست، پس آن را تنها می‌کنیم.",
+        "en": "The unknown only appears in the cube term, so get it on its own: move the number to the other side and divide by its coefficient.",
+        "fa": "مجهول فقط در جمله‌ی مکعب هست، پس آن را تنها می‌کنیم: عدد را به طرف دیگر می‌بریم و بر ضریبش تقسیم می‌کنیم.",
     },
     "cubic_cube_root": {
-        "en": "Take the cube root of both sides (a cube root of a negative number is allowed).",
-        "fa": "از دو طرف ریشه‌ی سوم می‌گیریم (ریشه‌ی سوم عدد منفی هم تعریف شده است).",
+        "en": "Take the cube root of both sides: {calc}. Unlike a square root, a cube root exists for negative numbers too and gives just one answer.",
+        "fa": "از دو طرف ریشه‌ی سوم می‌گیریم: {calc}. برخلاف جذر، ریشه‌ی سوم عدد منفی هم تعریف شده و فقط یک جواب می‌دهد.",
     },
     "cubic_common_factor": {
-        "en": "There's no constant term, so factor out {factor}.",
-        "fa": "معادله جمله‌ی ثابت ندارد، پس {factor} را فاکتور می‌گیریم.",
+        "en": "There is no constant term, so every term contains {factor}: take it out as a common factor. {factor} = 0 gives {symbol} = 0; the other answers come from setting the bracket to zero.",
+        "fa": "معادله جمله‌ی ثابت ندارد، پس همه‌ی جمله‌ها {factor} دارند و آن را فاکتور می‌گیریم. از صفر شدن {factor} جواب {assign0} به دست می‌آید و بقیه‌ی جواب‌ها از صفر کردن پرانتز.",
     },
     "cubic_rational_root": {
-        "en": "Try the divisors of the constant term: {symbol} = {root} makes the left side zero, so it's a root.",
-        "fa": "مقسوم‌علیه‌های جمله‌ی ثابت را امتحان می‌کنیم: به ازای {assign} عبارت صفر می‌شود، پس یکی از ریشه‌هاست.",
+        "en": "Look for a whole-number or fractional root among the divisors of the constant term (over the divisors of the leading coefficient): {candidates}. Trying {symbol} = {root} makes the expression 0, so it is a root.",
+        "fa": "ریشه‌ی گویا را بین مقسوم‌علیه‌های جمله‌ی ثابت (تقسیم بر مقسوم‌علیه‌های ضریب بزرگ‌ترین توان) جست‌وجو می‌کنیم: {candidates}. با امتحان {assign} عبارت صفر می‌شود، پس این عدد یکی از ریشه‌هاست.",
     },
     "cubic_divide": {
-        "en": "Divide by {factor} to split the cubic into a linear and a quadratic factor.",
-        "fa": "عبارت را بر {factor} تقسیم می‌کنیم تا به حاصل‌ضرب یک عامل درجه‌یک و یک عامل درجه‌دو برسیم.",
+        "en": "Since {symbol} = {root} is a root, {factor} is a factor. Divide the polynomial by {factor} (long division or Horner's method): the quotient is {quotient}.",
+        "fa": "چون {assign} ریشه است، {factor} یکی از عامل‌های عبارت است. عبارت را بر {factor} تقسیم می‌کنیم (تقسیم چندجمله‌ای‌ها یا روش هورنر) و خارج‌قسمت {quotient} به دست می‌آید.",
     },
     "cubic_linear_factor": {
-        "en": "Set the remaining linear factor to zero.",
-        "fa": "عامل درجه‌یک باقی‌مانده را برابر صفر قرار می‌دهیم.",
+        "en": "Set the remaining first-degree factor to zero and solve it like a simple linear equation.",
+        "fa": "عامل درجه‌یک باقی‌مانده را برابر صفر می‌گذاریم و مثل یک معادله‌ی درجه‌یک ساده حلش می‌کنیم.",
     },
     "cubic_collect_roots": {
-        "en": "Collect all the roots of the equation.",
-        "fa": "همه‌ی ریشه‌های معادله را کنار هم می‌نویسیم.",
+        "en": "Write together all the solutions we found from the different factors.",
+        "fa": "همه‌ی جواب‌هایی را که از عامل‌های مختلف به دست آمد، کنار هم می‌نویسیم.",
     },
     "no_real_roots": {
-        "en": "The discriminant is negative, so the equation has no real roots.",
-        "fa": "چون دلتا منفی است، معادله ریشه‌ی حقیقی ندارد.",
+        "en": "The discriminant is {value}, which is negative. The formula needs its square root, and a negative number has no real square root, so there is no real solution.",
+        "fa": "دلتا برابر {value} و منفی است. در فرمول باید از دلتا جذر بگیریم و عدد منفی جذر حقیقی ندارد، پس معادله ریشه‌ی حقیقی ندارد.",
     },
     "compute_roots": {
-        "en": "Substitute a, b, c and the discriminant to compute the roots.",
-        "fa": "a، b، c و دلتا را جای‌گذاری می‌کنیم تا ریشه‌ها به دست بیایند.",
+        "en": "Put the numbers into the formula: {calc}. The ± means we compute it once with + and once with −, which gives the two solutions.",
+        "fa": "عددها را در فرمول می‌گذاریم: {calc}. علامت ± یعنی یک بار با جمع و یک بار با تفریق حساب می‌کنیم؛ این‌طوری دو جواب به دست می‌آید.",
+    },
+    "compute_double_root": {
+        "en": "The discriminant is 0, so ± changes nothing and there is one (double) solution: {calc}.",
+        "fa": "دلتا صفر است، پس ± فرقی ایجاد نمی‌کند و معادله یک جواب (ریشه‌ی مضاعف) دارد: {calc}.",
     },
     # expression.py
     "simplify": {
-        "en": "Simplify the expression.",
-        "fa": "عبارت را ساده می‌کنیم.",
+        "en": "Simplify: expand brackets, combine like terms, and reduce fractions as far as possible.",
+        "fa": "عبارت را ساده می‌کنیم: پرانتزها را باز می‌کنیم، جمله‌های متشابه را با هم جمع می‌کنیم و کسرها را تا جایی که می‌شود ساده می‌کنیم.",
     },
     # trig.py
     "trig_degrees_to_radians": {
@@ -207,83 +243,103 @@ MESSAGES: dict[str, dict[str, str]] = {
         "fa": "به‌جای هر نسبت مثلثاتی، مقدار دقیق و معروفش را می‌گذاریم: {values}.",
     },
     "trig_evaluate": {
-        "en": "Work out the remaining arithmetic.",
-        "fa": "بقیه‌ی محاسبه را انجام می‌دهیم.",
+        "en": "Do the rest of the arithmetic with these values.",
+        "fa": "با این مقدارها بقیه‌ی محاسبه را انجام می‌دهیم.",
     },
     # derivative.py
     "derivative_sum_rule": {
-        "en": "Differentiate each term separately (sum rule).",
-        "fa": "از هر جمله جداگانه مشتق می‌گیریم (قاعده‌ی جمع).",
+        "en": "The expression is several terms joined by + and −. The derivative of a sum is the sum of the derivatives, so differentiate each term on its own.",
+        "fa": "عبارت از چند جمله تشکیل شده که با + و − به هم وصل‌اند. مشتق مجموع برابر مجموع مشتق‌هاست (قاعده‌ی جمع)، پس از هر جمله جداگانه مشتق می‌گیریم.",
     },
     "derivative_combine": {
-        "en": "Combine the differentiated terms.",
-        "fa": "مشتق جمله‌ها را کنار هم می‌گذاریم.",
+        "en": "Put the derivatives of all the terms back together with the same signs and simplify.",
+        "fa": "مشتق همه‌ی جمله‌ها را با همان علامت‌ها کنار هم می‌نویسیم و ساده می‌کنیم.",
     },
     "derivative_constant_rule": {
-        "en": "The derivative of a constant is 0.",
-        "fa": "مشتق عدد ثابت صفر است.",
+        "en": "{term} is a constant — it doesn't change when {symbol} changes — so its derivative is 0.",
+        "fa": "{term} عدد ثابت است و با تغییر {symbol} تغییر نمی‌کند، پس مشتقش صفر است.",
     },
     "derivative_power_rule": {
-        "en": "Power rule: bring the exponent down and reduce it by one.",
-        "fa": "قاعده‌ی توان: توان را پشت عبارت می‌آوریم و یکی از آن کم می‌کنیم.",
+        "en": "Power rule: bring the exponent down in front and lower it by one. Here: {calc}.",
+        "fa": "قاعده‌ی توان: توان را پشت عبارت (در ضریب) ضرب می‌کنیم و یکی از توان کم می‌کنیم. این‌جا: {calc}.",
     },
     "derivative_trig_rule": {
-        "en": "Derivative of {func}.",
-        "fa": "مشتق {func}.",
+        "en": "From the table of trig derivatives: {rule}. A number in front stays as it is.",
+        "fa": "از جدول مشتق‌های مثلثاتی: {rule}. عددی که پشت آن ضرب شده، بدون تغییر می‌ماند.",
+    },
+    "derivative_exp_rule": {
+        "en": "e^{symbol} is its own derivative: {rule}. A number in front stays as it is.",
+        "fa": "مشتق تابع نمایی e به توان {symbol} خودش است: {rule}. عددی که پشت آن ضرب شده، بدون تغییر می‌ماند.",
+    },
+    "derivative_ln_rule": {
+        "en": "From the derivative table: {rule}. A number in front stays as it is.",
+        "fa": "از جدول مشتق‌ها: {rule}. عددی که پشت آن ضرب شده، بدون تغییر می‌ماند.",
+    },
+    "derivative_chain_rule": {
+        "en": "Chain rule: there is a function inside another function. Differentiate the outer function (leave the inside unchanged), then multiply by the derivative of the inside: {inner}.",
+        "fa": "قاعده‌ی زنجیره‌ای: این‌جا یک تابع داخل تابع دیگر است. از تابع بیرونی مشتق می‌گیریم (داخل را دست نمی‌زنیم) و حاصل را در مشتقِ داخل ضرب می‌کنیم: {inner}.",
+    },
+    "derivative_product_rule": {
+        "en": "Product rule for u = {u} and v = {v}: (uv)' = u'v + uv'.",
+        "fa": "قاعده‌ی ضرب، با {u_eq} و {v_eq}: {rule}؛ یعنی مشتق اولی ضرب در دومی، به‌علاوه‌ی اولی ضرب در مشتق دومی.",
     },
     "derivative_apply_rules": {
-        "en": "Apply differentiation rules.",
-        "fa": "قواعد مشتق‌گیری را به کار می‌بریم.",
+        "en": "This term isn't a single basic function, so combine the product, quotient and chain rules.",
+        "fa": "این جمله یک تابع ساده نیست، پس قاعده‌های ضرب، تقسیم و زنجیره‌ای را با هم به کار می‌بریم.",
     },
     # integral.py
     "derivative_second": {
-        "en": "Differentiate the first derivative once more to get the second derivative.",
-        "fa": "از مشتق اول یک بار دیگر مشتق می‌گیریم تا مشتق دوم به دست آید.",
+        "en": "The second derivative is the derivative of the derivative: differentiate y' once more.",
+        "fa": "مشتق دوم یعنی مشتقِ مشتق: از مشتق اول یک بار دیگر با همان قاعده‌ها مشتق می‌گیریم.",
     },
     "derivative_at_point": {
-        "en": "Substitute {symbol} = {point} into the derivative.",
-        "fa": "{assign} را در مشتق جای‌گذاری می‌کنیم.",
+        "en": "Substitute {symbol} = {point} into the derivative and compute. This number is the slope of the tangent line at that point.",
+        "fa": "{assign} را در مشتق جای‌گذاری می‌کنیم و حساب می‌کنیم. این عدد شیب خط مماس بر نمودار در همین نقطه است.",
     },
     "integral_sum_rule": {
-        "en": "Integrate each term separately (sum rule).",
-        "fa": "از هر جمله جداگانه انتگرال می‌گیریم (قاعده‌ی جمع).",
+        "en": "The integral of a sum is the sum of the integrals, so integrate each term on its own.",
+        "fa": "انتگرال مجموع برابر مجموع انتگرال‌هاست (قاعده‌ی جمع)، پس از هر جمله جداگانه انتگرال می‌گیریم.",
     },
     "integral_combine": {
-        "en": "Combine the integrated terms.",
-        "fa": "انتگرال جمله‌ها را کنار هم می‌گذاریم.",
+        "en": "Put the integrals of all the terms back together with the same signs.",
+        "fa": "انتگرال همه‌ی جمله‌ها را با همان علامت‌ها کنار هم می‌نویسیم.",
     },
     "integral_add_constant": {
-        "en": "Add the constant of integration, C, since the derivative of any constant is 0.",
-        "fa": "ثابت انتگرال‌گیری C را اضافه می‌کنیم، چون مشتق هر عدد ثابتی صفر است.",
+        "en": "Add the constant of integration C: the derivative of any constant is 0, so every function + C has the same derivative.",
+        "fa": "ثابت انتگرال‌گیری C را اضافه می‌کنیم، چون مشتق هر عدد ثابتی صفر است؛ پس هر تابعی به‌علاوه‌ی یک عدد ثابت، همین مشتق را دارد.",
     },
     "integral_constant_rule": {
         "en": "The integral of a constant c is c·{symbol}.",
         "fa": "انتگرال عدد ثابت c برابر {form} است.",
     },
     "integral_log_rule": {
-        "en": "Integral of 1/{symbol} is ln|{symbol}|.",
-        "fa": "انتگرال {form} برابر {result} است.",
+        "en": "Integral of 1/x is ln|x|, because the derivative of ln|x| is 1/x (the absolute value lets x be negative too).",
+        "fa": "انتگرال {form} برابر {result} است، چون مشتق {result} برابر {form} است (قدرمطلق برای این است که {symbol} منفی هم مجاز باشد).",
     },
     "integral_power_rule": {
-        "en": "Reverse power rule: raise the exponent by one and divide by the new exponent.",
-        "fa": "عکس قاعده‌ی توان: یکی به توان اضافه می‌کنیم و بر توان جدید تقسیم می‌کنیم.",
+        "en": "Reverse power rule: add one to the exponent and divide by the new exponent. Here: {calc}.",
+        "fa": "عکس قاعده‌ی توان: یکی به توان اضافه می‌کنیم و بر توان جدید تقسیم می‌کنیم. این‌جا: {calc}.",
     },
     "integral_trig_rule": {
-        "en": "Antiderivative of {func}.",
-        "fa": "پادمشتق {func}.",
+        "en": "From the table of trig integrals: {rule}. (Check: differentiating the answer gives back the function.)",
+        "fa": "از جدول انتگرال‌های مثلثاتی: {rule}. (بررسی: اگر از جواب مشتق بگیریم، به خود تابع می‌رسیم.)",
+    },
+    "integral_exp_rule": {
+        "en": "e^{symbol} is its own antiderivative: {rule}.",
+        "fa": "پادمشتق تابع نمایی e به توان {symbol} خودش است: {rule}.",
     },
     "integral_apply_rules": {
-        "en": "Apply integration rules.",
-        "fa": "قواعد انتگرال‌گیری را به کار می‌بریم.",
+        "en": "This term isn't a single basic function, so use the integration rules (substitution or by parts) to find an antiderivative.",
+        "fa": "این جمله یک تابع ساده نیست، پس با قاعده‌های انتگرال‌گیری (تغییر متغیر یا جزءبه‌جزء) پادمشتق را پیدا می‌کنیم.",
     },
     # limit.py
     "definite_evaluate_bounds": {
-        "en": "Evaluate the antiderivative at the bounds, F({upper}) - F({lower}); the constant C cancels out.",
-        "fa": "پادمشتق را در دو کران حساب می‌کنیم: {formula}؛ ثابت C از بین می‌رود.",
+        "en": "Fundamental theorem: evaluate the antiderivative F at the upper bound {upper} and the lower bound {lower}, then subtract. C cancels in the subtraction, so we leave it out.",
+        "fa": "طبق قضیه‌ی اساسی حسابان، پادمشتق F را در کران بالا ({upper}) و کران پایین ({lower}) حساب می‌کنیم و کم می‌کنیم: {formula}. ثابت C در این تفریق حذف می‌شود، برای همین آن را نمی‌نویسیم.",
     },
     "definite_result": {
-        "en": "Simplify: this is the value of the definite integral.",
-        "fa": "ساده می‌کنیم؛ این مقدار انتگرال معین است.",
+        "en": "Simplify: this number is the value of the definite integral.",
+        "fa": "حاصل را ساده می‌کنیم؛ این عدد مقدار انتگرال معین است.",
     },
     # plot.py
     "plot_y_intercept": {
@@ -339,12 +395,12 @@ MESSAGES: dict[str, dict[str, str]] = {
         "fa": "با جای‌گذاری {assign} به حالت مبهم {form} می‌رسیم؛ پس اول عبارت را ساده می‌کنیم.",
     },
     "limit_factor": {
-        "en": "Factor the numerator and the denominator.",
-        "fa": "صورت و مخرج را تجزیه می‌کنیم.",
+        "en": "Factor the numerator and the denominator to find the factor that becomes 0 at {symbol} = {point}: {factor}.",
+        "fa": "صورت و مخرج را تجزیه می‌کنیم تا عاملی که در {assign} صفر می‌شود پیدا شود؛ یعنی {factor}.",
     },
     "limit_conjugate": {
-        "en": "Multiply the numerator and the denominator by the conjugate of the radical expression.",
-        "fa": "صورت و مخرج را در مزدوج عبارت رادیکالی ضرب می‌کنیم.",
+        "en": "Multiply the numerator and the denominator by the conjugate {conj}. By (a − b)(a + b) = a² − b² the square root disappears.",
+        "fa": "صورت و مخرج را در مزدوج {conj} ضرب می‌کنیم. طبق اتحاد مزدوج {identity}، رادیکال از بین می‌رود.",
     },
     "limit_cancel": {
         "en": "Cancel the common factor — allowed because {symbol} ≠ {point} while {symbol} approaches {point}.",
@@ -367,16 +423,16 @@ MESSAGES: dict[str, dict[str, str]] = {
         "fa": "حد چپ و حد راست برابر نیستند، پس تابع در این نقطه حد ندارد.",
     },
     "limit_leading_terms": {
-        "en": "At infinity only the highest-power terms matter: keep the leading term of the numerator and of the denominator.",
-        "fa": "در بی‌نهایت فقط جمله‌هایی با بزرگ‌ترین توان مهم‌اند؛ از صورت و مخرج فقط جمله‌ی با بزرگ‌ترین توان را نگه می‌داریم.",
+        "en": "At infinity only the highest-power terms matter — when {symbol} is huge the lower powers are tiny next to them — so keep only the leading term of the numerator and of the denominator.",
+        "fa": "در بی‌نهایت فقط جمله‌هایی با بزرگ‌ترین توان مهم‌اند، چون وقتی {symbol} خیلی بزرگ می‌شود، جمله‌های با توان کمتر در برابر آن‌ها ناچیزند. پس از صورت و مخرج فقط جمله‌ی با بزرگ‌ترین توان را نگه می‌داریم.",
     },
     "limit_evaluate": {
         "en": "Simplify and let {symbol} approach {point}.",
         "fa": "ساده می‌کنیم و {symbol} را به {point} میل می‌دهیم.",
     },
     "limit_apply_rules": {
-        "en": "Apply the limit rules.",
-        "fa": "قضیه‌های حد را به کار می‌بریم.",
+        "en": "Apply the limit laws: the limit of a sum, product or quotient is the sum, product or quotient of the limits.",
+        "fa": "قضیه‌های حد را به کار می‌بریم: حد مجموع، ضرب و تقسیم برابر مجموع، ضرب و تقسیم حدهاست.",
     },
     # logarithm.py
     "log_domain": {
@@ -454,8 +510,8 @@ MESSAGES: dict[str, dict[str, str]] = {
         "fa": "فرمول {what} را می‌نویسیم و اندازه‌های داده‌شده را جای‌گذاری می‌کنیم.",
     },
     "geo_compute": {
-        "en": "Compute.",
-        "fa": "حساب می‌کنیم.",
+        "en": "Do the arithmetic in the formula to get the answer.",
+        "fa": "عددها را در فرمول حساب می‌کنیم تا جواب به دست بیاید.",
     },
     "geo_approximate": {
         "en": "Approximate value.",
@@ -569,8 +625,18 @@ _GEO_FA = {
 # both languages always describe the same step.
 _DERIVED_FA_PARAMS = {
     "standard_form": lambda p: {"form": "ax^2 + bx + c = 0"},
+    "biquadratic_back": lambda p: {"assign": f"{p['symbol']}^2 = {p['value']}"},
+    "biquadratic_back_zero": lambda p: {"assign": f"{p['symbol']}^2 = 0", "zero": f"{p['symbol']} = 0"},
+    "biquadratic_negative_square": lambda p: {"assign": f"{p['symbol']}^2 = {p['value']}"},
+    "cubic_common_factor": lambda p: {"assign0": f"{p['symbol']} = 0"},
+    "cubic_divide": lambda p: {"assign": f"{p['symbol']} = {p['root']}"},
+    "derivative_product_rule": lambda p: {"u_eq": f"u = {p['u']}", "v_eq": f"v = {p['v']}",
+                                          "rule": "(uv)' = u'v + uv'"},
+    "limit_factor": lambda p: {"assign": f"{p['symbol']} = {p['point']}"},
+    "limit_conjugate": lambda p: {"identity": "(a - b)(a + b) = a² - b²"},
     "cubic_rational_root": lambda p: {"assign": f"{p['symbol']} = {p['root']}"},
-    "biquadratic_substitute": lambda p: {"assign": f"t = {p['symbol']}^2"},
+    "biquadratic_substitute": lambda p: {"assign": f"t = {p['symbol']}^2",
+                                         "pow4": f"{p['symbol']}^4 = ({p['symbol']}^2)^2"},
     "system_standard_form": lambda p: {"form": "ax + by = c"},
     "back_substitute_value": lambda p: {"assign": f"{p['known']} = {p['value']}"},
     "integral_constant_rule": lambda p: {"form": f"c·{p['symbol']}"},

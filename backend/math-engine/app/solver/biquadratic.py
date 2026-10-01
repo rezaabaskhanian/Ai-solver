@@ -48,14 +48,15 @@ def solve_biquadratic(lhs: sympy.Expr, rhs: sympy.Expr, symbol: sympy.Symbol) ->
     for t_root in t_roots:
         square = f"{format_expr(symbol**2)} = {format_root(t_root)}"
         if t_root.is_negative:
-            add(square, "∅", "negative_square", explained("biquadratic_negative_square"))
+            add(square, "∅", "negative_square", explained("biquadratic_negative_square", symbol=symbol,
+                                                                  value=format_root(t_root)))
         elif t_root == 0:
-            add(square, f"{symbol} = 0", "back_substitute", explained("biquadratic_back", symbol=symbol))
+            add(square, f"{symbol} = 0", "back_substitute", explained("biquadratic_back_zero", symbol=symbol))
             roots.append(sympy.Integer(0))
         else:
             pair = [-sympy.sqrt(t_root), sympy.sqrt(t_root)]
             add(square, format_roots(symbol, pair), "back_substitute",
-                explained("biquadratic_back", symbol=symbol))
+                explained("biquadratic_back", symbol=symbol, value=format_root(t_root)))
             roots.extend(pair)
 
     roots = sorted(set(roots), key=lambda r: float(r))

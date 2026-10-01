@@ -43,7 +43,8 @@ def solve_linear(lhs: sympy.Expr, rhs: sympy.Expr, symbol: sympy.Symbol) -> tupl
         steps.append(StepData(
             id=step_id, before=before, after=after,
             operation=op, value=term_str, target="both_sides",
-            **explained(f"{op}_both_sides", value=term_str),
+            **explained(f"lin_var_{op}", symbol=symbol, value=term_str,
+                        term=format_expr(term), cancel=_cancel(term)),
         ))
         lhs, rhs = new_lhs, new_rhs
         step_id += 1
@@ -62,7 +63,8 @@ def solve_linear(lhs: sympy.Expr, rhs: sympy.Expr, symbol: sympy.Symbol) -> tupl
         steps.append(StepData(
             id=step_id, before=before, after=after,
             operation=op, value=value_str, target="both_sides",
-            **explained(f"{op}_both_sides", value=value_str),
+            **explained(f"lin_const_{op}", symbol=symbol, value=value_str,
+                        term=format_expr(const_term), cancel=_cancel(const_term)),
         ))
         lhs, rhs = new_lhs, new_rhs
         step_id += 1
@@ -80,12 +82,14 @@ def solve_linear(lhs: sympy.Expr, rhs: sympy.Expr, symbol: sympy.Symbol) -> tupl
         if coeff_rational.q == 1:
             op = "divide"
             value_str = format_expr(coeff)
-            message = explained("divide_both_sides", value=value_str)
+            message = explained("lin_divide", symbol=symbol, value=value_str,
+                                cancel=f"{format_expr(coeff * symbol)} ÷ {_paren(coeff)} = {symbol}")
         else:
             op = "multiply"
             reciprocal = 1 / coeff
             value_str = format_expr(reciprocal)
-            message = explained("multiply_both_sides", value=value_str)
+            message = explained("lin_multiply", symbol=symbol, value=value_str, coeff=format_expr(coeff),
+                                cancel=f"{_paren(coeff)} × {_paren(reciprocal)} = 1")
 
         steps.append(StepData(
             id=step_id, before=before, after=after,
@@ -97,3 +101,16 @@ def solve_linear(lhs: sympy.Expr, rhs: sympy.Expr, symbol: sympy.Symbol) -> tupl
 
     final_value = sympy.simplify(rhs)
     return steps, final_value
+
+
+def _paren(n: sympy.Expr) -> str:
+    text = format_expr(n)
+    return f"({text})" if n.could_extract_minus_sign() or "/" in text else text
+
+
+def _cancel(term: sympy.Expr) -> str:
+    """'5 - 5 = 0' / '-3x + 3x = 0': why the moved term disappears."""
+    shown = format_expr(term)
+    magnitude = format_expr(-term if term.could_extract_minus_sign() else term)
+    sign = "+" if term.could_extract_minus_sign() else "-"
+    return f"{shown} {sign} {magnitude} = 0"

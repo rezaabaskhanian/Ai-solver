@@ -52,7 +52,8 @@ def solve_cubic(lhs: sympy.Expr, rhs: sympy.Expr, symbol: sympy.Symbol) -> tuple
             add(original, isolated, "isolate_cube", explained("cubic_isolate_cube"))
         root = sympy.real_root(value, 3)
         add(f"{format_expr(symbol**3)} = {format_expr(value)}", f"{symbol} = {format_root(root)}",
-            "cube_root", explained("cubic_cube_root"))
+            "cube_root", explained("cubic_cube_root",
+                                   calc=f"∛{_paren(value)} = {format_root(root)}"))
         return steps, [root]
 
     if poly.coeff_monomial(1) == 0:
@@ -61,7 +62,7 @@ def solve_cubic(lhs: sympy.Expr, rhs: sympy.Expr, symbol: sympy.Symbol) -> tuple
         common = symbol**power
         rest = sympy.expand(standard / common)
         add(f"{format_expr(standard)} = 0", f"{format_expr(common)}({format_expr(rest)}) = 0",
-            "common_factor", explained("cubic_common_factor", factor=format_expr(common)))
+            "common_factor", explained("cubic_common_factor", factor=format_expr(common), symbol=symbol))
         roots.append(sympy.Integer(0))
     else:
         root = _rational_root(poly)
@@ -71,12 +72,14 @@ def solve_cubic(lhs: sympy.Expr, rhs: sympy.Expr, symbol: sympy.Symbol) -> tuple
                 "textbook way (the general cubic formula is beyond school math)."
             )
         add(f"P({format_expr(root)})", "0", "rational_root",
-            explained("cubic_rational_root", symbol=symbol, root=format_expr(root)))
+            explained("cubic_rational_root", symbol=symbol, root=format_expr(root),
+                      candidates=_candidates_text(poly)))
         # A fractional root p/q divides out as (qx - p), as textbooks write it.
         linear = root.q * symbol - root.p
         rest = sympy.quo(standard, linear, symbol)
         add(f"{format_expr(standard)} = 0", f"({format_expr(linear)})({format_expr(rest)}) = 0",
-            "polynomial_division", explained("cubic_divide", factor=format_expr(linear)))
+            "polynomial_division", explained("cubic_divide", factor=format_expr(linear), symbol=symbol,
+                                             root=format_expr(root), quotient=format_expr(rest)))
         roots.append(root)
 
     rest_degree = sympy.degree(rest, symbol)
@@ -97,21 +100,39 @@ def solve_cubic(lhs: sympy.Expr, rhs: sympy.Expr, symbol: sympy.Symbol) -> tuple
     return steps, roots
 
 
-def _rational_root(poly: sympy.Poly):
-    """A rational root ±p/q (p | constant, q | leading coefficient), smallest first."""
+def _paren(n: sympy.Expr) -> str:
+    return f"({format_expr(n)})" if n.could_extract_minus_sign() or not n.is_Integer else format_expr(n)
+
+
+def _candidates(poly: sympy.Poly) -> list:
+    """Every ±p/q to try (p | constant, q | leading coefficient), smallest
+    first — empty when the coefficients aren't integers after clearing
+    denominators."""
     _, integral = poly.clear_denoms()
     coeffs = integral.all_coeffs()
     if not all(c.is_Integer for c in coeffs):
-        return None
+        return []
     lead, const = int(coeffs[0]), int(coeffs[-1])
-    candidates = sorted(
+    return sorted(
         {sympy.Rational(sign * p, q)
          for p in sympy.divisors(abs(const))
          for q in sympy.divisors(abs(lead))
          for sign in (1, -1)},
         key=lambda r: (abs(r), bool(r.is_negative)),
     )
-    for candidate in candidates:
+
+
+def _candidates_text(poly: sympy.Poly) -> str:
+    """'±1, ±2, ±3, ±6' — at most eight, so a big constant stays readable."""
+    positives = sorted({abs(c) for c in _candidates(poly)})
+    shown = ", ".join(f"±{format_expr(c)}" for c in positives[:8])
+    return shown + (", …" if len(positives) > 8 else "")
+
+
+def _rational_root(poly: sympy.Poly):
+    """A rational root ±p/q (p | constant, q | leading coefficient), smallest first."""
+    _, integral = poly.clear_denoms()
+    for candidate in _candidates(poly):
         if integral.eval(candidate) == 0:
             return candidate
     return None

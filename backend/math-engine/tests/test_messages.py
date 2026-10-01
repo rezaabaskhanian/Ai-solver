@@ -32,7 +32,10 @@ def test_every_message_renders_in_every_language(key):
               "m1": "2", "m2": "3", "var": "y", "known": "x", "which": "1", "other": "x", "m": "3",
               "a": "2", "b": "-5", "c": "6", "q": "-3", "ac": "12", "ac_eq": "2 × 6 = 12",
               "prod": "(-2) × (-3) = 6", "sum": "(-2) + (-3) = -5", "factored": "(x - 2)(x - 3)",
-              "split": "2x^2 - 2x - 3x + 6 = 0"}
+              "split": "2x^2 - 2x - 3x + 6 = 0", "cancel": "5 - 5 = 0", "term": "-5", "coeff": "1/3",
+              "eq1": "x - 2 = 0", "eq2": "x - 3 = 0", "coeffs": "a = 1, b = -5, c = 6",
+              "calc": "Δ = 25 - 24 = 1", "rule": "(sin(x))' = cos(x)", "inner": "(2x)' = 2",
+              "u": "x", "v": "sin(x)", "candidates": "±1, ±2", "quotient": "x^2 + 1", "conj": "sqrt(x) + 2"}
     for lang in SUPPORTED_LANGS:
         text = render(key, lang, **params)
         assert text and "{" not in text
@@ -40,7 +43,9 @@ def test_every_message_renders_in_every_language(key):
 
 def test_english_text_is_unchanged():
     assert render("subtract_both_sides", "en", value="5") == "Subtract 5 from both sides."
-    assert render("integral_log_rule", "en", symbol="x") == "Integral of 1/x is ln|x|."
+    assert render("integral_log_rule", "en", symbol="x") == (
+        "Integral of 1/x is ln|x|, because the derivative of ln|x| is 1/x (the absolute value lets x be negative too)."
+    )
 
 
 def test_persian_isolates_math_so_rtl_cannot_reorder_it():
@@ -59,15 +64,25 @@ def test_normalize_lang(raw, want):
 def test_solve_defaults_to_english():
     resp = client.post("/solve", json={"problem": "2x + 5 = 17"})
     assert resp.status_code == 200
-    assert resp.json()["steps"][0]["explanation"] == "Subtract 5 from both sides."
+    assert resp.json()["steps"][0]["explanation"] == (
+        "To get x on its own, remove the number 5 from the left: subtract 5 from both sides "
+        "(5 - 5 = 0). Whatever we do to one side we must do to the other."
+    )
 
 
 def test_solve_in_persian():
     resp = client.post("/solve", json={"problem": "2x + 5 = 17", "lang": "fa"})
     assert resp.status_code == 200
     steps = resp.json()["steps"]
-    assert steps[0]["explanation"] == f"{LRI}5{PDI} را از هر دو طرف کم می‌کنیم."
-    assert steps[1]["explanation"] == f"هر دو طرف را بر {LRI}2{PDI} تقسیم می‌کنیم."
+    assert steps[0]["explanation"] == (
+        f"برای این‌که {LRI}x{PDI} تنها بماند، عدد {LRI}5{PDI} را از سمت چپ حذف می‌کنیم: "
+        f"از هر دو طرف {LRI}5{PDI} کم می‌کنیم ({LRI}5 - 5 = 0{PDI}). "
+        "هر کاری با یک طرف تساوی بکنیم، باید با طرف دیگر هم بکنیم."
+    )
+    assert steps[1]["explanation"] == (
+        f"{LRI}x{PDI} در {LRI}2{PDI} ضرب شده است؛ عکسِ ضرب، تقسیم است، "
+        f"پس هر دو طرف را بر {LRI}2{PDI} تقسیم می‌کنیم ({LRI}2x ÷ 2 = x{PDI})."
+    )
     # Only the explanation is localized — the math itself never is.
     assert steps[0]["before"] == "2x + 5 = 17"
 

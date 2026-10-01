@@ -1,6 +1,6 @@
 import sympy
 
-from .formatting import format_expr, format_roots, join_signed_terms
+from .formatting import format_expr, format_root, format_roots, join_signed_terms
 from .messages import explained
 from .schemas_internal import StepData
 
@@ -47,7 +47,7 @@ def solve_quadratic(lhs: sympy.Expr, rhs: sympy.Expr, symbol: sympy.Symbol) -> t
         steps.append(StepData(
             id=step_id, before=f"{format_expr(factored)} = 0", after=format_roots(symbol, roots),
             operation="zero_product_property", value=None, target="each_factor",
-            **explained("zero_product"),
+            **_explain_zero_product(factored, symbol),
         ))
         step_id += 1
     else:
@@ -55,7 +55,8 @@ def solve_quadratic(lhs: sympy.Expr, rhs: sympy.Expr, symbol: sympy.Symbol) -> t
             id=step_id, before=f"a={format_expr(a)}, b={format_expr(b)}, c={format_expr(c)}",
             after=f"{symbol} = (-b ± √(b² - 4ac)) / 2a",
             operation="apply_quadratic_formula", value=None, target="equation",
-            **explained("apply_quadratic_formula"),
+            **explained("apply_quadratic_formula",
+                        coeffs=f"a = {format_expr(a)}, b = {format_expr(b)}, c = {format_expr(c)}"),
         ))
         step_id += 1
 
@@ -63,7 +64,8 @@ def solve_quadratic(lhs: sympy.Expr, rhs: sympy.Expr, symbol: sympy.Symbol) -> t
         steps.append(StepData(
             id=step_id, before="Δ = b² - 4ac", after=f"Δ = {format_expr(discriminant)}",
             operation="compute_discriminant", value=format_expr(discriminant), target="equation",
-            **explained("compute_discriminant"),
+            **explained("compute_discriminant",
+                        calc=f"Δ = {_paren(b)}² - 4 × {_paren(a)} × {_paren(c)} = {format_expr(discriminant)}"),
         ))
         step_id += 1
 
@@ -71,7 +73,7 @@ def solve_quadratic(lhs: sympy.Expr, rhs: sympy.Expr, symbol: sympy.Symbol) -> t
             steps.append(StepData(
                 id=step_id, before=f"Δ = {format_expr(discriminant)}", after="Δ < 0 ⇒ ∅",
                 operation="no_real_roots", value=None, target="equation",
-                **explained("no_real_roots"),
+                **explained("no_real_roots", value=format_expr(discriminant)),
             ))
             return steps, []
 
@@ -79,7 +81,7 @@ def solve_quadratic(lhs: sympy.Expr, rhs: sympy.Expr, symbol: sympy.Symbol) -> t
         steps.append(StepData(
             id=step_id, before=f"{symbol} = (-b ± √Δ) / 2a", after=format_roots(symbol, roots),
             operation="compute_roots", value=None, target="equation",
-            **explained("compute_roots"),
+            **_explain_formula_roots(a, b, discriminant, symbol, roots),
         ))
         step_id += 1
 
@@ -116,6 +118,25 @@ def _explain_factoring(a, b, c, symbol: sympy.Symbol, factored: sympy.Expr) -> d
         split=join_signed_terms([a * symbol**2, p * symbol, q * symbol, c]) + " = 0",
         **common,
     )
+
+
+def _explain_zero_product(factored: sympy.Expr, symbol: sympy.Symbol) -> dict:
+    factors = [f for f in factored.args if not f.is_number]
+    if len(factors) != 2:
+        return explained("zero_product")
+    eq1, eq2 = (f"{format_expr(f)} = 0" for f in factors)
+    return explained("zero_product_each", eq1=eq1, eq2=eq2)
+
+
+def _explain_formula_roots(a, b, discriminant, symbol: sympy.Symbol, roots) -> dict:
+    """The formula with this equation's numbers: x = (5 ± √1) / 2."""
+    minus_b = format_expr(-b)
+    two_a = format_expr(2 * a)
+    if discriminant == 0:
+        return explained("compute_double_root",
+                         calc=f"{symbol} = {minus_b} / {two_a} = {format_root(roots[0])}")
+    return explained("compute_roots",
+                     calc=f"{symbol} = ({minus_b} ± √{_paren(discriminant)}) / {two_a}")
 
 
 def _paren(n: sympy.Expr) -> str:

@@ -102,7 +102,7 @@ def solve_limit(expr: sympy.Expr, symbol: sympy.Symbol, point: sympy.Expr,
         if is_rational and den.has(symbol):
             lead_num, lead_den = _leading_term(num, symbol), _leading_term(den, symbol)
             leading = _format_fraction(lead_num, lead_den)
-            add(format_expr(expr), leading, "keep_leading_terms", "limit_leading_terms")
+            add(format_expr(expr), leading, "keep_leading_terms", "limit_leading_terms", symbol=x)
             add(leading, format_limit_value(value), "evaluate_limit",
                 "limit_evaluate", symbol=x, point=a)
         else:
@@ -123,16 +123,17 @@ def solve_limit(expr: sympy.Expr, symbol: sympy.Symbol, point: sympy.Expr,
             "limit_zero_over_zero", symbol=x, point=a)
         if is_rational:
             shown = _format_fraction(sympy.factor(num), sympy.factor(den))
-            add(format_expr(expr), shown, "factor", "limit_factor")
+            add(format_expr(expr), shown, "factor", "limit_factor",
+                symbol=x, point=a, factor=format_expr(symbol - point))
             reduced = sympy.cancel(sympy.together(expr))
         else:
             conjugate = _conjugate_rewrite(num, den, symbol)
             if conjugate is None:
                 finish_generic(expr)
                 return steps, value, sides
-            new_num, new_den = conjugate
+            new_num, new_den, conj = conjugate
             shown = _format_fraction(new_num, new_den)
-            add(format_expr(expr), shown, "multiply_conjugate", "limit_conjugate")
+            add(format_expr(expr), shown, "multiply_conjugate", "limit_conjugate", conj=format_expr(conj))
             # Dividing the factored sides cancels the common factor, e.g.
             # (x - 4)/((sqrt(x) + 2)(x - 4)) -> 1/(sqrt(x) + 2).
             reduced = sympy.factor(new_num) / sympy.factor(new_den)
@@ -156,12 +157,12 @@ def solve_limit(expr: sympy.Expr, symbol: sympy.Symbol, point: sympy.Expr,
 
 
 def _conjugate_rewrite(num: sympy.Expr, den: sympy.Expr,
-                       symbol: sympy.Symbol) -> Optional[tuple[sympy.Expr, sympy.Expr]]:
+                       symbol: sympy.Symbol) -> Optional[tuple[sympy.Expr, sympy.Expr, sympy.Expr]]:
     """For a 0/0 with a square root, the textbook trick: multiply the
     radical side (a two-term sum like sqrt(x) - 2) and the other side by
     its conjugate (sqrt(x) + 2). Returns the new (numerator,
-    denominator), radical side multiplied out, or None when neither side
-    has that shape."""
+    denominator, conjugate), radical side multiplied out, or None when
+    neither side has that shape."""
     for side in ("num", "den"):
         target = num if side == "num" else den
         terms = sympy.Add.make_args(target)
@@ -171,8 +172,8 @@ def _conjugate_rewrite(num: sympy.Expr, den: sympy.Expr,
         other = next(t for t in terms if t is not radical[0])
         conjugate = radical[0] - other
         if side == "num":
-            return sympy.expand(num * conjugate), sympy.Mul(den, conjugate, evaluate=False)
-        return sympy.Mul(num, conjugate, evaluate=False), sympy.expand(den * conjugate)
+            return sympy.expand(num * conjugate), sympy.Mul(den, conjugate, evaluate=False), conjugate
+        return sympy.Mul(num, conjugate, evaluate=False), sympy.expand(den * conjugate), conjugate
     return None
 
 
