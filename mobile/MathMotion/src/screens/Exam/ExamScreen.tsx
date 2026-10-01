@@ -103,6 +103,7 @@ export function ExamScreen({ route, navigation }: Props) {
 
       <View style={[styles.nav, isRTL && styles.rowRTL]}>
         <AppButton
+          size="sm"
           label={t('exam.previous')}
           variant="secondary"
           disabled={index === 0}
@@ -110,9 +111,10 @@ export function ExamScreen({ route, navigation }: Props) {
           style={styles.flexOne}
         />
         {isLast ? (
-          <AppButton label={t('exam.finish')} icon="flag" onPress={handleFinish} style={styles.flexOne} />
+          <AppButton label={t('exam.finish')} size="sm" icon="flag" onPress={handleFinish} style={styles.flexOne} />
         ) : (
           <AppButton
+            size="sm"
             label={t('exam.next')}
             variant={answers[index] === null ? 'secondary' : 'primary'}
             onPress={() => setIndex(i => i + 1)}
@@ -121,7 +123,7 @@ export function ExamScreen({ route, navigation }: Props) {
         )}
       </View>
       {!isLast && (
-        <AppButton label={t('exam.finishEarly')} variant="ghost" onPress={handleFinish} />
+        <AppButton label={t('exam.finishEarly')} variant="ghost" size="sm" onPress={handleFinish} />
       )}
     </ScreenContainer>
   );

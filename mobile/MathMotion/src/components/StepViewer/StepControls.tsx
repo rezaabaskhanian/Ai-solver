@@ -41,6 +41,7 @@ export function StepControls({
       </AppText>
       <View style={styles.buttons}>
         <AppButton
+          size="sm"
           label={t('solution.previous')}
           variant="secondary"
           onPress={onPrevious}
@@ -48,6 +49,7 @@ export function StepControls({
           style={styles.button}
         />
         <AppButton
+          size="sm"
           label={isPlaying ? t('solution.pause') : t('solution.play')}
           variant="primary"
           onPress={onTogglePlay}
@@ -57,6 +59,7 @@ export function StepControls({
           style={styles.button}
         />
         <AppButton
+          size="sm"
           label={t('solution.next')}
           variant="secondary"
           onPress={onNext}
@@ -64,7 +67,7 @@ export function StepControls({
           style={styles.button}
         />
       </View>
-      <AppButton label={t('solution.replay')} variant="ghost" onPress={onReplay} />
+      <AppButton label={t('solution.replay')} variant="ghost" size="sm" onPress={onReplay} />
     </View>
   );
 }

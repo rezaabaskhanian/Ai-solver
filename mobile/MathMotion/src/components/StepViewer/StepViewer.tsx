@@ -86,6 +86,7 @@ export function StepViewer({ steps }: StepViewerProps) {
 
         <View style={[styles.controls, isRTL && styles.rowRTL]}>
           <AppButton
+            size="sm"
             label={t('solution.previous')}
             variant="secondary"
             onPress={goToPrevious}
@@ -93,6 +94,7 @@ export function StepViewer({ steps }: StepViewerProps) {
             style={styles.sideButton}
           />
           <AppButton
+            size="sm"
             label={isPlaying ? t('solution.pause') : t('solution.play')}
             icon={isPlaying ? 'pause' : 'play-arrow'}
             variant="primary"
@@ -103,6 +105,7 @@ export function StepViewer({ steps }: StepViewerProps) {
             style={styles.playButton}
           />
           <AppButton
+            size="sm"
             label={t('solution.next')}
             variant="secondary"
             onPress={goToNext}

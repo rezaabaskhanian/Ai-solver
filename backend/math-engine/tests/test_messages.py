@@ -29,7 +29,10 @@ def test_every_message_renders_in_every_language(key):
               "base": "2", "root": "x = -2", "left": "A", "right": "B", "set": "A",
               "n": "2", "count": "4", "quantity": "n(A ∪ B)", "start": "A", "end": "B",
               "k": "3", "shape": "circle", "p": "6", "d": "3", "lower": "0", "upper": "1", "factor": "x",
-              "m1": "2", "m2": "3", "var": "y", "known": "x", "which": "1", "other": "x", "m": "3"}
+              "m1": "2", "m2": "3", "var": "y", "known": "x", "which": "1", "other": "x", "m": "3",
+              "a": "2", "b": "-5", "c": "6", "q": "-3", "ac": "12", "ac_eq": "2 × 6 = 12",
+              "prod": "(-2) × (-3) = 6", "sum": "(-2) + (-3) = -5", "factored": "(x - 2)(x - 3)",
+              "split": "2x^2 - 2x - 3x + 6 = 0"}
     for lang in SUPPORTED_LANGS:
         text = render(key, lang, **params)
         assert text and "{" not in text

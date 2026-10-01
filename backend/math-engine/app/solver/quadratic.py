@@ -1,6 +1,6 @@
 import sympy
 
-from .formatting import format_expr, format_roots
+from .formatting import format_expr, format_roots, join_signed_terms
 from .messages import explained
 from .schemas_internal import StepData
 
@@ -39,7 +39,7 @@ def solve_quadratic(lhs: sympy.Expr, rhs: sympy.Expr, symbol: sympy.Symbol) -> t
         steps.append(StepData(
             id=step_id, before=before, after=after,
             operation="factor", value=None, target="both_sides",
-            **explained("factor"),
+            **_explain_factoring(a, b, c, symbol, factored),
         ))
         step_id += 1
 
@@ -84,6 +84,42 @@ def solve_quadratic(lhs: sympy.Expr, rhs: sympy.Expr, symbol: sympy.Symbol) -> t
         step_id += 1
 
     return steps, roots
+
+
+def _explain_factoring(a, b, c, symbol: sympy.Symbol, factored: sympy.Expr) -> dict:
+    """Show the student how the factoring was found, the way a textbook
+    does: a common factor when c = 0, the two numbers with product c and
+    sum b when a = 1, or the a·c split of the middle term otherwise.
+    Non-integer coefficients keep the short generic sentence."""
+    if not all(k.is_Integer for k in (a, b, c)):
+        return explained("factor")
+    shown = format_expr(factored)
+
+    if c == 0:
+        g = sympy.gcd(a, b) * (-1 if a < 0 else 1)
+        return explained("factor_common", factor=format_expr(g * symbol), factored=shown)
+
+    # p + q = b and p·q = a·c: they're -a·r for the two roots r, always
+    # integers here since they solve t^2 + bt + ac = 0 with rational roots.
+    r1, r2 = sympy.Poly(a * symbol**2 + b * symbol + c, symbol).all_roots()
+    p, q = sorted((-a * r1, -a * r2), key=lambda v: (abs(v), v))
+    prod = f"{_paren(p)} × {_paren(q)} = {format_expr(a * c)}"
+    total = f"{_paren(p)} + {_paren(q)} = {format_expr(b)}"
+    common = {"b": format_expr(b), "p": format_expr(p), "q": format_expr(q),
+              "prod": prod, "sum": total, "factored": shown, "symbol": symbol}
+
+    if a == 1:
+        return explained("factor_sum_product", c=format_expr(c), **common)
+    return explained(
+        "factor_ac", a=format_expr(a), ac=format_expr(a * c),
+        ac_eq=f"{_paren(a)} × {_paren(c)} = {format_expr(a * c)}",
+        split=join_signed_terms([a * symbol**2, p * symbol, q * symbol, c]) + " = 0",
+        **common,
+    )
+
+
+def _paren(n: sympy.Expr) -> str:
+    return f"({format_expr(n)})" if n < 0 else format_expr(n)
 
 
 def _is_linear_factor(factor: sympy.Expr, symbol: sympy.Symbol) -> bool:

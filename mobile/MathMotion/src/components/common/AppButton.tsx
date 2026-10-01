@@ -7,11 +7,15 @@ import { AppText } from './AppText';
 import { Icon, type IconName } from './Icon';
 
 type Variant = 'primary' | 'secondary' | 'ghost';
+// `sm` is for rows of two or three buttons side by side (step controls,
+// exam navigation) where full-size pills crowd the screen.
+type Size = 'md' | 'sm';
 
 interface AppButtonProps {
   label: string;
   onPress: () => void;
   variant?: Variant;
+  size?: Size;
   disabled?: boolean;
   loading?: boolean;
   style?: StyleProp<ViewStyle>;
@@ -25,6 +29,7 @@ export function AppButton({
   label,
   onPress,
   variant = 'primary',
+  size = 'md',
   disabled = false,
   loading = false,
   style,
@@ -35,6 +40,8 @@ export function AppButton({
   const isRTL = useIsRTL();
   const contentColor = textColor(colors)[variant];
   const isDisabled = disabled || loading;
+  const isSmall = size === 'sm';
+  const iconSize = isSmall ? 18 : 20;
 
   return (
     <Pressable
@@ -44,6 +51,7 @@ export function AppButton({
       disabled={isDisabled}
       style={({ pressed }) => [
         styles.base,
+        isSmall && styles.small,
         variantStyles(colors)[variant],
         isDisabled && styles.disabled,
         pressed && !isDisabled && styles.pressed,
@@ -54,11 +62,17 @@ export function AppButton({
         <ActivityIndicator color={variant === 'primary' ? colors.onPrimary : colors.primaryText} />
       ) : (
         <View style={[styles.content, isRTL && styles.contentRTL]}>
-          {icon && <Icon name={icon} size={20} color={contentColor} />}
-          <AppText weight="medium" color={contentColor} align="center" style={styles.label}>
+          {icon && <Icon name={icon} size={iconSize} color={contentColor} />}
+          <AppText
+            weight="medium"
+            size={isSmall ? 'sm' : 'md'}
+            color={contentColor}
+            align="center"
+            style={styles.label}
+          >
             {label}
           </AppText>
-          {iconEnd && <Icon name={iconEnd} size={20} color={contentColor} directional />}
+          {iconEnd && <Icon name={iconEnd} size={iconSize} color={contentColor} directional />}
         </View>
       )}
     </Pressable>
@@ -67,12 +81,18 @@ export function AppButton({
 
 const styles = StyleSheet.create({
   base: {
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
+    minHeight: 48,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     // Pill buttons, as everywhere in the "MathMotion AI Study System".
     borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  small: {
+    minHeight: 40,
+    paddingVertical: 6,
+    paddingHorizontal: spacing.md,
   },
   content: {
     flexDirection: 'row',

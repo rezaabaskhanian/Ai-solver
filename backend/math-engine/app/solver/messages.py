@@ -50,6 +50,20 @@ MESSAGES: dict[str, dict[str, str]] = {
         "en": "Factor the left-hand side.",
         "fa": "سمت چپ معادله را تجزیه می‌کنیم.",
     },
+    # The factor step says *how* it factored, not just that it did: the
+    # two numbers (sum/product), the common factor, or the a·c split.
+    "factor_sum_product": {
+        "en": "Look for two numbers whose product is the constant term ({c}) and whose sum is the coefficient of {symbol} ({b}). They are {p} and {q}, because {prod} and {sum}. So the expression factors as {factored}.",
+        "fa": "دنبال دو عدد می‌گردیم که حاصل‌ضربشان برابر عدد ثابت ({c}) و مجموعشان برابر ضریب {symbol} ({b}) باشد. این دو عدد {p} و {q} هستند، چون {prod} و {sum}. پس عبارت به شکل {factored} تجزیه می‌شود.",
+    },
+    "factor_common": {
+        "en": "Both terms contain {factor}, so take {factor} out as a common factor: {factored}.",
+        "fa": "هر دو جمله {factor} دارند، پس {factor} را فاکتور می‌گیریم (بیرون پرانتز می‌نویسیم): {factored}.",
+    },
+    "factor_ac": {
+        "en": "The coefficient of {symbol}^2 is {a}, so multiply it by the constant term: {ac_eq}. Find two numbers whose product is {ac} and whose sum is {b}: {p} and {q}, because {prod} and {sum}. Split the middle term with them: {split}. Factor each pair and take out the common bracket: {factored}.",
+        "fa": "ضریب جمله‌ی درجه‌دو {a} است، پس آن را در عدد ثابت ضرب می‌کنیم: {ac_eq}. دو عدد پیدا می‌کنیم که حاصل‌ضربشان {ac} و مجموعشان {b} باشد: {p} و {q}، چون {prod} و {sum}. جمله‌ی وسط را با این دو عدد می‌شکنیم: {split}. از هر دو جمله فاکتور می‌گیریم و پرانتز مشترک را بیرون می‌آوریم: {factored}.",
+    },
     "zero_product": {
         "en": "If a product is zero, at least one factor must be zero.",
         "fa": "اگر حاصل‌ضرب صفر باشد، دست‌کم یکی از عامل‌ها صفر است.",

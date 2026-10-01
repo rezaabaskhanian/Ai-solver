@@ -138,6 +138,7 @@ export function SolutionScreen({ route, navigation }: Props) {
       <View style={[styles.actions, isRTL && styles.rowRTL]}>
         {canPractice && (
           <AppButton
+            size="sm"
             label={generatingPractice ? t('solution.generatingPractice') : t('solution.practiceSimilar')}
             icon="refresh"
             variant="primary"
@@ -148,6 +149,7 @@ export function SolutionScreen({ route, navigation }: Props) {
         )}
         {hasSteps && (
           <AppButton
+            size="sm"
             label={t('solution.quizThis')}
             icon="quiz"
             variant="secondary"
@@ -163,7 +165,7 @@ export function SolutionScreen({ route, navigation }: Props) {
         onPress={handleShare}
         loading={sharing}
       />
-      <AppButton label={t('solution.done')} variant="ghost" onPress={() => navigation.popToTop()} />
+      <AppButton label={t('solution.done')} variant="ghost" size="sm" onPress={() => navigation.popToTop()} />
     </ScreenContainer>
   );
 }

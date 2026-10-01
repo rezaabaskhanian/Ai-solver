@@ -7,9 +7,19 @@ import { isARSupportedOnDevice } from '@reactvision/react-viro';
 // back to the plain Solution screen. Checked once per app run.
 const CHECK_TIMEOUT_MS = 3000;
 
+// Off for now: on a phone that reported ARCore as supported, opening
+// ViroARSceneNavigator still closed the app right after a scan was solved
+// (the solve itself succeeded — it was in History). A native crash can't
+// be caught from JS, so scans go to the plain Solution screen until the
+// Viro crash is understood from a device logcat. Flip back to true then.
+const AR_SOLUTION_ENABLED = false;
+
 let cached: Promise<boolean> | null = null;
 
 export function isArSupported(): Promise<boolean> {
+  if (!AR_SOLUTION_ENABLED) {
+    return Promise.resolve(false);
+  }
   if (!cached) {
     const check = isARSupportedOnDevice().then(
       response => response.isARSupported === true,
