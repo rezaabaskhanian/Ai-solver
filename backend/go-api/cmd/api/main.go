@@ -16,6 +16,7 @@ import (
 	"mathmotion/go-api/internal/repository/postgres"
 	postgresaiusage "mathmotion/go-api/internal/repository/postgres/aiusage"
 	postgresbilling "mathmotion/go-api/internal/repository/postgres/billing"
+	postgreskonkur "mathmotion/go-api/internal/repository/postgres/konkur"
 	postgreslanding "mathmotion/go-api/internal/repository/postgres/landing"
 	postgresotp "mathmotion/go-api/internal/repository/postgres/otp"
 	postgresproblem "mathmotion/go-api/internal/repository/postgres/problem"
@@ -26,6 +27,7 @@ import (
 	aiusageservice "mathmotion/go-api/internal/service/aiusage"
 	authservice "mathmotion/go-api/internal/service/auth"
 	billingservice "mathmotion/go-api/internal/service/billing"
+	konkurservice "mathmotion/go-api/internal/service/konkur"
 	landingservice "mathmotion/go-api/internal/service/landing"
 	otpservice "mathmotion/go-api/internal/service/otp"
 	problemservice "mathmotion/go-api/internal/service/problem"
@@ -218,6 +220,11 @@ func main() {
 	landingSvc := landingservice.New(postgreslanding.New(db.Pool))
 	uploadDir := getEnv("UPLOAD_DIR", "uploads")
 
+	// «نکات کنکوری»: page extraction reuses the vision client (so the
+	// admin-configured provider/keys apply) and records cost via aiusage.
+	konkurSvc := konkurservice.New(postgreskonkur.New(db.Pool)).
+		WithExtractor(visionClient).WithUsageRecorder(aiUsageSvc)
+
 	httpserver.New(cfg, userSvc, problemSvc, billingSvc, visionSvc, visionClient, proxySvc, settingsSvc, quotaSvc,
-		accountSvc, authSvc, landingSvc, aiUsageSvc, uploadDir).Server()
+		accountSvc, authSvc, landingSvc, aiUsageSvc, konkurSvc, uploadDir).Server()
 }

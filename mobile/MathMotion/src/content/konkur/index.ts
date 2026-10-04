@@ -32,25 +32,43 @@ export const KONKUR_QUESTIONS: KonkurQuestion[] = [
   ...PAST_QUESTIONS,
 ];
 
-export function findKonkurTip(id: string): KonkurTip | undefined {
-  return KONKUR_TIPS.find(tip => tip.id === id);
+export interface KonkurContent {
+  tips: KonkurTip[];
+  questions: KonkurQuestion[];
 }
 
-export function tipsForGrade(grade: CurriculumGrade): KonkurTip[] {
-  return KONKUR_TIPS.filter(tip => tip.grade === grade);
+// What ships inside the app: the seed and the offline fallback. The live
+// content comes from the server (store/useKonkurContentStore.ts).
+export const BUNDLED_KONKUR_CONTENT: KonkurContent = {
+  tips: KONKUR_TIPS,
+  questions: KONKUR_QUESTIONS,
+};
+
+// Pure helpers: pass the content from useKonkurContent() in components;
+// without it they read the bundled content.
+export function findKonkurTip(id: string, content: KonkurContent = BUNDLED_KONKUR_CONTENT): KonkurTip | undefined {
+  return content.tips.find(tip => tip.id === id);
 }
 
-export function tipsForChapter(chapterId: string): KonkurTip[] {
-  return KONKUR_TIPS.filter(tip => tip.chapterId === chapterId);
+export function tipsForGrade(grade: CurriculumGrade, content: KonkurContent = BUNDLED_KONKUR_CONTENT): KonkurTip[] {
+  return content.tips.filter(tip => tip.grade === grade);
 }
 
-export const GENERAL_KONKUR_TIPS = KONKUR_TIPS.filter(tip => tip.grade === null);
+export function tipsForChapter(chapterId: string, content: KonkurContent = BUNDLED_KONKUR_CONTENT): KonkurTip[] {
+  return content.tips.filter(tip => tip.chapterId === chapterId);
+}
+
+export function generalKonkurTips(content: KonkurContent = BUNDLED_KONKUR_CONTENT): KonkurTip[] {
+  return content.tips.filter(tip => tip.grade === null);
+}
+
+export const GENERAL_KONKUR_TIPS = generalKonkurTips();
 
 // Real exam questions first, newest year first — they're what students
 // came for; authored ones follow in file order.
-export function questionsForTip(tipId: string): KonkurQuestion[] {
+export function questionsForTip(tipId: string, content: KonkurContent = BUNDLED_KONKUR_CONTENT): KonkurQuestion[] {
   const year = (q: KonkurQuestion) => (q.source.kind === 'konkur' ? q.source.year : 0);
-  return KONKUR_QUESTIONS.filter(q => q.tipIds.includes(tipId)).sort((a, b) => year(b) - year(a));
+  return content.questions.filter(q => q.tipIds.includes(tipId)).sort((a, b) => year(b) - year(a));
 }
 
 const PERSIAN_DIGITS = '۰۱۲۳۴۵۶۷۸۹';

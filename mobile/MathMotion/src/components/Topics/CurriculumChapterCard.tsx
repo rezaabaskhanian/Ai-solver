@@ -7,6 +7,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import type { CurriculumChapter, CurriculumGrade } from '../../content/curriculum';
 import { findGrade, type GradeId } from '../../content/examSyllabus';
 import { tipsForChapter } from '../../content/konkur';
+import { useKonkurContent } from '../../store/useKonkurContentStore';
 import { findTopic } from '../../content/topics';
 import { useIsRTL } from '../../hooks/useIsRTL';
 import type { RootStackParamList } from '../../navigation/types';
@@ -29,6 +30,7 @@ export function CurriculumChapterCard({ grade, number, chapter }: Props) {
   const { t } = useTranslation();
   const isRTL = useIsRTL();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const konkurContent = useKonkurContent();
   const [open, setOpen] = useState(false);
   const row = [styles.row, isRTL && styles.rowRTL];
 
@@ -36,7 +38,7 @@ export function CurriculumChapterCard({ grade, number, chapter }: Props) {
   const hasExam = Boolean(
     findGrade(grade as GradeId)?.chapters.find(c => c.id === chapter.id && c.skills.length > 0),
   );
-  const hasTips = tipsForChapter(chapter.id).length > 0;
+  const hasTips = tipsForChapter(chapter.id, konkurContent).length > 0;
   const supported = topics.length > 0 || hasExam || hasTips;
 
   return (

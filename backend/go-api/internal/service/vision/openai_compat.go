@@ -59,7 +59,7 @@ type chatResponse struct {
 	} `json:"error,omitempty"`
 }
 
-func (c *Client) callOpenAICompatible(ctx context.Context, baseURL, apiKey, model, imageBase64, mediaType string) (string, Usage, error) {
+func (c *Client) callOpenAICompatible(ctx context.Context, baseURL, apiKey, model, prompt string, maxTokens int, imageBase64, mediaType string) (string, Usage, error) {
 	usage := Usage{Model: model}
 	var usageRequest *chatUsageRequest
 	if baseURL == c.openRouterURL {
@@ -68,12 +68,12 @@ func (c *Client) callOpenAICompatible(ctx context.Context, baseURL, apiKey, mode
 	body, err := json.Marshal(chatRequest{
 		Usage:     usageRequest,
 		Model:     model,
-		MaxTokens: maxOutputTokens,
+		MaxTokens: maxTokens,
 		Messages: []chatMessage{{
 			Role: "user",
 			Content: []chatContentPart{
 				{Type: "image_url", ImageURL: &chatImageURL{URL: "data:" + mediaType + ";base64," + imageBase64}},
-				{Type: "text", Text: recognitionPrompt},
+				{Type: "text", Text: prompt},
 			},
 		}},
 	})

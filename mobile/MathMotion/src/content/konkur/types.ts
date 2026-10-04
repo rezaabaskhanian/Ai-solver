@@ -54,6 +54,9 @@ export interface KonkurQuestion {
   // (content/konkur/figures/). The text says what is drawn, so the
   // question stays answerable if the image can't be shown.
   figure?: ImageSourcePropType;
+  // Server content: the figure as a path relative to the API host
+  // (/uploads/x.png) or an absolute URL. The UI shows `figure` first.
+  figureUrl?: string;
   choices: [string, string, string, string];
   // Choices are math (rendered left-to-right) unless set to false.
   choicesMath?: boolean;

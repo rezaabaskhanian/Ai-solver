@@ -2,9 +2,11 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Image, Pressable, type ImageSourcePropType, StyleSheet, View } from 'react-native';
 
 import { findKonkurTip, sourceLabel, type KonkurQuestion } from '../../content/konkur';
+import { API_BASE_URL } from '../../config/env';
+import { useKonkurContent } from '../../store/useKonkurContentStore';
 import { useIsRTL } from '../../hooks/useIsRTL';
 import type { RootStackParamList } from '../../navigation/types';
 import { makeStyles, radius, spacing, useColors } from '../../theme';
@@ -27,10 +29,27 @@ interface Props {
   currentTipId?: string;
 }
 
+// Bundled questions carry a require()d figure; server ones a URL that is
+// relative to the API host (or already absolute).
+function figureSourceOf(question: KonkurQuestion): ImageSourcePropType | undefined {
+  if (question.figure) {
+    return question.figure;
+  }
+  if (!question.figureUrl) {
+    return undefined;
+  }
+  const url = /^https?:\/\//i.test(question.figureUrl)
+    ? question.figureUrl
+    : `${API_BASE_URL}${question.figureUrl.startsWith('/') ? '' : '/'}${question.figureUrl}`;
+  return { uri: url };
+}
+
 // One multiple-choice question: answer once, then see right/wrong, the
 // worked solution, and which tips it uses (each a link to that tip).
 export function KonkurQuestionCard({ question, index, currentTipId }: Props) {
   const colors = useColors();
+  const content = useKonkurContent();
+  const figureSource = figureSourceOf(question);
   const styles = useStyles();
   const { t } = useTranslation();
   const isRTL = useIsRTL();
@@ -65,9 +84,9 @@ export function KonkurQuestionCard({ question, index, currentTipId }: Props) {
         </View>
       )}
 
-      {question.figure && (
+      {figureSource && (
         <View style={styles.figureBox}>
-          <Image source={question.figure} style={styles.figure} resizeMode="contain" accessibilityIgnoresInvertColors />
+          <Image source={figureSource} style={styles.figure} resizeMode="contain" accessibilityIgnoresInvertColors />
         </View>
       )}
 
@@ -116,7 +135,7 @@ export function KonkurQuestionCard({ question, index, currentTipId }: Props) {
           </AppText>
           <View style={[styles.chips, isRTL && styles.rowRTL]}>
             {question.tipIds.map(tipId => {
-              const tip = findKonkurTip(tipId);
+              const tip = findKonkurTip(tipId, content);
               if (!tip) {
                 return null;
               }

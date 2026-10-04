@@ -516,3 +516,54 @@ fallback. مثل بقیه‌ی این پاس، اجرا نشده — طبق تص
 اجرا نشده. مثل همیشه، `go build`/`go test` این پاس اجرا نشدن — طبق تصمیم قبلی، اجرا/تست دست خود
 کاربره. تست‌های جدید: `outboundhttp` (۵ تست)، `proxy` (پارس vless + build کانفیگ + سرویس، با
 `httptest.Server` به‌جای شبکه‌ی واقعی)، `middleware.Admin` (۳ تست)، `proxyhandler` (مسیرهای خطا).
+
+---
+
+## ۹. نکات کنکوری روی سرور — `internal/service/konkur` (درخواست جداگانه‌ی کاربر)
+
+محتوای «نکات کنکوری» (نکته‌ها + سؤال‌های تستی) که قبلاً داخل باندل اپ بود، حالا روی سرور نگه‌داری می‌شه:
+از پنل ادمین ویرایش می‌شه، اپ از API عمومی می‌خونتش، و می‌شه از روی صفحه‌ی PDF با مدل بینایی (همون
+تنظیمات AI پنل ادمین) استخراجش کرد. ساختار هر نکته/سؤال دقیقاً همون تایپ‌های
+`mobile/MathMotion/src/content/konkur/types.ts` با فیلدهای camelCase هست (`tipIds`، `choicesMath`،
+`chapterId`، `source{kind,year,track,number,abroad,newSystem,round}`، و هر خط `KonkurLine` یا رشته‌ست یا
+`{"math": "..."}`)؛ تنها فرق: `figure` (عکس RN) تبدیل شده به `figureUrl` (مثلاً `/uploads/xxx.png`).
+
+**ذخیره‌سازی (migration `011_konkur.sql`، موقع بالا آمدن سرور خودکار اجرا می‌شه):**
+`konkur_tips` و `konkur_questions` (هر آیتم یک سند JSONB + `position`/`published`/`updated_at`)،
+`konkur_drafts` (پیش‌نویس‌ها)، و `konkur_meta` (یک ردیف با شمارنده‌ی `version`).
+
+**نسخه (`version`):** یک عدد صعودی که با هر ساخت/ویرایش/حذف/ایمپورت/تأیید پیش‌نویس یکی زیاد می‌شه
+(داخل همون تراکنش تغییر). اپ با همین عدد می‌فهمه باید دوباره دانلود کنه.
+
+### اندپوینت‌های عمومی (بدون احراز هویت، با rate limit مثل landing)
+
+| مسیر | توضیح |
+|---|---|
+| `GET /api/v1/public/konkur` | `{"version", "tips":[...], "questions":[...]}` فقط آیتم‌های منتشرشده. نکته‌ها به ترتیب `position` بعد `id`، سؤال‌ها به ترتیب `id`. هدر `ETag` برابر version است و `If-None-Match` با `304` پاسخ داده می‌شه. |
+| `GET /api/v1/public/konkur/version` | `{"version": N}` — چک سبک. |
+
+### اندپوینت‌های ادمین (زیر `/admin`، با Bearer token)
+
+- `GET/POST /admin/konkur/tips`، `PUT/DELETE /admin/konkur/tips/:id` — بدنه‌ی POST نکته‌ی کامل (با `id`)؛ PUT جایگزین می‌کنه (id از URL ملاکه). id تکراری در POST: `409`.
+- `GET/POST /admin/konkur/questions`، `PUT/DELETE /admin/konkur/questions/:id` — GET فیلترهای `?year=&track=&tipId=&q=` رو می‌فهمه و سند کامل برمی‌گردونه.
+- `POST /admin/konkur/import` با بدنه‌ی `{"tips":[...],"questions":[...]}` — همه رو یکجا و در یک تراکنش upsert می‌کنه (منتشرشده)، version فقط یک بار زیاد می‌شه، خروجی `{"tips":N,"questions":M,"version":V}`. اگه یک آیتم نامعتبر باشه هیچ چیز نوشته نمی‌شه (`422` با لیست مشکل‌ها). برای seed کردن از محتوای TS فعلی.
+- `POST /admin/konkur/extract` (multipart): فیلد `image` (یک صفحه‌ی PDF که پنل توی مرورگر به PNG/JPEG/WebP تبدیل کرده، حداکثر ۸ مگابایت) و فیلدهای متنی `source_name`، `kind` (`questions` یا `tips`) و اختیاری `year`، `track` (`riazi`/`tajrobi`)، `round`، `abroad`، `page_label`. مدل بینایی با یک prompt مخصوص صفحه‌ی آزمون فارسی صدا زده می‌شه و هر آیتم نتیجه به‌صورت **پیش‌نویس** (نامرئی برای اپ) ذخیره می‌شه. خروجی: `{"drafts":[...],"skipped":[{"index","reason"}]}`.
+- `GET /admin/konkur/drafts?status=pending`، `PUT /admin/konkur/drafts/:id` (جایگزینی `data`؛ بدنه یا خود سند است یا `{"data": سند}`؛ هشدارها دوباره محاسبه می‌شن)، `POST /admin/konkur/drafts/:id/approve` (بدنه‌ی اختیاری `{"overwrite":true}`)، `DELETE /admin/konkur/drafts/:id` (وضعیت می‌شه `rejected`).
+
+شکل پیش‌نویس: `{"id","kind":"question"|"tip","source_name","status":"pending"|"approved"|"rejected","data":{...},"warnings":[...],"created_at"}`.
+
+**اعتبارسنجی:**
+- سؤال: `id` و `text` غیرخالی؛ `choices` دقیقاً ۴ رشته‌ی غیرخالی؛ `answer` بین ۰ تا ۳؛ `tipIds` حداقل یک مورد (فقط توی پیش‌نویس می‌تونه خالی بمونه)؛ `source.kind` یکی از `authored`/`konkur` و برای `konkur` سال و رشته‌ی معتبر.
+- نکته: `id` و `title` غیرخالی؛ `grade` یا `null` یا ۷ تا ۱۲.
+- تأیید پیش‌نویس (`approve`) داده رو سخت‌گیرانه چک می‌کنه؛ نامعتبر یا id موجود (بدون `overwrite`) → `422` با پیام فارسی.
+
+### استخراج با AI
+
+- از **همون `vision.Client`** استفاده می‌کنه (متد جدید `Complete(prompt, maxTokens, image, mediaType)`؛ `RecognizeWithUsage` فقط یک wrapper روش شده و رفتار اسکن عوض نشده)، پس provider/کلید/مدل از تنظیمات پنل ادمین خونده می‌شه و پراکسی Xray هم شاملش می‌شه. سقف توکن خروجی برای استخراج ۸۱۹۲ هست (اسکن ۵۱۲).
+- هزینه‌ی هر صفحه با `Feature = "konkur_extract"` توی گزارش «هزینه‌ی هوش مصنوعی» (`aiusage`) ثبت می‌شه.
+- خروجی مدل حتی اگه داخل ```` ```json ```` یا بین توضیح اضافه باشه پارس می‌شه. آیتم خراب (متن/عنوان خالی، غیر آبجکت) به‌جای شکستن کل صفحه توی `skipped` با دلیل میاد؛ آیتم ناقص (مثلاً بدون پاسخ یا با تعداد گزینه‌ی غلط) پیش‌نویس می‌شه ولی `warnings` داره.
+- اگه `year` و `track` داده بشه، `source` از نوع `konkur` ساخته می‌شه و `id` قطعی است (`konkur-1402-riazi-5` و در صورت لزوم `-abroad`/`-r2`)، پس استخراج دوباره‌ی همون صفحه موقع تأیید به «id موجود» می‌خوره.
+
+### تست‌ها
+
+`internal/service/konkur/service_test.go` — با repo و extractor جعلی (بدون دیتابیس و شبکه): اعتبارسنجی سؤال/نکته، افزایش version، import همه‌یا‌هیچ، جریان approve/overwrite/reject، و پارس استخراج (خروجی fenced، متن اضافه، آیتم خراب، نکته‌ها). طبق قرارِ همیشگی اجرای `go test` دست خود کاربره.

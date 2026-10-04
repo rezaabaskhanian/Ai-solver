@@ -189,10 +189,23 @@ func (c *Client) RecognizeEquations(ctx context.Context, imageBase64, mediaType 
 // usage is filled whenever the provider answered — also for a "nothing
 // legible" reply, which is still billed.
 func (c *Client) RecognizeWithUsage(ctx context.Context, imageBase64, mediaType string) ([]string, Usage, error) {
+	text, usage, err := c.Complete(ctx, recognitionPrompt, maxOutputTokens, imageBase64, mediaType)
+	if err != nil {
+		return nil, usage, err
+	}
+	problems, err := parseProblems(text)
+	return problems, usage, err
+}
+
+// Complete sends one image plus a prompt to the active provider (the
+// admin-configured one) and returns the raw text reply and what it cost.
+// RecognizeWithUsage is this with the scan prompt; the konkur page
+// extractor uses its own prompt and a larger token budget.
+func (c *Client) Complete(ctx context.Context, prompt string, maxTokens int, imageBase64, mediaType string) (string, Usage, error) {
 	provider := c.ActiveProvider()
 	apiKey := c.settings.Get(apiKeySetting(provider))
 	if apiKey == "" {
-		return nil, Usage{Provider: provider}, fmt.Errorf("%s is not configured (set it from the admin panel or .env)", apiKeySetting(provider))
+		return "", Usage{Provider: provider}, fmt.Errorf("%s is not configured (set it from the admin panel or .env)", apiKeySetting(provider))
 	}
 
 	var (
@@ -203,24 +216,22 @@ func (c *Client) RecognizeWithUsage(ctx context.Context, imageBase64, mediaType 
 	switch provider {
 	case ProviderOpenRouter:
 		text, usage, err = c.callOpenAICompatible(ctx, c.openRouterURL, apiKey,
-			c.settingOr(settingskeys.KeyOpenRouterModel, defaultOpenRouterModel), imageBase64, mediaType)
+			c.settingOr(settingskeys.KeyOpenRouterModel, defaultOpenRouterModel), prompt, maxTokens, imageBase64, mediaType)
 	case ProviderDeepSeek:
 		text, usage, err = c.callOpenAICompatible(ctx, c.deepSeekURL, apiKey,
-			c.settingOr(settingskeys.KeyDeepSeekModel, defaultDeepSeekModel), imageBase64, mediaType)
+			c.settingOr(settingskeys.KeyDeepSeekModel, defaultDeepSeekModel), prompt, maxTokens, imageBase64, mediaType)
 	default:
 		text, usage, err = c.callAnthropic(ctx, apiKey,
-			c.settingOr(settingskeys.KeyClaudeModel, defaultClaudeModel), imageBase64, mediaType)
+			c.settingOr(settingskeys.KeyClaudeModel, defaultClaudeModel), prompt, maxTokens, imageBase64, mediaType)
 	}
 	usage.Provider = provider
 	if err != nil {
-		return nil, usage, fmt.Errorf("calling %s vision: %w", provider, err)
+		return "", usage, fmt.Errorf("calling %s vision: %w", provider, err)
 	}
-
-	problems, err := parseProblems(text)
-	return problems, usage, err
+	return text, usage, nil
 }
 
-func (c *Client) callAnthropic(ctx context.Context, apiKey, model, imageBase64, mediaType string) (string, Usage, error) {
+func (c *Client) callAnthropic(ctx context.Context, apiKey, model, prompt string, maxTokens int, imageBase64, mediaType string) (string, Usage, error) {
 	usage := Usage{Model: model}
 	opts := append([]option.RequestOption{
 		option.WithAPIKey(apiKey),
@@ -230,11 +241,11 @@ func (c *Client) callAnthropic(ctx context.Context, apiKey, model, imageBase64, 
 
 	resp, err := client.Messages.New(ctx, anthropic.MessageNewParams{
 		Model:     anthropic.Model(model),
-		MaxTokens: maxOutputTokens,
+		MaxTokens: int64(maxTokens),
 		Messages: []anthropic.MessageParam{
 			anthropic.NewUserMessage(
 				anthropic.NewImageBlockBase64(mediaType, imageBase64),
-				anthropic.NewTextBlock(recognitionPrompt),
+				anthropic.NewTextBlock(prompt),
 			),
 		},
 	})

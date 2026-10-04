@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -10,7 +10,7 @@ import { Icon } from '../../components/common/Icon';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 import { CURRICULUM_GRADES, findCurriculumGrade, type CurriculumGrade } from '../../content/curriculum';
 import {
-  GENERAL_KONKUR_TIPS,
+  generalKonkurTips,
   questionsForTip,
   tipsForChapter,
   type KonkurTip,
@@ -18,6 +18,7 @@ import {
 import { useIsRTL } from '../../hooks/useIsRTL';
 import type { RootStackParamList } from '../../navigation/types';
 import { usePreferencesStore } from '../../store/usePreferencesStore';
+import { refreshKonkurContent, useKonkurContent } from '../../store/useKonkurContentStore';
 import { makeStyles, radius, spacing, useColors } from '../../theme';
 
 // «نکات کنکوری و تست‌زنی»: general test-taking tips, then one grade's
@@ -29,6 +30,10 @@ export function KonkurScreen() {
   const { t } = useTranslation();
   const isRTL = useIsRTL();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const content = useKonkurContent();
+  useEffect(() => {
+    refreshKonkurContent();
+  }, []);
   const savedGrade = usePreferencesStore(s => s.grade);
   const setGrade = usePreferencesStore(s => s.setGrade);
   const grade: CurriculumGrade = savedGrade ?? 10;
@@ -36,7 +41,7 @@ export function KonkurScreen() {
   const row = [styles.row, isRTL && styles.rowRTL];
 
   const renderTip = (tip: KonkurTip) => {
-    const count = questionsForTip(tip.id).length;
+    const count = questionsForTip(tip.id, content).length;
     return (
       <Card
         key={tip.id}
@@ -61,7 +66,7 @@ export function KonkurScreen() {
 
   const chapters = (curriculum?.books ?? []).flatMap(book =>
     book.chapters
-      .map(chapter => ({ book: book.title, chapter, tips: tipsForChapter(chapter.id) }))
+      .map(chapter => ({ book: book.title, chapter, tips: tipsForChapter(chapter.id, content) }))
       .filter(entry => entry.tips.length > 0),
   );
 
@@ -73,7 +78,7 @@ export function KonkurScreen() {
         <AppText weight="bold" size="lg">
           {t('konkur.general')}
         </AppText>
-        {GENERAL_KONKUR_TIPS.map(renderTip)}
+        {generalKonkurTips(content).map(renderTip)}
       </View>
 
       {/* Not mirrored in RTL: a reversed horizontal ScrollView would open

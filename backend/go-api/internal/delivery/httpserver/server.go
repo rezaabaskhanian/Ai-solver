@@ -11,6 +11,7 @@ import (
 	accounthandler "mathmotion/go-api/internal/delivery/httpserver/account"
 	aiusagehandler "mathmotion/go-api/internal/delivery/httpserver/aiusage"
 	billinghandler "mathmotion/go-api/internal/delivery/httpserver/billing"
+	konkurhandler "mathmotion/go-api/internal/delivery/httpserver/konkur"
 	landinghandler "mathmotion/go-api/internal/delivery/httpserver/landing"
 	problemhandler "mathmotion/go-api/internal/delivery/httpserver/problem"
 	proxyhandler "mathmotion/go-api/internal/delivery/httpserver/proxy"
@@ -22,6 +23,7 @@ import (
 	aiusageservice "mathmotion/go-api/internal/service/aiusage"
 	authservice "mathmotion/go-api/internal/service/auth"
 	billingservice "mathmotion/go-api/internal/service/billing"
+	konkurservice "mathmotion/go-api/internal/service/konkur"
 	landingservice "mathmotion/go-api/internal/service/landing"
 	problemservice "mathmotion/go-api/internal/service/problem"
 	proxyservice "mathmotion/go-api/internal/service/proxy"
@@ -41,6 +43,7 @@ type Service struct {
 	accountHandler  accounthandler.Handler
 	landingHandler  landinghandler.Handler
 	aiUsageHandler  aiusagehandler.Handler
+	konkurHandler   konkurhandler.Handler
 	uploadDir       string
 	userSvc         userservice.Service
 	authSvc         authservice.Service
@@ -61,6 +64,7 @@ func New(
 	authSvc authservice.Service,
 	landingSvc landingservice.Service,
 	aiUsageSvc aiusageservice.Service,
+	konkurSvc konkurservice.Service,
 	uploadDir string,
 ) Service {
 	return Service{
@@ -73,6 +77,7 @@ func New(
 		accountHandler:  accounthandler.New(accountSvc),
 		landingHandler:  landinghandler.New(landingSvc, uploadDir),
 		aiUsageHandler:  aiusagehandler.New(aiUsageSvc),
+		konkurHandler:   konkurhandler.New(konkurSvc),
 		uploadDir:       uploadDir,
 		userSvc:         userSvc,
 		authSvc:         authSvc,
@@ -116,6 +121,8 @@ func (s Service) Server() {
 	// here, and the images uploaded from the admin panel are served from disk.
 	s.landingHandler.SetPublicRoutes(e, s.rateLimiter.Middleware)
 	e.Static(landinghandler.UploadURLPath, s.uploadDir)
+	// «نکات کنکوری» (tips + questions) the mobile app syncs from.
+	s.konkurHandler.SetPublicRoutes(e, s.rateLimiter.Middleware)
 
 	// Operator-only (the admin panel), no device resolution or rate
 	// limiting — gated by a static bearer token instead (see middleware.Admin).
@@ -125,6 +132,7 @@ func (s Service) Server() {
 	s.billingHandler.SetAdminRoutes(admin)
 	s.landingHandler.SetAdminRoutes(admin)
 	s.aiUsageHandler.SetAdminRoutes(admin)
+	s.konkurHandler.SetAdminRoutes(admin)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", s.cfg.HttpServer.Port)))
 }

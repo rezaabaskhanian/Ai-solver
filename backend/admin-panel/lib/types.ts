@@ -154,3 +154,82 @@ export interface LandingFAQ {
   answer: string;
   position: number;
 }
+
+// ---------- نکات کنکوری (آینه‌ی mobile/.../content/konkur/types.ts) ----------
+export type KonkurLine = string | { math: string };
+export type KonkurGrade = 7 | 8 | 9 | 10 | 11 | 12;
+export type KonkurTrack = "riazi" | "tajrobi";
+
+export interface KonkurTip {
+  id: string;
+  // null = نکته‌ی عمومی (برای همه‌ی پایه‌ها)
+  grade: KonkurGrade | null;
+  chapterId?: string;
+  title: string;
+  body: KonkurLine[];
+  example?: {
+    question: KonkurLine[];
+    solution: KonkurLine[];
+  };
+}
+
+export type KonkurSource =
+  | { kind: "authored" }
+  | {
+      kind: "konkur";
+      year: number;
+      track: KonkurTrack;
+      number?: number;
+      abroad?: boolean;
+      newSystem?: boolean;
+      round?: 1 | 2;
+    };
+
+export interface KonkurQuestion {
+  id: string;
+  tipIds: string[];
+  text: string;
+  expression?: string;
+  // مسیر/آدرس عکسِ آپلودشده (POST /admin/upload)
+  figureUrl?: string;
+  choices: [string, string, string, string];
+  choicesMath?: boolean;
+  answer: 0 | 1 | 2 | 3;
+  solution: KonkurLine[];
+  source: KonkurSource;
+}
+
+export interface KonkurQuestionFilters {
+  year?: string;
+  track?: string;
+  tipId?: string;
+  q?: string;
+}
+
+export type KonkurDraftStatus = "pending" | "approved" | "rejected";
+
+// data می‌تواند ناقص باشد (خروجی هوش مصنوعی)
+export interface KonkurDraft {
+  id: string;
+  kind: "question" | "tip";
+  source_name: string;
+  status: KonkurDraftStatus;
+  data: Record<string, unknown>;
+  warnings: string[];
+  created_at: string;
+}
+
+export interface KonkurExtractResult {
+  drafts: KonkurDraft[];
+  skipped?: unknown[];
+}
+
+export interface KonkurExtractMeta {
+  source_name: string;
+  kind: "questions" | "tips";
+  year?: string;
+  track?: string;
+  round?: string;
+  abroad?: boolean;
+  page_label?: string;
+}

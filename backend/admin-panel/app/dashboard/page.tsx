@@ -9,8 +9,9 @@ import ProxyPanel from "./ProxyPanel";
 import QuotaPanel from "./QuotaPanel";
 import SubscriptionPanel from "./SubscriptionPanel";
 import LandingPanel from "./LandingPanel";
+import KonkurPanel from "./KonkurPanel";
 
-type Tab = "ai" | "ai-usage" | "quota" | "subscriptions" | "landing" | "proxy";
+type Tab = "ai" | "ai-usage" | "quota" | "subscriptions" | "landing" | "konkur" | "proxy";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -65,6 +66,9 @@ export default function DashboardPage() {
           <button className={`sidebar-link ${tab === "landing" ? "active" : ""}`} onClick={() => setTab("landing")}>
             صفحه‌ی معرفی (سایت)
           </button>
+          <button className={`sidebar-link ${tab === "konkur" ? "active" : ""}`} onClick={() => setTab("konkur")}>
+            نکات کنکوری
+          </button>
           <button className={`sidebar-link ${tab === "proxy" ? "active" : ""}`} onClick={() => setTab("proxy")}>
             پراکسی Xray
           </button>
@@ -83,6 +87,7 @@ export default function DashboardPage() {
         {tab === "quota" && <QuotaPanel notify={notify} />}
         {tab === "subscriptions" && <SubscriptionPanel notify={notify} />}
         {tab === "landing" && <LandingPanel notify={notify} />}
+        {tab === "konkur" && <KonkurPanel notify={notify} />}
         {tab === "proxy" && <ProxyPanel notify={notify} />}
       </main>
 

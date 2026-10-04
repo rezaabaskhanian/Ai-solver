@@ -6,6 +6,12 @@ import type {
   LandingHighlight,
   LandingHighlightKind,
   LandingSection,
+  KonkurDraft,
+  KonkurExtractMeta,
+  KonkurExtractResult,
+  KonkurQuestion,
+  KonkurQuestionFilters,
+  KonkurTip,
   LandingSettings,
   Plan,
   ProxyStatus,
@@ -260,4 +266,94 @@ export async function updateLandingFAQ(id: string, question: string, answer: str
 
 export async function deleteLandingFAQ(id: string): Promise<void> {
   await jsonOrThrow(await authFetch(`/admin/landing-faqs/${id}`, { method: "DELETE" }));
+}
+
+// ---------- نکات کنکوری ----------
+export async function listKonkurTips(): Promise<KonkurTip[]> {
+  const data = await jsonOrThrow<{ tips?: KonkurTip[] }>(await authFetch("/admin/konkur/tips", { method: "GET" }));
+  return data.tips || [];
+}
+
+export async function createKonkurTip(tip: KonkurTip): Promise<void> {
+  await jsonOrThrow(await authFetch("/admin/konkur/tips", jsonBody("POST", tip)));
+}
+
+export async function updateKonkurTip(id: string, tip: KonkurTip): Promise<void> {
+  await jsonOrThrow(await authFetch(`/admin/konkur/tips/${encodeURIComponent(id)}`, jsonBody("PUT", tip)));
+}
+
+export async function deleteKonkurTip(id: string): Promise<void> {
+  await jsonOrThrow(await authFetch(`/admin/konkur/tips/${encodeURIComponent(id)}`, { method: "DELETE" }));
+}
+
+export async function listKonkurQuestions(f: KonkurQuestionFilters = {}): Promise<KonkurQuestion[]> {
+  const qs = new URLSearchParams();
+  if (f.year) qs.set("year", f.year);
+  if (f.track) qs.set("track", f.track);
+  if (f.tipId) qs.set("tipId", f.tipId);
+  if (f.q) qs.set("q", f.q);
+  const suffix = qs.toString() ? `?${qs.toString()}` : "";
+  const data = await jsonOrThrow<{ questions?: KonkurQuestion[] }>(
+    await authFetch(`/admin/konkur/questions${suffix}`, { method: "GET" })
+  );
+  return data.questions || [];
+}
+
+export async function createKonkurQuestion(q: KonkurQuestion): Promise<void> {
+  await jsonOrThrow(await authFetch("/admin/konkur/questions", jsonBody("POST", q)));
+}
+
+export async function updateKonkurQuestion(id: string, q: KonkurQuestion): Promise<void> {
+  await jsonOrThrow(await authFetch(`/admin/konkur/questions/${encodeURIComponent(id)}`, jsonBody("PUT", q)));
+}
+
+export async function deleteKonkurQuestion(id: string): Promise<void> {
+  await jsonOrThrow(await authFetch(`/admin/konkur/questions/${encodeURIComponent(id)}`, { method: "DELETE" }));
+}
+
+export async function importKonkur(payload: { tips: unknown[]; questions: unknown[] }): Promise<unknown> {
+  return jsonOrThrow(await authFetch("/admin/konkur/import", jsonBody("POST", payload)));
+}
+
+// یک صفحه‌ی PDF (PNG) را برای استخراج می‌فرستد.
+export async function extractKonkurPage(image: Blob, meta: KonkurExtractMeta): Promise<KonkurExtractResult> {
+  const fd = new FormData();
+  fd.append("image", image, "page.png");
+  fd.append("source_name", meta.source_name);
+  fd.append("kind", meta.kind);
+  if (meta.year) fd.append("year", meta.year);
+  if (meta.track) fd.append("track", meta.track);
+  if (meta.round) fd.append("round", meta.round);
+  if (meta.abroad) fd.append("abroad", "true");
+  if (meta.page_label) fd.append("page_label", meta.page_label);
+  const data = await jsonOrThrow<Partial<KonkurExtractResult>>(
+    await authFetch("/admin/konkur/extract", { method: "POST", body: fd })
+  );
+  return { drafts: data.drafts || [], skipped: data.skipped };
+}
+
+export async function listKonkurDrafts(status = "pending"): Promise<KonkurDraft[]> {
+  const data = await jsonOrThrow<{ drafts?: KonkurDraft[] }>(
+    await authFetch(`/admin/konkur/drafts?status=${encodeURIComponent(status)}`, { method: "GET" })
+  );
+  return data.drafts || [];
+}
+
+export async function updateKonkurDraft(id: string, data: Record<string, unknown>): Promise<void> {
+  await jsonOrThrow(await authFetch(`/admin/konkur/drafts/${encodeURIComponent(id)}`, jsonBody("PUT", data)));
+}
+
+export async function approveKonkurDraft(id: string, overwrite = false): Promise<void> {
+  await jsonOrThrow(
+    await authFetch(`/admin/konkur/drafts/${encodeURIComponent(id)}/approve`, jsonBody("POST", overwrite ? { overwrite: true } : {}))
+  );
+}
+
+export async function deleteKonkurDraft(id: string): Promise<void> {
+  await jsonOrThrow(await authFetch(`/admin/konkur/drafts/${encodeURIComponent(id)}`, { method: "DELETE" }));
+}
+
+// آدرس قابل نمایشِ عکس (مسیر نسبیِ /uploads/... به آدرس API وصل می‌شود)
+export function assetUrl(url: string): string {
+  return /^https?:\/\//i.test(url) ? url : `${API_BASE}${url.startsWith("/") ? "" : "/"}${url}`;
 }

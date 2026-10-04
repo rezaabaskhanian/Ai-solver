@@ -11,6 +11,7 @@ import { KonkurLines } from '../../components/Konkur/KonkurLines';
 import { KonkurQuestionCard } from '../../components/Konkur/KonkurQuestionCard';
 import { CURRICULUM } from '../../content/curriculum';
 import { findKonkurTip, questionsForTip } from '../../content/konkur';
+import { useKonkurContent } from '../../store/useKonkurContentStore';
 import type { RootStackParamList } from '../../navigation/types';
 import { makeStyles, radius, spacing, useColors } from '../../theme';
 
@@ -22,7 +23,8 @@ export function KonkurTipScreen({ route, navigation }: Props) {
   const colors = useColors();
   const styles = useStyles();
   const { t } = useTranslation();
-  const tip = findKonkurTip(route.params.tipId);
+  const content = useKonkurContent();
+  const tip = findKonkurTip(route.params.tipId, content);
   const [showExample, setShowExample] = useState(false);
 
   useLayoutEffect(() => {
@@ -33,7 +35,7 @@ export function KonkurTipScreen({ route, navigation }: Props) {
     return null;
   }
 
-  const questions = questionsForTip(tip.id);
+  const questions = questionsForTip(tip.id, content);
   const chapter = tip.chapterId
     ? CURRICULUM.flatMap(g => g.books.flatMap(b => b.chapters.map(c => ({ grade: g.grade, chapter: c }))))
         .find(entry => entry.chapter.id === tip.chapterId)

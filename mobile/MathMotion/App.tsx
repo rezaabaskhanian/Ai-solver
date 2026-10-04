@@ -5,7 +5,7 @@
 
 import { DarkTheme, DefaultTheme, NavigationContainer, type Theme } from '@react-navigation/native';
 import React, { useEffect, useMemo } from 'react';
-import { StatusBar, StyleSheet } from 'react-native';
+import { AppState, StatusBar, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -14,6 +14,7 @@ import { AppDrawer } from './src/navigation/AppDrawer';
 import { AuthScreen } from './src/screens/Auth/AuthScreen';
 import { OnboardingScreen } from './src/screens/Onboarding/OnboardingScreen';
 import { useAuthStore } from './src/store/useAuthStore';
+import { refreshKonkurContent } from './src/store/useKonkurContentStore';
 import { useEntitlementStore } from './src/store/useEntitlementStore';
 import { useLanguageStore } from './src/store/useLanguageStore';
 import { useOnboardingStore } from './src/store/useOnboardingStore';
@@ -29,6 +30,17 @@ function App() {
   const authMode = useOnboardingStore(state => state.authMode);
   const authStatus = useAuthStore(state => state.status);
   const isDarkMode = colors.scheme === 'dark';
+
+  // Konkur content comes from the server; recheck when the app returns
+  // to the foreground (throttled inside the store).
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', state => {
+      if (state === 'active') {
+        refreshKonkurContent();
+      }
+    });
+    return () => sub.remove();
+  }, []);
 
   // Navigation's own backgrounds (screen transitions, drawer scrim) and
   // header font follow the app theme too, so a theme switch leaves no
