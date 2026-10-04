@@ -5,31 +5,45 @@ import { extractKonkurPage } from "@/lib/api";
 import type { KonkurDraft } from "@/lib/types";
 import type { Notify } from "./types";
 
-// فقط سمت کلاینت و با import پویا بارگذاری می‌شود (pdfjs به DOM نیاز دارد).
-type PdfJs = typeof import("pdfjs-dist");
-type PdfDoc = import("pdfjs-dist").PDFDocumentProxy;
+// pdf.js داخل bundle نمی‌آید (نسخه‌ی 4 با پارسر Next 14 نمی‌سازد)؛ موقع اجرا از CDN
+// لود می‌شود، پس فقط سمت مرورگر و با اینترنت کار می‌کند.
+const PDFJS_VERSION = "4.4.168";
+const PDFJS_BASE = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${PDFJS_VERSION}/build`;
+
+type PdfPage = {
+  getViewport(o: { scale: number }): { width: number; height: number };
+  render(o: { canvasContext: CanvasRenderingContext2D; viewport: unknown }): { promise: Promise<void> };
+};
+type PdfDoc = { numPages: number; getPage(n: number): Promise<PdfPage> };
+type PdfJs = {
+  GlobalWorkerOptions: { workerSrc: string };
+  getDocument(o: { data: ArrayBuffer }): { promise: Promise<PdfDoc> };
+};
 
 type PageState = { status: "idle" | "running" | "done" | "error"; message?: string; drafts?: number };
 
 const MAX_WIDTH_PX = 1700;
 
-async function loadPdfJs(useCdn = false): Promise<PdfJs> {
-  const pdfjs = await import("pdfjs-dist");
-  pdfjs.GlobalWorkerOptions.workerSrc = useCdn
-    ? `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
-    : new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
-  return pdfjs;
+let pdfjsPromise: Promise<PdfJs> | null = null;
+
+function loadPdfJs(): Promise<PdfJs> {
+  if (!pdfjsPromise) {
+    pdfjsPromise = (import(/* webpackIgnore: true */ `${PDFJS_BASE}/pdf.min.mjs`) as Promise<PdfJs>)
+      .then((pdfjs) => {
+        pdfjs.GlobalWorkerOptions.workerSrc = `${PDFJS_BASE}/pdf.worker.min.mjs`;
+        return pdfjs;
+      })
+      .catch((err) => {
+        pdfjsPromise = null;
+        throw new Error("بارگذاری pdf.js از CDN ناموفق بود (اینترنت را چک کن): " + (err?.message || err));
+      });
+  }
+  return pdfjsPromise;
 }
 
 async function openPdf(data: ArrayBuffer): Promise<PdfDoc> {
-  // اول worker محلی؛ اگر بالا نیامد، CDN.
-  try {
-    const pdfjs = await loadPdfJs(false);
-    return await pdfjs.getDocument({ data: data.slice(0) }).promise;
-  } catch {
-    const pdfjs = await loadPdfJs(true);
-    return await pdfjs.getDocument({ data: data.slice(0) }).promise;
-  }
+  const pdfjs = await loadPdfJs();
+  return pdfjs.getDocument({ data: data.slice(0) }).promise;
 }
 
 async function renderPage(doc: PdfDoc, n: number): Promise<Blob> {
