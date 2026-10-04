@@ -11,6 +11,8 @@ import { GeometryScreen } from '../screens/Geometry/GeometryScreen';
 import { GuideScreen } from '../screens/Guide/GuideScreen';
 import { HistoryScreen } from '../screens/History/HistoryScreen';
 import { HomeScreen } from '../screens/Home/HomeScreen';
+import { KonkurScreen } from '../screens/Konkur/KonkurScreen';
+import { KonkurTipScreen } from '../screens/Konkur/KonkurTipScreen';
 import { PremiumScreen } from '../screens/Premium/PremiumScreen';
 import { ProblemInputScreen } from '../screens/ProblemInput/ProblemInputScreen';
 import { QuizScreen } from '../screens/Quiz/QuizScreen';
@@ -96,6 +98,8 @@ export function RootNavigator() {
       />
       <Stack.Screen name="Premium" component={PremiumScreen} options={{ title: t('premium.title') }} />
       <Stack.Screen name="Topics" component={TopicsScreen} options={{ title: t('topics.title') }} />
+      <Stack.Screen name="Konkur" component={KonkurScreen} options={{ title: t('konkur.title') }} />
+      <Stack.Screen name="KonkurTip" component={KonkurTipScreen} />
       {/* Title is set by TopicScreen itself from the topic's i18n key. */}
       <Stack.Screen name="Topic" component={TopicScreen} />
     </Stack.Navigator>

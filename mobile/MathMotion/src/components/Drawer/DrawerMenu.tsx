@@ -17,7 +17,7 @@ import { MathExpression } from '../MathExpression/MathExpression';
 import { PremiumBanner } from '../Home/PremiumBanner';
 import { Icon, type IconName } from '../common/Icon';
 
-type MenuScreen = 'Home' | 'Topics' | 'ExamSetup' | 'Geometry' | 'History' | 'Guide' | 'Settings';
+type MenuScreen = 'Home' | 'Topics' | 'Konkur' | 'ExamSetup' | 'Geometry' | 'History' | 'Guide' | 'Settings';
 
 interface MenuItem {
   icon: IconName;
@@ -36,6 +36,13 @@ const LEARN_ITEMS: MenuItem[] = [
     screen: 'Topics',
     activeFor: ['Topics', 'Topic'],
     badge: { labelKey: 'drawer.topicsCount', params: { count: TOPICS.length } },
+  },
+  {
+    icon: 'lightbulb',
+    labelKey: 'drawer.konkur',
+    screen: 'Konkur',
+    activeFor: ['Konkur', 'KonkurTip'],
+    badge: { labelKey: 'drawer.new', tone: 'new' },
   },
   {
     icon: 'assignment',

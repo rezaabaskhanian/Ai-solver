@@ -6,6 +6,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import type { CurriculumChapter, CurriculumGrade } from '../../content/curriculum';
 import { findGrade, type GradeId } from '../../content/examSyllabus';
+import { tipsForChapter } from '../../content/konkur';
 import { findTopic } from '../../content/topics';
 import { useIsRTL } from '../../hooks/useIsRTL';
 import type { RootStackParamList } from '../../navigation/types';
@@ -35,7 +36,8 @@ export function CurriculumChapterCard({ grade, number, chapter }: Props) {
   const hasExam = Boolean(
     findGrade(grade as GradeId)?.chapters.find(c => c.id === chapter.id && c.skills.length > 0),
   );
-  const supported = topics.length > 0 || hasExam;
+  const hasTips = tipsForChapter(chapter.id).length > 0;
+  const supported = topics.length > 0 || hasExam || hasTips;
 
   return (
     <View style={[styles.card, open && styles.cardOpen]}>
@@ -90,6 +92,18 @@ export function CurriculumChapterCard({ grade, number, chapter }: Props) {
                   </AppText>
                 </Pressable>
               ))}
+              {hasTips && (
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => navigation.navigate('Konkur')}
+                  style={({ pressed }) => [styles.chip, isRTL && styles.rowRTL, pressed && styles.pressed]}
+                >
+                  <Icon name="lightbulb" size={16} color={colors.primaryText} />
+                  <AppText size="xs" weight="medium" color={colors.primaryText}>
+                    {t('topics.konkurTips')}
+                  </AppText>
+                </Pressable>
+              )}
               {hasExam && (
                 <Pressable
                   accessibilityRole="button"

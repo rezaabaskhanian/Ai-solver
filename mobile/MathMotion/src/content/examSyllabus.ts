@@ -16,7 +16,7 @@ export interface ExamChapter {
   id: string;
   skills: SkillId[];
   // Chapter number inside its book, where a grade has two books (11 and
-  // 12: حسابان + آمار / گسسته) and a running number would be wrong. The
+  // 10–12: ریاضی/حسابان + آمار / گسسته + هندسه) and a running number would be wrong. The
   // title (exam.chapters.<id>) then names the book.
   number?: number;
 }
@@ -85,13 +85,17 @@ export const EXAM_SYLLABUS: ExamGrade[] = [
     grade: 10,
     chapters: [
       // Lesson 2 of the chapter is «متمم یک مجموعه».
-      { id: 'g10_sets', skills: ['setOps', 'setComplement'] },
-      { id: 'g10_trig', skills: [] },
-      { id: 'g10_powers', skills: ['powerRules', 'sqrt'] },
-      { id: 'g10_equations', skills: ['quadraticRoots'] },
-      { id: 'g10_function', skills: [] },
-      { id: 'g10_counting', skills: [] },
-      { id: 'g10_statistics', skills: [] },
+      { id: 'g10_sets', skills: ['setOps', 'setComplement'], number: 1 },
+      { id: 'g10_trig', skills: [], number: 2 },
+      { id: 'g10_powers', skills: ['powerRules', 'sqrt'], number: 3 },
+      { id: 'g10_equations', skills: ['quadraticRoots'], number: 4 },
+      { id: 'g10_function', skills: [], number: 5 },
+      { id: 'g10_counting', skills: [], number: 6 },
+      { id: 'g10_statistics', skills: [], number: 7 },
+      { id: 'g10h_constructions', skills: [], number: 1 },
+      { id: 'g10h_thales', skills: [], number: 2 },
+      { id: 'g10h_polygons', skills: [], number: 3 },
+      { id: 'g10h_solids', skills: [], number: 4 },
     ],
   },
   {
@@ -106,6 +110,9 @@ export const EXAM_SYLLABUS: ExamGrade[] = [
       { id: 'g11s_probability', skills: [], number: 2 },
       { id: 'g11s_descriptive', skills: [], number: 3 },
       { id: 'g11s_inferential', skills: [], number: 4 },
+      { id: 'g11h_circle', skills: [], number: 1 },
+      { id: 'g11h_transformations', skills: [], number: 2 },
+      { id: 'g11h_triangle', skills: [], number: 3 },
     ],
   },
   {
@@ -119,6 +126,9 @@ export const EXAM_SYLLABUS: ExamGrade[] = [
       { id: 'g12d_numbers', skills: [], number: 1 },
       { id: 'g12d_graphs', skills: ['graphCounting'], number: 2 },
       { id: 'g12d_counting', skills: [], number: 3 },
+      { id: 'g12h_matrices', skills: [], number: 1 },
+      { id: 'g12h_conics', skills: [], number: 2 },
+      { id: 'g12h_vectors', skills: [], number: 3 },
     ],
   },
 ];

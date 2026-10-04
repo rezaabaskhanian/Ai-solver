@@ -40,6 +40,10 @@ export type RootStackParamList = {
   ExamSetup: { grade?: number; chapterIds?: string[] } | undefined;
   Exam: { config: ExamConfig };
   ExamResult: { config: ExamConfig; questions: ExamQuestion[]; answers: (number | null)[] };
+  // «نکات کنکوری و تست‌زنی»: tips by grade/chapter, and one tip with
+  // the multiple-choice questions tagged with it (content/konkur).
+  Konkur: undefined;
+  KonkurTip: { tipId: string };
   // «ماشین‌حساب هندسه»: pick a shape and measurements; solved like any
   // typed problem.
   Geometry: undefined;

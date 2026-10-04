@@ -13,7 +13,7 @@ import { Icon, type IconName } from '../common/Icon';
 interface Tool {
   icon: IconName;
   labelKey: string;
-  screen: 'Scan' | 'ExamSetup' | 'Topics' | 'Geometry';
+  screen: 'Scan' | 'ExamSetup' | 'Topics' | 'Konkur';
   highlight?: boolean;
 }
 
@@ -23,7 +23,8 @@ const TOOLS: Tool[] = [
   { icon: 'photo-camera', labelKey: 'home.toolScan', screen: 'Scan' },
   { icon: 'assignment', labelKey: 'home.toolExam', screen: 'ExamSetup', highlight: true },
   { icon: 'menu-book', labelKey: 'home.toolTopics', screen: 'Topics' },
-  { icon: 'square-foot', labelKey: 'home.toolGeometry', screen: 'Geometry' },
+  // Geometry stays reachable from the drawer.
+  { icon: 'lightbulb', labelKey: 'home.toolKonkur', screen: 'Konkur' },
 ];
 
 export function HomeToolCards() {

@@ -12,8 +12,8 @@ import type { TopicId } from './topics';
 // syllabus ids (content/examSyllabus.ts), which is how a chapter finds
 // its "take an exam" link.
 //
-// Not covered yet: the geometry books (هندسه ۱–۳) and the تجربی-track
-// books for grades 11–12 — no screenshots of those were provided.
+// Not covered yet: the تجربی-track books for grades 11–12 — no
+// screenshots of those were provided.
 export type CurriculumGrade = 7 | 8 | 9 | 10 | 11 | 12;
 
 export interface CurriculumChapter {
@@ -247,6 +247,33 @@ export const CURRICULUM: CurriculumGradeEntry[] = [
           },
         ],
       },
+      {
+        id: 'geometry1',
+        title: 'هندسه (۱)',
+        track: 'رشته‌ی ریاضی و فیزیک',
+        chapters: [
+          {
+            id: 'g10h_constructions',
+            title: 'ترسیم‌های هندسی و استدلال',
+            lessons: ['ترسیم‌های هندسی', 'استدلال'],
+          },
+          {
+            id: 'g10h_thales',
+            title: 'قضیه‌ی تالس، تشابه و کاربردهای آن',
+            lessons: ['نسبت و تناسب در هندسه', 'قضیه‌ی تالس', 'تشابه مثلث‌ها', 'کاربردهایی از قضیه‌ی تالس و تشابه مثلث‌ها'],
+          },
+          {
+            id: 'g10h_polygons',
+            title: 'چندضلعی‌ها',
+            lessons: ['چندضلعی‌ها و ویژگی‌هایی از آن‌ها', 'مساحت و کاربردهای آن'],
+          },
+          {
+            id: 'g10h_solids',
+            title: 'تجسم فضایی',
+            lessons: ['خط، نقطه و صفحه', 'تفکر تجسمی'],
+          },
+        ],
+      },
     ],
   },
   {
@@ -315,6 +342,28 @@ export const CURRICULUM: CurriculumGradeEntry[] = [
           { id: 'g11s_inferential', title: 'آمار استنباطی', lessons: ['گردآوری داده‌ها', 'برآورد'] },
         ],
       },
+      {
+        id: 'geometry2',
+        title: 'هندسه (۲)',
+        track: 'رشته‌ی ریاضی و فیزیک',
+        chapters: [
+          {
+            id: 'g11h_circle',
+            title: 'دایره',
+            lessons: ['مفاهیم اولیه و زاویه‌ها در دایره', 'رابطه‌های طولی در دایره', 'چندضلعی‌های محاطی و محیطی'],
+          },
+          {
+            id: 'g11h_transformations',
+            title: 'تبدیل‌های هندسی و کاربردها',
+            lessons: ['تبدیل‌های هندسی', 'کاربرد تبدیل‌ها'],
+          },
+          {
+            id: 'g11h_triangle',
+            title: 'روابط طولی در مثلث',
+            lessons: ['قضیه‌ی سینوس‌ها', 'قضیه‌ی کسینوس‌ها', 'قضیه‌ی نیمسازهای زوایای داخلی و محاسبه‌ی طول نیمسازها', 'قضیه‌ی هرون (محاسبه‌ی ارتفاع‌ها و مساحت مثلث)'],
+          },
+        ],
+      },
     ],
   },
   {
@@ -372,6 +421,28 @@ export const CURRICULUM: CurriculumGradeEntry[] = [
             topics: ['graphs'],
           },
           { id: 'g12d_counting', title: 'ترکیبیات (شمارش)', lessons: ['مباحثی در ترکیبیات', 'روش‌هایی برای شمارش'] },
+        ],
+      },
+      {
+        id: 'geometry3',
+        title: 'هندسه (۳)',
+        track: 'رشته‌ی ریاضی و فیزیک',
+        chapters: [
+          {
+            id: 'g12h_matrices',
+            title: 'ماتریس و کاربردها',
+            lessons: ['ماتریس و اعمال روی ماتریس‌ها', 'وارون ماتریس و دترمینان'],
+          },
+          {
+            id: 'g12h_conics',
+            title: 'آشنایی با مقاطع مخروطی',
+            lessons: ['آشنایی با مقاطع مخروطی و مکان هندسی', 'دایره', 'بیضی و سهمی'],
+          },
+          {
+            id: 'g12h_vectors',
+            title: 'بردارها',
+            lessons: ['معرفی فضای ℝ³', 'ضرب داخلی و ضرب خارجی بردارها'],
+          },
         ],
       },
     ],
