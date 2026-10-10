@@ -47,6 +47,18 @@ export type KonkurSource =
       round?: 1 | 2;
     };
 
+// «مسیر حل»: how to approach a question before reading its solution —
+// what it gives, what it asks, hints revealed one at a time (general to
+// specific, never the answer), and the trap most students fall into.
+// Every part is optional; a question without a guide still gets the tip
+// hint and the step-by-step solution.
+export interface KonkurGuide {
+  given?: KonkurLine[];
+  asked?: KonkurLine[];
+  hints?: KonkurLine[][];
+  trap?: KonkurLine[];
+}
+
 export interface KonkurQuestion {
   id: string;
   // The tips this question is solved with — the first is the main one.
@@ -65,5 +77,6 @@ export interface KonkurQuestion {
   choicesMath?: boolean;
   answer: 0 | 1 | 2 | 3;
   solution: KonkurLine[];
+  guide?: KonkurGuide;
   source: KonkurSource;
 }

@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { assetUrl, uploadImage } from "@/lib/api";
 import type { KonkurLine, KonkurQuestion, KonkurSource, KonkurTrack } from "@/lib/types";
+import GuideEditor, { cleanGuide } from "./GuideEditor";
 import LinesEditor from "./LinesEditor";
 
 export const emptyQuestion: KonkurQuestion = {
@@ -33,6 +34,7 @@ export function normalizeQuestion(d: Record<string, unknown> | undefined): Konku
     choicesMath: x.choicesMath !== false,
     answer: ans === 0 || ans === 1 || ans === 2 || ans === 3 ? ans : 0,
     solution: Array.isArray(x.solution) ? (x.solution as KonkurLine[]) : [],
+    guide: x.guide && typeof x.guide === "object" ? x.guide : undefined,
     source:
       src && src.kind === "konkur"
         ? src
@@ -128,6 +130,8 @@ export default function QuestionForm({
     };
     if (q.expression && q.expression.trim()) out.expression = q.expression.trim();
     if (q.figureUrl) out.figureUrl = q.figureUrl;
+    const guide = cleanGuide(q.guide);
+    if (guide) out.guide = guide;
     return out;
   }
 
@@ -202,6 +206,13 @@ export default function QuestionForm({
       </fieldset>
 
       <LinesEditor label="پاسخ تشریحی" lines={q.solution} onChange={(solution) => setQ({ ...q, solution })} />
+
+      <GuideEditor
+        guide={q.guide || {}}
+        onChange={(guide) => setQ((prev) => ({ ...prev, guide }))}
+        question={() => ({ ...q, tipIds: [], guide: undefined })}
+        notify={notify}
+      />
 
       <fieldset className="field" style={{ border: "1px solid var(--border)", borderRadius: 8, padding: 10 }}>
         <legend style={{ fontSize: 13, padding: "0 6px" }}>منبع</legend>

@@ -1,5 +1,5 @@
 import type { KonkurContent } from './index';
-import type { KonkurLine, KonkurQuestion, KonkurTip } from './types';
+import type { KonkurGuide, KonkurLine, KonkurQuestion, KonkurTip } from './types';
 
 // Defensive parsing of the server payload: anything malformed is dropped
 // instead of crashing a screen. Returns null when the payload isn't even
@@ -58,6 +58,41 @@ function validSource(v: unknown): boolean {
   );
 }
 
+const optionalLines = (v: unknown) => v === undefined || v === null || validLines(v);
+
+// A malformed guide is dropped (see cleanGuide), not the whole question.
+function cleanGuide(v: unknown): KonkurGuide | undefined {
+  if (!isObj(v) || !optionalLines(v.given) || !optionalLines(v.asked) || !optionalLines(v.trap)) {
+    return undefined;
+  }
+  if (v.hints !== undefined && v.hints !== null && !(Array.isArray(v.hints) && v.hints.every(validLines))) {
+    return undefined;
+  }
+  const guide: KonkurGuide = {};
+  if (Array.isArray(v.given) && v.given.length > 0) {
+    guide.given = v.given;
+  }
+  if (Array.isArray(v.asked) && v.asked.length > 0) {
+    guide.asked = v.asked;
+  }
+  const hints = Array.isArray(v.hints) ? (v.hints as KonkurLine[][]).filter(h => h.length > 0) : [];
+  if (hints.length > 0) {
+    guide.hints = hints;
+  }
+  if (Array.isArray(v.trap) && v.trap.length > 0) {
+    guide.trap = v.trap;
+  }
+  return Object.keys(guide).length > 0 ? guide : undefined;
+}
+
+function withGuide(q: KonkurQuestion): KonkurQuestion {
+  const out = { ...q, guide: cleanGuide(q.guide) };
+  if (!out.guide) {
+    delete out.guide;
+  }
+  return out;
+}
+
 function validQuestion(v: unknown): v is KonkurQuestion {
   if (!isObj(v) || !isStr(v.id) || !v.id || !isStr(v.text)) {
     return false;
@@ -104,6 +139,7 @@ export function parseKonkurContent(payload: unknown): KonkurContent | null {
   const questions = payload.questions
     .filter(validQuestion)
     .map(clean)
+    .map(withGuide)
     .filter(q => q.tipIds.some(id => tipIds.has(id)));
   if (tips.length === 0) {
     return null;

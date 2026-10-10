@@ -200,7 +200,8 @@ func (c *Client) RecognizeWithUsage(ctx context.Context, imageBase64, mediaType 
 // Complete sends one image plus a prompt to the active provider (the
 // admin-configured one) and returns the raw text reply and what it cost.
 // RecognizeWithUsage is this with the scan prompt; the konkur page
-// extractor uses its own prompt and a larger token budget.
+// extractor uses its own prompt and a larger token budget. An empty
+// imageBase64 sends the prompt alone (the konkur solving-guide drafts).
 func (c *Client) Complete(ctx context.Context, prompt string, maxTokens int, imageBase64, mediaType string) (string, Usage, error) {
 	provider := c.ActiveProvider()
 	apiKey := c.settings.Get(apiKeySetting(provider))
@@ -239,15 +240,14 @@ func (c *Client) callAnthropic(ctx context.Context, apiKey, model, prompt string
 	}, c.anthropicOpts...)
 	client := anthropic.NewClient(opts...)
 
+	blocks := []anthropic.ContentBlockParamUnion{anthropic.NewTextBlock(prompt)}
+	if imageBase64 != "" {
+		blocks = append([]anthropic.ContentBlockParamUnion{anthropic.NewImageBlockBase64(mediaType, imageBase64)}, blocks...)
+	}
 	resp, err := client.Messages.New(ctx, anthropic.MessageNewParams{
 		Model:     anthropic.Model(model),
 		MaxTokens: int64(maxTokens),
-		Messages: []anthropic.MessageParam{
-			anthropic.NewUserMessage(
-				anthropic.NewImageBlockBase64(mediaType, imageBase64),
-				anthropic.NewTextBlock(prompt),
-			),
-		},
+		Messages:  []anthropic.MessageParam{anthropic.NewUserMessage(blocks...)},
 	})
 	if err != nil {
 		return "", usage, err

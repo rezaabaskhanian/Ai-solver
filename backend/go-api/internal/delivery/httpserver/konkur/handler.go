@@ -53,6 +53,7 @@ func (h Handler) SetAdminRoutes(admin *echo.Group) {
 
 	admin.POST("/konkur/import", h.Import)
 	admin.POST("/konkur/extract", h.Extract)
+	admin.POST("/konkur/guide", h.GenerateGuide)
 
 	admin.GET("/konkur/drafts", h.ListDrafts)
 	admin.PUT("/konkur/drafts/:id", h.UpdateDraft)
@@ -227,6 +228,23 @@ func (h Handler) Import(c echo.Context) error {
 		return errorhandling.ErrorHandling(err, c)
 	}
 	return c.JSON(http.StatusOK, res)
+}
+
+// ---------- solving guide ----------
+
+// GenerateGuide handles POST /admin/konkur/guide: the body is a question
+// (possibly unsaved, from the form) and the reply is an AI-drafted
+// solving guide for the admin to review. Nothing is stored.
+func (h Handler) GenerateGuide(c echo.Context) error {
+	var q konkurservice.Question
+	if err := c.Bind(&q); err != nil {
+		return invalidBody(c)
+	}
+	g, err := h.svc.GenerateGuide(c.Request().Context(), q)
+	if err != nil {
+		return errorhandling.ErrorHandling(err, c)
+	}
+	return c.JSON(http.StatusOK, g)
 }
 
 // ---------- extract ----------

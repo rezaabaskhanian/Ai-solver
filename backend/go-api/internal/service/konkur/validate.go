@@ -40,6 +40,18 @@ func normalizeQuestion(q Question) Question {
 	if q.Solution == nil {
 		q.Solution = []Line{}
 	}
+	if q.Guide != nil {
+		hints := make([][]Line, 0, len(q.Guide.Hints))
+		for _, h := range q.Guide.Hints {
+			if len(h) > 0 {
+				hints = append(hints, h)
+			}
+		}
+		q.Guide.Hints = hints
+		if q.Guide.Empty() {
+			q.Guide = nil
+		}
+	}
 	return q
 }
 
