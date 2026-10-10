@@ -528,6 +528,8 @@ fallback. مثل بقیه‌ی این پاس، اجرا نشده — طبق تص
 `chapterId`، `source{kind,year,track,number,abroad,newSystem,round}`، و هر خط `KonkurLine` یا رشته‌ست یا
 `{"math": "..."}`)؛ تنها فرق: `figure` (عکس RN) تبدیل شده به `figureUrl` (مثلاً `/uploads/xxx.png`).
 
+فیلد اختیاری `details` (آرایه‌ای از خط‌ها، مثل `body`) «توضیح کامل» نکته‌ست که اپ فقط با باز کردنش نشون می‌ده؛ `body` همون خلاصه‌ی کوتاه می‌مونه، و `details` از ایمپورت/استخراج/پیش‌نویس/تأیید بدون تغییر رد می‌شه (اگه خالی باشه از JSON حذف می‌شه).
+
 **ذخیره‌سازی (migration `011_konkur.sql`، موقع بالا آمدن سرور خودکار اجرا می‌شه):**
 `konkur_tips` و `konkur_questions` (هر آیتم یک سند JSONB + `position`/`published`/`updated_at`)،
 `konkur_drafts` (پیش‌نویس‌ها)، و `konkur_meta` (یک ردیف با شمارنده‌ی `version`).

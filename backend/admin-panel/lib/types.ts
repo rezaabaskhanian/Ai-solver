@@ -167,6 +167,8 @@ export interface KonkurTip {
   chapterId?: string;
   title: string;
   body: KonkurLine[];
+  // توضیح کامل (اختیاری)
+  details?: KonkurLine[];
   example?: {
     question: KonkurLine[];
     solution: KonkurLine[];

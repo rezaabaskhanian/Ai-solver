@@ -1,16 +1,18 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useLayoutEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppButton } from '../../components/common/AppButton';
 import { AppText } from '../../components/common/AppText';
 import { Card } from '../../components/common/Card';
+import { Icon } from '../../components/common/Icon';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 import { KonkurLines } from '../../components/Konkur/KonkurLines';
 import { KonkurQuestionCard } from '../../components/Konkur/KonkurQuestionCard';
 import { CURRICULUM } from '../../content/curriculum';
 import { findKonkurTip, questionsForTip } from '../../content/konkur';
+import { useIsRTL } from '../../hooks/useIsRTL';
 import { useKonkurContent } from '../../store/useKonkurContentStore';
 import type { RootStackParamList } from '../../navigation/types';
 import { makeStyles, radius, spacing, useColors } from '../../theme';
@@ -25,7 +27,9 @@ export function KonkurTipScreen({ route, navigation }: Props) {
   const { t } = useTranslation();
   const content = useKonkurContent();
   const tip = findKonkurTip(route.params.tipId, content);
+  const isRTL = useIsRTL();
   const [showExample, setShowExample] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   useLayoutEffect(() => {
     navigation.setOptions({ title: t('konkur.tipTitle') });
@@ -57,6 +61,24 @@ export function KonkurTipScreen({ route, navigation }: Props) {
       <Card style={styles.card}>
         <KonkurLines lines={tip.body} />
       </Card>
+
+      {tip.details && tip.details.length > 0 && (
+        <Card style={styles.card}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('konkur.details')}
+            accessibilityState={{ expanded: showDetails }}
+            onPress={() => setShowDetails(v => !v)}
+            style={[styles.detailsHeader, isRTL && styles.detailsHeaderRTL]}
+          >
+            <AppText weight="bold" style={styles.detailsTitle}>
+              {t('konkur.details')}
+            </AppText>
+            <Icon name={showDetails ? 'expand-less' : 'expand-more'} color={colors.textSecondary} />
+          </Pressable>
+          {showDetails && <KonkurLines lines={tip.details} />}
+        </Card>
+      )}
 
       {tip.example && (
         <Card style={styles.card}>
@@ -99,6 +121,17 @@ const useStyles = makeStyles(colors => StyleSheet.create({
   card: {
     gap: spacing.md,
     padding: spacing.md,
+  },
+  detailsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  detailsHeaderRTL: {
+    flexDirection: 'row-reverse',
+  },
+  detailsTitle: {
+    flex: 1,
   },
   solution: {
     padding: spacing.md,

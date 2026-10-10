@@ -464,6 +464,7 @@
     "testsCount": "{{count}} questions",
     "tipOnly": "Tip only",
     "noTips": "No tips for this grade yet.",
+    "details": "Full explanation",
     "example": "Example",
     "showSolution": "Show solution",
     "tests": "Questions ({{count}})",

@@ -34,6 +34,16 @@ function validTip(v: unknown): v is KonkurTip {
   return true;
 }
 
+// `details` is optional and never worth losing a whole tip over: keep it
+// only when it is a non-empty, valid list of lines.
+function cleanTip(tip: KonkurTip): KonkurTip {
+  const { details, ...rest } = tip;
+  if (Array.isArray(details) && details.length > 0 && validLines(details)) {
+    return { ...rest, details };
+  }
+  return rest;
+}
+
 function validSource(v: unknown): boolean {
   if (!isObj(v)) {
     return false;
@@ -89,7 +99,7 @@ export function parseKonkurContent(payload: unknown): KonkurContent | null {
   if (!isObj(payload) || !Array.isArray(payload.tips) || !Array.isArray(payload.questions)) {
     return null;
   }
-  const tips = payload.tips.filter(validTip).map(clean);
+  const tips = payload.tips.filter(validTip).map(clean).map(cleanTip);
   const tipIds = new Set(tips.map(t => t.id));
   const questions = payload.questions
     .filter(validQuestion)

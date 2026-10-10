@@ -50,10 +50,12 @@ const tipsPrompt = `You will be shown one page of a Persian (Farsi) math test-ta
   "title": "<short Persian title of the tip>",
   "grade": <school grade 7-12 the tip belongs to, or null for a general test-taking tip>,
   "body": ["<one line of Persian prose>", {"math": "<one line of math, plain ASCII>"}],
+  "details": ["<line>", {"math": "<line>"}],
   "example": {"question": ["<line>", {"math": "<line>"}], "solution": ["<line>", {"math": "<line>"}]}
 }
 Rules: ` +
-	`"example" is optional: omit it when the page has no worked example. Math always goes on its own line as ` +
+	`"example" is optional: omit it when the page has no worked example. "details" is an optional long-form ` +
+	`explanation: omit it unless the page has one beyond the short body. Math always goes on its own line as ` +
 	`{"math": "..."} in plain ASCII (x^2, sqrt(x), (a+b)/c, log_2(x)), never inside Persian prose. Write numbers ` +
 	`with ASCII digits 0-9. Keep Persian text as printed; do not translate or invent content. ` +
 	`If the page contains no tip respond with exactly: []`
@@ -308,6 +310,7 @@ type rawTip struct {
 	Title   string            `json:"title"`
 	Grade   *int              `json:"grade"`
 	Body    []json.RawMessage `json:"body"`
+	Details []json.RawMessage `json:"details"`
 	Example *struct {
 		Question []json.RawMessage `json:"question"`
 		Solution []json.RawMessage `json:"solution"`
@@ -328,6 +331,9 @@ func tipFromRaw(raw json.RawMessage) (Tip, []string, error) {
 		Grade: rt.Grade,
 		Title: strings.TrimSpace(rt.Title),
 		Body:  rawLines("body", rt.Body, &warnings),
+	}
+	if len(rt.Details) > 0 {
+		t.Details = rawLines("details", rt.Details, &warnings)
 	}
 	if rt.Example != nil {
 		t.Example = &Example{

@@ -462,6 +462,33 @@ func TestApproveTipDraft(t *testing.T) {
 	}
 }
 
+func TestTipDetailsRoundTrip(t *testing.T) {
+	in := `{"id":"t1","grade":null,"title":"نکته","body":["خلاصه"],"details":["توضیح",{"math":"x^2"}]}`
+	var tip Tip
+	if err := json.Unmarshal([]byte(in), &tip); err != nil {
+		t.Fatal(err)
+	}
+	if len(tip.Details) != 2 || tip.Details[0].Text != "توضیح" || !tip.Details[1].IsMath {
+		t.Fatalf("details = %+v", tip.Details)
+	}
+	repo := newFakeRepo()
+	svc := New(repo)
+	if _, err := svc.CreateTip(context.Background(), tip); err != nil {
+		t.Fatal(err)
+	}
+	if len(repo.tips["t1"].Details) != 2 {
+		t.Fatalf("details lost on save: %+v", repo.tips["t1"])
+	}
+	out, _ := json.Marshal(repo.tips["t1"])
+	if !strings.Contains(string(out), `"details":["توضیح",{"math":"x^2"}]`) {
+		t.Fatalf("marshal = %s", out)
+	}
+	out, _ = json.Marshal(Tip{ID: "t2", Title: "x", Body: []Line{}})
+	if strings.Contains(string(out), "details") {
+		t.Fatalf("empty details must be omitted: %s", out)
+	}
+}
+
 func TestUpdateDraftRecomputesWarnings(t *testing.T) {
 	repo := newFakeRepo()
 	svc := New(repo)

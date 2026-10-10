@@ -19,6 +19,9 @@ export interface KonkurTip {
   chapterId?: string;
   title: string;
   body: KonkurLine[];
+  // Optional long-form explanation («توضیح کامل»), collapsed by default;
+  // `body` stays the short summary.
+  details?: KonkurLine[];
   example?: {
     question: KonkurLine[];
     solution: KonkurLine[];

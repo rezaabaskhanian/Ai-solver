@@ -86,6 +86,7 @@ type Tip struct {
 	ChapterID string   `json:"chapterId,omitempty"`
 	Title     string   `json:"title"`
 	Body      []Line   `json:"body"`
+	Details   []Line   `json:"details,omitempty"`
 	Example   *Example `json:"example,omitempty"`
 }
 

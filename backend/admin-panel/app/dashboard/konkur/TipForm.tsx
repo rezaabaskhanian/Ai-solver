@@ -18,6 +18,7 @@ export function normalizeTip(d: Record<string, unknown> | undefined): KonkurTip 
     chapterId: typeof x.chapterId === "string" && x.chapterId ? x.chapterId : undefined,
     title: typeof x.title === "string" ? x.title : "",
     body: Array.isArray(x.body) ? (x.body as KonkurLine[]) : [],
+    details: Array.isArray(x.details) && x.details.length > 0 ? (x.details as KonkurLine[]) : undefined,
     example:
       x.example && typeof x.example === "object"
         ? {
@@ -76,6 +77,8 @@ export default function TipForm({
       title: tip.title.trim(),
       body,
     };
+    const details = cleanLines(tip.details || []);
+    if (details.length) out.details = details;
     if (tip.chapterId && tip.chapterId.trim()) out.chapterId = tip.chapterId.trim();
     if (tip.example) {
       const q = cleanLines(tip.example.question);
@@ -130,6 +133,11 @@ export default function TipForm({
         <input value={tip.title} onChange={(e) => setTip({ ...tip, title: e.target.value })} />
       </label>
       <LinesEditor label="متن نکته" lines={tip.body} onChange={(body) => setTip({ ...tip, body })} />
+      <LinesEditor
+        label="توضیح کامل (اختیاری)"
+        lines={tip.details || []}
+        onChange={(details) => setTip({ ...tip, details })}
+      />
 
       <label>
         <input
