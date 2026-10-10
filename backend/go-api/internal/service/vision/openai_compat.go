@@ -65,16 +65,19 @@ func (c *Client) callOpenAICompatible(ctx context.Context, baseURL, apiKey, mode
 	if baseURL == c.openRouterURL {
 		usageRequest = &chatUsageRequest{Include: true}
 	}
+	parts := []chatContentPart{{Type: "text", Text: prompt}}
+	if imageBase64 != "" {
+		parts = append([]chatContentPart{
+			{Type: "image_url", ImageURL: &chatImageURL{URL: "data:" + mediaType + ";base64," + imageBase64}},
+		}, parts...)
+	}
 	body, err := json.Marshal(chatRequest{
 		Usage:     usageRequest,
 		Model:     model,
 		MaxTokens: maxTokens,
 		Messages: []chatMessage{{
-			Role: "user",
-			Content: []chatContentPart{
-				{Type: "image_url", ImageURL: &chatImageURL{URL: "data:" + mediaType + ";base64," + imageBase64}},
-				{Type: "text", Text: prompt},
-			},
+			Role:    "user",
+			Content: parts,
 		}},
 	})
 	if err != nil {

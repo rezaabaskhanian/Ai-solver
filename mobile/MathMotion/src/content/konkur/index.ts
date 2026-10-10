@@ -9,7 +9,7 @@ import { GRADE9_QUESTIONS, GRADE9_TIPS } from './grade9';
 import { PAST_QUESTIONS } from './past';
 import type { KonkurQuestion, KonkurSource, KonkurTip } from './types';
 
-export type { KonkurLine, KonkurQuestion, KonkurSource, KonkurTip, KonkurTrack } from './types';
+export type { KonkurGuide, KonkurLine, KonkurQuestion, KonkurSource, KonkurTip, KonkurTrack } from './types';
 
 export const KONKUR_TIPS: KonkurTip[] = [
   ...GENERAL_TIPS,

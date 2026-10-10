@@ -185,6 +185,14 @@ export type KonkurSource =
       round?: 1 | 2;
     };
 
+// «مسیر حل»: فهم سؤال (داده‌ها/خواسته)، راهنمایی‌های پله‌ای و دام تست — همه اختیاری
+export interface KonkurGuide {
+  given?: KonkurLine[];
+  asked?: KonkurLine[];
+  hints?: KonkurLine[][];
+  trap?: KonkurLine[];
+}
+
 export interface KonkurQuestion {
   id: string;
   tipIds: string[];
@@ -196,6 +204,7 @@ export interface KonkurQuestion {
   choicesMath?: boolean;
   answer: 0 | 1 | 2 | 3;
   solution: KonkurLine[];
+  guide?: KonkurGuide;
   source: KonkurSource;
 }
 

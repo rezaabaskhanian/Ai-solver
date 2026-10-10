@@ -474,6 +474,18 @@
     "solution": "Worked solution",
     "tipsUsed": "Tips used in this question",
     "tryAgain": "Try again",
+    "understand": "First understand it: what's given, what's asked?",
+    "given": "What does the question give us?",
+    "asked": "What does it ask for?",
+    "getHint": "Stuck? Get a hint ({{total}} hints)",
+    "nextHint": "Next hint ({{n}} of {{total}})",
+    "hintN": "Hint {{n}}",
+    "giveUp": "I don't know — show me the solution step by step",
+    "gaveUp": "No problem! The answer is choice {{n}}; let's solve it step by step.",
+    "solutionSteps": "Worked solution — step {{n}} of {{total}}",
+    "nextStep": "Next step",
+    "showAllSteps": "Show all steps",
+    "trap": "The trap in this question",
     "sourceNote": "\"تست تألیفی\" means the question was written for this app in the exam's style. Real Konkur questions are labelled with their year and track (math or science)."
   },
   "topics": {

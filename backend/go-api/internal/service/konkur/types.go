@@ -101,6 +101,21 @@ type Source struct {
 	Round     int    `json:"round,omitempty"`
 }
 
+// Guide is the app's KonkurGuide: how to approach a question before
+// reading its solution — what it gives, what it asks, hints revealed one
+// at a time, and the trap most students fall into. Every part is optional.
+type Guide struct {
+	Given []Line   `json:"given,omitempty"`
+	Asked []Line   `json:"asked,omitempty"`
+	Hints [][]Line `json:"hints,omitempty"`
+	Trap  []Line   `json:"trap,omitempty"`
+}
+
+// Empty reports whether the guide has nothing to show.
+func (g *Guide) Empty() bool {
+	return g == nil || (len(g.Given) == 0 && len(g.Asked) == 0 && len(g.Hints) == 0 && len(g.Trap) == 0)
+}
+
 // Question is the app's KonkurQuestion. Answer is a pointer only so an
 // incomplete draft can carry "answer": null; a published question always
 // has 0..3.
@@ -114,6 +129,7 @@ type Question struct {
 	ChoicesMath *bool    `json:"choicesMath,omitempty"`
 	Answer      *int     `json:"answer"`
 	Solution    []Line   `json:"solution"`
+	Guide       *Guide   `json:"guide,omitempty"`
 	Source      Source   `json:"source"`
 }
 

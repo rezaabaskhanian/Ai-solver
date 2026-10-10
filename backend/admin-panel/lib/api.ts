@@ -9,6 +9,7 @@ import type {
   KonkurDraft,
   KonkurExtractMeta,
   KonkurExtractResult,
+  KonkurGuide,
   KonkurQuestion,
   KonkurQuestionFilters,
   KonkurTip,
@@ -309,6 +310,11 @@ export async function updateKonkurQuestion(id: string, q: KonkurQuestion): Promi
 
 export async function deleteKonkurQuestion(id: string): Promise<void> {
   await jsonOrThrow(await authFetch(`/admin/konkur/questions/${encodeURIComponent(id)}`, { method: "DELETE" }));
+}
+
+// پیش‌نویس «مسیر حل» یک سؤال با هوش مصنوعی (چیزی ذخیره نمی‌شود)
+export async function generateKonkurGuide(q: KonkurQuestion): Promise<KonkurGuide> {
+  return jsonOrThrow<KonkurGuide>(await authFetch("/admin/konkur/guide", jsonBody("POST", q)));
 }
 
 export async function importKonkur(payload: { tips: unknown[]; questions: unknown[] }): Promise<unknown> {

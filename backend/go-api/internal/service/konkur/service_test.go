@@ -667,3 +667,77 @@ func TestMissingSourceFallsBackToAuthoredWithWarning(t *testing.T) {
 		t.Fatalf("question = %+v", q)
 	}
 }
+
+// ---------- solving guide ----------
+
+func guideQuestion() Question {
+	a := 1
+	return Question{
+		Text:     "جواب معادله کدام است؟",
+		Choices:  []string{"1", "2", "3", "4"},
+		Answer:   &a,
+		Solution: []Line{{Text: "دو طرف را تقسیم می‌کنیم"}, {Math: "x = 2", IsMath: true}},
+	}
+}
+
+func TestGenerateGuideParsesReplyAndRecordsUsage(t *testing.T) {
+	reply := "```json\n" + `{
+  "given": ["معادله‌ی خطی", {"math": "2x = 4"}],
+  "asked": ["مقدار x"],
+  "hints": [["از تقسیم استفاده کن"], "خط تنها هم قبول است", []],
+  "trap": []
+}` + "\n```"
+	ex := &fakeExtractor{reply: reply}
+	usage := &fakeUsage{}
+	svc := New(newFakeRepo()).WithExtractor(ex).WithUsageRecorder(usage)
+
+	g, err := svc.GenerateGuide(context.Background(), guideQuestion())
+	if err != nil {
+		t.Fatalf("GenerateGuide: %v", err)
+	}
+	if len(g.Given) != 2 || !g.Given[1].IsMath || g.Given[1].Math != "2x = 4" {
+		t.Fatalf("given = %+v", g.Given)
+	}
+	if len(g.Hints) != 2 || g.Hints[1][0].Text != "خط تنها هم قبول است" {
+		t.Fatalf("hints = %+v (empty hint should be dropped, bare line accepted)", g.Hints)
+	}
+	if len(g.Trap) != 0 {
+		t.Fatalf("trap = %+v", g.Trap)
+	}
+	if !strings.Contains(ex.prompt, "CORRECT CHOICE: 2") || !strings.Contains(ex.prompt, "x = 2") {
+		t.Fatalf("prompt is missing the key or the solution:\n%s", ex.prompt)
+	}
+	if len(usage.entries) != 1 || usage.entries[0].Feature != "konkur_guide" {
+		t.Fatalf("usage = %+v", usage.entries)
+	}
+}
+
+func TestGenerateGuideRejectsBadInputAndReplies(t *testing.T) {
+	svc := New(newFakeRepo()).WithExtractor(&fakeExtractor{reply: "{}"})
+	q := guideQuestion()
+	q.Choices = q.Choices[:3]
+	if _, err := svc.GenerateGuide(context.Background(), q); err == nil {
+		t.Fatal("expected an error for 3 choices")
+	}
+	if _, err := svc.GenerateGuide(context.Background(), guideQuestion()); err == nil {
+		t.Fatal("expected an error for an empty guide")
+	}
+	svc = New(newFakeRepo()).WithExtractor(&fakeExtractor{reply: "نمی‌دانم"})
+	if _, err := svc.GenerateGuide(context.Background(), guideQuestion()); err == nil {
+		t.Fatal("expected an error for a reply without JSON")
+	}
+	if _, err := New(newFakeRepo()).GenerateGuide(context.Background(), guideQuestion()); err == nil {
+		t.Fatal("expected an error without an AI model")
+	}
+}
+
+func TestNormalizeQuestionDropsEmptyGuide(t *testing.T) {
+	q := normalizeQuestion(Question{Guide: &Guide{Hints: [][]Line{{}}}})
+	if q.Guide != nil {
+		t.Fatalf("guide = %+v, want nil", q.Guide)
+	}
+	q = normalizeQuestion(Question{Guide: &Guide{Hints: [][]Line{{}, {{Text: "x"}}}}})
+	if q.Guide == nil || len(q.Guide.Hints) != 1 {
+		t.Fatalf("guide = %+v, want one hint", q.Guide)
+	}
+}
