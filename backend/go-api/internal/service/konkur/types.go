@@ -80,10 +80,13 @@ type Example struct {
 }
 
 // Tip is the app's KonkurTip. Grade nil = a general tip for every grade.
+// Tracks limits the tip to study tracks ("riazi", "tajrobi"); empty means
+// every track.
 type Tip struct {
 	ID        string   `json:"id"`
 	Grade     *int     `json:"grade"`
 	ChapterID string   `json:"chapterId,omitempty"`
+	Tracks    []string `json:"tracks,omitempty"`
 	Title     string   `json:"title"`
 	Body      []Line   `json:"body"`
 	Details   []Line   `json:"details,omitempty"`

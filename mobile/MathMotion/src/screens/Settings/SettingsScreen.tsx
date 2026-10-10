@@ -8,6 +8,8 @@ import { SubscriptionStatusCard } from '../../components/Billing/SubscriptionSta
 import { AppButton } from '../../components/common/AppButton';
 import { AppText } from '../../components/common/AppText';
 import { Card } from '../../components/common/Card';
+import { DailyGoalStepper } from '../../components/Konkur/DailyGoalStepper';
+import { TrackPicker } from '../../components/common/TrackPicker';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 import { APP_VERSION } from '../../config/version';
 import { MathExpression } from '../../components/MathExpression/MathExpression';
@@ -15,6 +17,7 @@ import { useIsRTL } from '../../hooks/useIsRTL';
 import type { RootStackParamList } from '../../navigation/types';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useEntitlementStore } from '../../store/useEntitlementStore';
+import { usePreferencesStore, useTrack } from '../../store/usePreferencesStore';
 import { useThemeStore } from '../../store/useThemeStore';
 import {
   ACCENTS,
@@ -42,6 +45,8 @@ export function SettingsScreen() {
     useThemeStore();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const isPremium = useEntitlementStore(state => state.isPremium);
+  const track = useTrack();
+  const setTrack = usePreferencesStore(state => state.setTrack);
   const { user, logout } = useAuthStore();
 
   const confirmLogout = () =>
@@ -74,6 +79,26 @@ export function SettingsScreen() {
         variant="secondary"
         onPress={() => navigation.navigate('Premium')}
       />
+
+      <Card style={styles.section}>
+        <AppText weight="bold" size="lg">
+          {t('track.title')}
+        </AppText>
+        <AppText size="sm" color={colors.textSecondary}>
+          {t('track.hint')}
+        </AppText>
+        <TrackPicker value={track} onChange={setTrack} />
+      </Card>
+
+      <Card style={styles.section}>
+        <AppText weight="bold" size="lg">
+          {t('konkur.daily.goalTitle')}
+        </AppText>
+        <AppText size="sm" color={colors.textSecondary}>
+          {t('konkur.daily.goalHint')}
+        </AppText>
+        <DailyGoalStepper />
+      </Card>
 
       <Card style={styles.section}>
         <AppText weight="bold" size="lg">

@@ -6,9 +6,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppButton } from '../../components/common/AppButton';
 import { AppText } from '../../components/common/AppText';
 import { Logo } from '../../components/common/Logo';
+import { TrackPicker } from '../../components/common/TrackPicker';
 import { MathExpression } from '../../components/MathExpression/MathExpression';
 import { useIsRTL } from '../../hooks/useIsRTL';
 import { useOnboardingStore } from '../../store/useOnboardingStore';
+import { usePreferencesStore, useTrack } from '../../store/usePreferencesStore';
 import { makeStyles, radius, spacing, useColors } from '../../theme';
 import { Icon } from '../../components/common/Icon';
 
@@ -30,6 +32,8 @@ export function OnboardingScreen() {
   const { t } = useTranslation();
   const isRTL = useIsRTL();
   const complete = useOnboardingStore(s => s.complete);
+  const track = useTrack();
+  const setTrack = usePreferencesStore(s => s.setTrack);
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
@@ -46,13 +50,8 @@ export function OnboardingScreen() {
           <View style={[styles.brand, isRTL && styles.rowRTL]}>
             <Logo size={36} />
             <AppText size="xl" weight="bold">
-              MathMotion
+              {t('common.appName')}
             </AppText>
-            <View style={styles.brandPill}>
-              <AppText size="xs" weight="bold" color={colors.onPrimary}>
-                {t('common.appName')}
-              </AppText>
-            </View>
           </View>
           <AppText size="sm" align="center" color={colors.textSecondary}>
             {t('onboarding.tagline')}
@@ -111,6 +110,13 @@ export function OnboardingScreen() {
               </View>
             ))}
           </View>
+
+          {/* The study track is saved the moment it is tapped (riazi is
+              preselected), so «شروع» / «ورود» need no extra step. */}
+          <AppText weight="bold" align="center" style={styles.trackTitle}>
+            {t('track.onboardingTitle')}
+          </AppText>
+          <TrackPicker value={track} onChange={setTrack} />
 
           <AppButton
             label={t('onboarding.start')}
@@ -183,12 +189,6 @@ const useStyles = makeStyles(colors => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-  },
-  brandPill: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
-    borderRadius: radius.pill,
-    backgroundColor: colors.primary,
   },
   cards: {
     flexDirection: 'row',
@@ -314,6 +314,9 @@ const useStyles = makeStyles(colors => StyleSheet.create({
     height: 6,
     borderRadius: 3,
     backgroundColor: colors.success,
+  },
+  trackTitle: {
+    marginTop: spacing.xs,
   },
   start: {
     minHeight: 56,

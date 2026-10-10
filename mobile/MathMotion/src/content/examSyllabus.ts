@@ -1,4 +1,5 @@
 import type { SkillId } from '../services/exam/generators';
+import type { StudyTrack } from './track';
 
 // «آمادگی برای امتحان»: each grade's math textbook chapters and the
 // skills the exam can generate questions for. Chapter titles are i18n
@@ -19,6 +20,9 @@ export interface ExamChapter {
   // 10–12: ریاضی/حسابان + آمار / گسسته + هندسه) and a running number would be wrong. The
   // title (exam.chapters.<id>) then names the book.
   number?: number;
+  // Only these study tracks see the chapter; missing = every track (a
+  // chapter that also exists in content/curriculum.ts follows it too).
+  tracks?: StudyTrack[];
 }
 
 export interface ExamGrade {
@@ -113,6 +117,13 @@ export const EXAM_SYLLABUS: ExamGrade[] = [
       { id: 'g11h_circle', skills: [], number: 1 },
       { id: 'g11h_transformations', skills: [], number: 2 },
       { id: 'g11h_triangle', skills: [], number: 3 },
+      { id: 'g11t_analytic', skills: [], number: 1 },
+      { id: 'g11t_geometry', skills: [], number: 2 },
+      { id: 'g11t_function', skills: [], number: 3 },
+      { id: 'g11t_trig', skills: [], number: 4 },
+      { id: 'g11t_exp_log', skills: ['logValue', 'logEquation', 'expEquation'], number: 5 },
+      { id: 'g11t_limits', skills: [], number: 6 },
+      { id: 'g11t_statistics', skills: [], number: 7 },
     ],
   },
   {
@@ -129,6 +140,13 @@ export const EXAM_SYLLABUS: ExamGrade[] = [
       { id: 'g12h_matrices', skills: [], number: 1 },
       { id: 'g12h_conics', skills: [], number: 2 },
       { id: 'g12h_vectors', skills: [], number: 3 },
+      { id: 'g12t_function', skills: [], number: 1 },
+      { id: 'g12t_trig', skills: [], number: 2 },
+      { id: 'g12t_limits', skills: [], number: 3 },
+      { id: 'g12t_derivative', skills: [], number: 4 },
+      { id: 'g12t_applications', skills: [], number: 5 },
+      { id: 'g12t_geometry', skills: [], number: 6 },
+      { id: 'g12t_probability', skills: [], number: 7 },
     ],
   },
 ];

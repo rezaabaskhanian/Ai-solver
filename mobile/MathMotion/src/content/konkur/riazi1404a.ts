@@ -1,7 +1,7 @@
 import type { KonkurQuestion, KonkurSource } from './types';
 
 // ریاضی ۱۴۰۴ نوبت اول (دی ۱۴۰۳) — booklet 121A
-// (.source_kunkor/133127_PDF_Gama.ir_I1SQav.pdf). No worked solutions
+// (the source booklet). No worked solutions
 // were available for this exam, so every key was solved here from
 // scratch (and cross-checked by plugging the answer back in) — compare
 // with the official Sanjesh key when it's found (see TODO.md).
@@ -482,7 +482,7 @@ export const RIAZI_1404A: KonkurQuestion[] = [
   },
   {
     id: 'r1404a_q27',
-    tipIds: ['g10_trig_table', 'g11h_triangle'],
+    tipIds: ['g10_trig_table'],
     text: 'در شکل زیر مثلث ABC متساوی‌الساقین (AB = AC) است و AB = 2CE (CE بر AB عمود است، AD ارتفاع و EF بر BC عمود). اگر DE = 2√3 + 4 باشد، اندازه‌ی BF کدام است؟',
     figure: require('./figures/r1404a_q27.png'),
     choices: ['1', '2', 'sqrt(3)', '2sqrt(3)'],
@@ -538,6 +538,7 @@ export const RIAZI_1404A: KonkurQuestion[] = [
     id: 'r1404a_q31',
     tipIds: ['g11h_cosine_law', 'g10h_incircle_area'],
     text: 'در مثلث محیطی شکل (دایره‌ی محاطی)، ضلع‌های AB = 4 و AC = 5 و BC = 7 هستند. دایره‌ی محاطی در نقاط T و T′ به ضلع‌های AB و AC مماس است. اندازه‌ی وتر TT′ کدام است؟',
+    figure: require('./figures/r1404a_q31.png'),
     choices: ['0.2sqrt(15)', '0.4sqrt(15)', '0.2sqrt(5)', '0.4sqrt(5)'],
     answer: 1,
     solution: [

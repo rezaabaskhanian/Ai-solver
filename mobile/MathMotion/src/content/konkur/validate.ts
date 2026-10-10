@@ -1,3 +1,4 @@
+import { isStudyTrack } from '../track';
 import type { KonkurContent } from './index';
 import type { KonkurGuide, KonkurLine, KonkurQuestion, KonkurTip } from './types';
 
@@ -36,12 +37,19 @@ function validTip(v: unknown): v is KonkurTip {
 
 // `details` is optional and never worth losing a whole tip over: keep it
 // only when it is a non-empty, valid list of lines.
+// `tracks` is cleaned the same way: unknown track names are dropped, and
+// a list left empty means "no restriction" (shown to every track).
 function cleanTip(tip: KonkurTip): KonkurTip {
-  const { details, ...rest } = tip;
+  const { details, tracks, ...rest } = tip;
+  const out: KonkurTip = rest;
   if (Array.isArray(details) && details.length > 0 && validLines(details)) {
-    return { ...rest, details };
+    out.details = details;
   }
-  return rest;
+  const known = Array.isArray(tracks) ? tracks.filter(isStudyTrack) : [];
+  if (known.length > 0) {
+    out.tracks = known;
+  }
+  return out;
 }
 
 function validSource(v: unknown): boolean {

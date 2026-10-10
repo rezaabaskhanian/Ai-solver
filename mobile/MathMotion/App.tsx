@@ -3,16 +3,25 @@
  * @format
  */
 
-import { DarkTheme, DefaultTheme, NavigationContainer, type Theme } from '@react-navigation/native';
+import {
+  DarkTheme,
+  DefaultTheme,
+  NavigationContainer,
+  useNavigationContainerRef,
+  type Theme,
+} from '@react-navigation/native';
 import React, { useEffect, useMemo } from 'react';
 import { AppState, StatusBar, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import './src/i18n';
+import { AppErrorBoundary } from './src/components/ErrorBoundary/AppErrorBoundary';
 import { AppDrawer } from './src/navigation/AppDrawer';
 import { AuthScreen } from './src/screens/Auth/AuthScreen';
 import { OnboardingScreen } from './src/screens/Onboarding/OnboardingScreen';
+import { initTelemetry, trackNavigationState } from './src/services/telemetry';
+import { startKonkurProgressSync } from './src/services/konkurProgressSync';
 import { useAuthStore } from './src/store/useAuthStore';
 import { refreshKonkurContent } from './src/store/useKonkurContentStore';
 import { useEntitlementStore } from './src/store/useEntitlementStore';
@@ -21,8 +30,12 @@ import { useOnboardingStore } from './src/store/useOnboardingStore';
 import { useThemeStore } from './src/store/useThemeStore';
 import { fontFamily, useColors } from './src/theme';
 
+// Self-hosted crash / usage reporting: global error handlers + flush timers.
+initTelemetry();
+
 function App() {
   const colors = useColors();
+  const navigationRef = useNavigationContainerRef();
   const languageHydrated = useLanguageStore(state => state.hasHydrated);
   const themeHydrated = useThemeStore(state => state.hasHydrated);
   const onboardingHydrated = useOnboardingStore(state => state.hasHydrated);
@@ -68,6 +81,7 @@ function App() {
 
   useEffect(() => {
     useAuthStore.getState().restore();
+    startKonkurProgressSync();
     useEntitlementStore.getState().refresh();
   }, []);
 
@@ -94,9 +108,15 @@ function App() {
           // Login is required, as in LingoFlow: onboarding → login → app.
           <AuthScreen initialMode={authMode} />
         ) : (
-          <NavigationContainer theme={navigationTheme}>
-            <AppDrawer />
-          </NavigationContainer>
+          <AppErrorBoundary>
+            <NavigationContainer
+              ref={navigationRef}
+              theme={navigationTheme}
+              onReady={() => trackNavigationState(navigationRef.getRootState())}
+              onStateChange={state => trackNavigationState(state)}>
+              <AppDrawer />
+            </NavigationContainer>
+          </AppErrorBoundary>
         )}
       </SafeAreaProvider>
     </GestureHandlerRootView>

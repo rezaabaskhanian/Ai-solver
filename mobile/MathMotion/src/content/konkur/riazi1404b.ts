@@ -1,9 +1,9 @@
 import type { KonkurQuestion, KonkurSource } from './types';
 
 // ریاضی ۱۴۰۴ نوبت دوم (تیر) — booklet 121A
-// (.source_kunkor/136976_PDF_Gama.ir_MexhTc.pdf); questions and keys
+// (the source booklet); questions and keys
 // read from the worked-solutions booklet
-// R1404-Riaziat-Nastaran-Vandadi-[konkur.in].pdf and re-derived here.
+// the worked-solutions booklet and re-derived here.
 // Left out: 8, 26, 31, 40 (figures that the worked-solutions booklet
 // annotates with the solution's own labels, or graph theory).
 const source = (number: number): KonkurSource => ({ kind: 'konkur', year: 1404, track: 'riazi', round: 2, number });
@@ -423,6 +423,7 @@ export const RIAZI_1404B: KonkurQuestion[] = [
     id: 'r1404b_q27',
     tipIds: ['g10h_painted_cube'],
     text: 'تمام وجه‌های مکعب 4 × 4 × 4 شکل زیر رنگ‌آمیزی شده است (مکعب از 64 مکعب 1 × 1 × 1 ساخته شده). چند مکعب به ابعاد 1 × 1 × 1 وجود دارد که فقط یک وجهشان رنگ شده است؟',
+    figure: require('./figures/r1404b_q27.png'),
     choices: ['8', '12', '16', '24'],
     answer: 3,
     solution: [
@@ -451,6 +452,7 @@ export const RIAZI_1404B: KonkurQuestion[] = [
     id: 'r1404b_q29',
     tipIds: ['g10h_incircle_area'],
     text: 'محیط مثلثی که یک دایره در آن محاط شده است √(48π) است. اگر مساحت قسمت هاشورخورده (مثلث منهای دایره‌ی محاطی) برابر 3 باشد، مساحت مثلث کدام است؟',
+    figure: require('./figures/r1404b_q29.png'),
     choices: ['6', '6.5', 'π + 3', '1.5π + 3'],
     answer: 0,
     solution: [

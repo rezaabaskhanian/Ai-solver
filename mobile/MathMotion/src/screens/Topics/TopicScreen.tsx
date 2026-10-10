@@ -19,6 +19,7 @@ import { useIsRTL } from '../../hooks/useIsRTL';
 import type { RootStackParamList } from '../../navigation/types';
 import { toApiError, translationKeyForApiError } from '../../services/api/apiError';
 import { practiceProblem } from '../../services/api/problems';
+import { useTrack } from '../../store/usePreferencesStore';
 import { makeStyles, spacing, useColors } from '../../theme';
 
 export function TopicScreen() {
@@ -26,11 +27,12 @@ export function TopicScreen() {
   const styles = useStyles();
   const { t } = useTranslation();
   const isRTL = useIsRTL();
+  const track = useTrack();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { params } = useRoute<RouteProp<RootStackParamList, 'Topic'>>();
   const topic = findTopic(params.topicId);
   // Where this topic sits in the official textbooks (content/curriculum.ts).
-  const bookRefs = chaptersForTopic(params.topicId);
+  const bookRefs = chaptersForTopic(params.topicId, track);
   const lesson = LESSONS[params.topicId];
 
   const [generatingPractice, setGeneratingPractice] = useState(false);

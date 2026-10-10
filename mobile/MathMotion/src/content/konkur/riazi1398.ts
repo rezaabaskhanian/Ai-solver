@@ -1,7 +1,7 @@
 import type { KonkurQuestion, KonkurSource } from './types';
 
 // ریاضی ۱۳۹۸ نظام جدید — the math part of the "کنکورتایم" reprint of
-// the exam (.source_kunkor/Konkur98-Riazi-NezamJadid-[konkur.in].pdf),
+// the exam (the source booklet),
 // which includes a short worked solution and the answer of each
 // question. Keys come from that reprint and each answer was re-derived
 // here. Numbers are as printed (101…).

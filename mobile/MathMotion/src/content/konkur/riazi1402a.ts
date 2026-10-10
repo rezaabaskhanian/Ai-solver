@@ -1,9 +1,9 @@
 import type { KonkurQuestion, KonkurSource } from './types';
 
 // ریاضی ۱۴۰۲ نوبت اول (دی ۱۴۰۱) — booklet 121-A
-// (.source_kunkor/99183_PDF_Gama.ir_4XDuZA.pdf, a low-quality scan);
+// (the source booklet, a low-quality scan);
 // keys and statements double-checked against the worked solutions
-// R1402-Dey-Pasokh-Tashrihi-[konkur.in].pdf and re-derived here.
+// R1402-Dey-Pasokh-Tashrihi-[the source booklet and re-derived here.
 // Left out: 38 (graph-theory figure); 16 (the official key
 // is wrong, the worked solution says so); 19, 21 (no correct option);
 // 23 (statement open to two readings); 36 (the printed sign of the

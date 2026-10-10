@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 const SUPPORT_EMAIL = "rezaabaskhanian1367kash@gmail.com";
 
 export const metadata: Metadata = {
-  title: "سیاست حریم خصوصی — MathMotion",
-  description: "اطلاعاتی که اپلیکیشن MathMotion جمع‌آوری می‌کند و نحوه‌ی استفاده از آن",
+  title: "سیاست حریم خصوصی — مجهول",
+  description: "اطلاعاتی که اپلیکیشن مجهول جمع‌آوری می‌کند و نحوه‌ی استفاده از آن",
 };
 
 export default function PrivacyPage() {
@@ -15,7 +15,7 @@ export default function PrivacyPage() {
           <div className="navpill">
             <a href="/" className="brand">
               <span className="brand-dot" />
-              MathMotion
+              مجهول
             </a>
           </div>
         </div>
@@ -23,7 +23,7 @@ export default function PrivacyPage() {
 
       <main className="wrap privacy">
         <span className="eyebrow">حریم خصوصی</span>
-        <h1>سیاست حریم خصوصی MathMotion</h1>
+        <h1>سیاست حریم خصوصی مجهول</h1>
         <p className="privacy-updated">آخرین به‌روزرسانی: مهر ۱۴۰۵</p>
 
         <h2>اطلاعاتی که جمع‌آوری می‌کنیم</h2>
@@ -48,7 +48,7 @@ export default function PrivacyPage() {
         <h2>استفاده از سرویس‌های هوش مصنوعی</h2>
         <p>
           برای خواندن متن مسئله از روی عکس، عکس برای پردازش به ارائه‌دهندگان سرویس هوش مصنوعی فرستاده
-          می‌شود. حل خود مسئله با موتور ریاضی خود MathMotion انجام می‌شود. این اطلاعات فقط برای ارائه‌ی
+          می‌شود. حل خود مسئله با موتور ریاضی خود مجهول انجام می‌شود. این اطلاعات فقط برای ارائه‌ی
           همان خدمت استفاده می‌شود.
         </p>
 
@@ -75,7 +75,7 @@ export default function PrivacyPage() {
       <footer className="footer">
         <div className="wrap">
           <div className="footer-bottom">
-            <span>© {new Date().getFullYear()} MathMotion</span>
+            <span>© {new Date().getFullYear()} مجهول</span>
             <a href="/">mathmotion.ir</a>
           </div>
         </div>

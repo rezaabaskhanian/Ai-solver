@@ -1,7 +1,7 @@
 import type { KonkurQuestion, KonkurSource } from './types';
 
 // ریاضی ۱۳۹۶ — the math part of the combined booklet
-// (.source_kunkor/Riazi96-G-[konkur.in].pdf, which carries the worked
+// (the source booklet, which carries the worked
 // solutions). Keys are from the printed worked solutions and each
 // answer was re-derived here. Numbers are as printed (101…).
 // 1396 ran on the old curriculum, so only the questions whose topic is
@@ -62,6 +62,7 @@ export const RIAZI_1396: KonkurQuestion[] = [
     id: 'r1396_q104',
     tipIds: ['g12_trig_period'],
     text: 'شکل روبه‌رو قسمتی از نمودار تابع y = 1/2 + 2cos(mx) است (دوره‌ی تناوب نمودار 4π است). مقدار تابع در نقطه‌ی x = 16π/3 کدام است؟',
+    figure: require('./figures/r1396_q104.png'),
     choices: ['-1/2', '1/2', '1', 'صفر'],
     answer: 0,
     solution: [

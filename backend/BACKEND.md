@@ -549,6 +549,7 @@ fallback. مثل بقیه‌ی این پاس، اجرا نشده — طبق تص
 - `GET/POST /admin/konkur/tips`، `PUT/DELETE /admin/konkur/tips/:id` — بدنه‌ی POST نکته‌ی کامل (با `id`)؛ PUT جایگزین می‌کنه (id از URL ملاکه). id تکراری در POST: `409`.
 - `GET/POST /admin/konkur/questions`، `PUT/DELETE /admin/konkur/questions/:id` — GET فیلترهای `?year=&track=&tipId=&q=` رو می‌فهمه و سند کامل برمی‌گردونه.
 - `POST /admin/konkur/import` با بدنه‌ی `{"tips":[...],"questions":[...]}` — همه رو یکجا و در یک تراکنش upsert می‌کنه (منتشرشده)، version فقط یک بار زیاد می‌شه، خروجی `{"tips":N,"questions":M,"version":V}`. اگه یک آیتم نامعتبر باشه هیچ چیز نوشته نمی‌شه (`422` با لیست مشکل‌ها). برای seed کردن از محتوای TS فعلی.
+- `GET /admin/konkur/seed` و `POST /admin/konkur/seed` — «محتوای آماده‌ی اپ»: محتوای bundle‌شده‌ی اپ (`mobile/.../content/konkur`) با `go:embed` داخل ایمیج API هست (`internal/service/konkur/seed/konkur-seed.json` و `seed/figures/*.png`، ساخته‌شده با `scripts/export-konkur.ts`). GET خروجی `{"tips","questions","missing_tips","missing_questions","figures"}` می‌ده (چندتا از آیتم‌های seed هنوز روی سرور نیست). POST (بدنه‌ی اختیاری `{"overwrite":true}`) فقط آیتم‌هایی رو اضافه می‌کنه که id‌شون روی سرور نیست (ویرایش‌های دستی ادمین دست نمی‌خوره؛ با `overwrite` همه جایگزین می‌شن)، آیتم نامعتبر رد و گزارش می‌شه، تصویرهای PNG رو توی `$UPLOAD_DIR/konkur/` کپی می‌کنه (فایل موجود رو رد می‌کنه؛ با `/uploads/konkur/<file>` سرو می‌شه)، و version رو فقط یک بار (و فقط اگه چیزی اضافه شد) زیاد می‌کنه. خروجی: `added_*`، `skipped_*`، `invalid_*`، `problems`، `figures_copied`، `version`. بعد از تغییر seed باید ایمیج API دوباره build بشه.
 - `POST /admin/konkur/extract` (multipart): فیلد `image` (یک صفحه‌ی PDF که پنل توی مرورگر به PNG/JPEG/WebP تبدیل کرده، حداکثر ۸ مگابایت) و فیلدهای متنی `source_name`، `kind` (`questions` یا `tips`) و اختیاری `year`، `track` (`riazi`/`tajrobi`)، `round`، `abroad`، `page_label`. مدل بینایی با یک prompt مخصوص صفحه‌ی آزمون فارسی صدا زده می‌شه و هر آیتم نتیجه به‌صورت **پیش‌نویس** (نامرئی برای اپ) ذخیره می‌شه. خروجی: `{"drafts":[...],"skipped":[{"index","reason"}]}`.
 - `GET /admin/konkur/drafts?status=pending`، `PUT /admin/konkur/drafts/:id` (جایگزینی `data`؛ بدنه یا خود سند است یا `{"data": سند}`؛ هشدارها دوباره محاسبه می‌شن)، `POST /admin/konkur/drafts/:id/approve` (بدنه‌ی اختیاری `{"overwrite":true}`)، `DELETE /admin/konkur/drafts/:id` (وضعیت می‌شه `rejected`).
 
@@ -568,4 +569,27 @@ fallback. مثل بقیه‌ی این پاس، اجرا نشده — طبق تص
 
 ### تست‌ها
 
-`internal/service/konkur/service_test.go` — با repo و extractor جعلی (بدون دیتابیس و شبکه): اعتبارسنجی سؤال/نکته، افزایش version، import همه‌یا‌هیچ، جریان approve/overwrite/reject، و پارس استخراج (خروجی fenced، متن اضافه، آیتم خراب، نکته‌ها). طبق قرارِ همیشگی اجرای `go test` دست خود کاربره.
+`internal/service/konkur/service_test.go` — با repo و extractor جعلی (بدون دیتابیس و شبکه): اعتبارسنجی سؤال/نکته، افزایش version، import همه‌یا‌هیچ، جریان approve/overwrite/reject، و پارس استخراج (خروجی fenced، متن اضافه، آیتم خراب، نکته‌ها). `internal/service/konkur/seed_test.go` هم seed کوچک (با `fstest.MapFS`) رو تست می‌کنه: فقط موارد جاافتاده، عدم بازنویسی ویرایش‌ها، overwrite، آیتم نامعتبر و کپی تصویرها. طبق قرارِ همیشگی اجرای `go test` دست خود کاربره.
+
+## همگام‌سازی پیشرفت کنکور و رتبه‌ی تقریبی
+
+- مایگریشن `012_konkur_progress.sql`: جدول‌های `konkur_progress` (یک سند JSONB برای هر کاربر + `revision`) و `konkur_exam_results` (بهترین نتیجه‌ی هر کاربر در هر آزمون، کلید `(user_id, paper_key)`).
+- کاربر از همان middleware.Device می‌آید: اکانت اگر لاگین باشد، وگرنه کاربر دستگاه. مسیرها زیر `/api/v1/konkur` هستند (rate limit + Device).
+- `GET /api/v1/konkur/progress` -> `{revision, updated_at, data}` (برای کاربری که هیچ‌وقت ذخیره نکرده: `revision: 0` و `data: {}`).
+- `PUT /api/v1/konkur/progress` با بدنه‌ی `{revision, data}`: `revision` همان نسخه‌ای است که کلاینت آخرین بار از سرور گرفته (۰ برای اولین ذخیره). اگر با نسخه‌ی سرور نخواند، پاسخ `409` همراه سند فعلی (`revision`, `updated_at`, `data`) برمی‌گردد تا کلاینت ادغام کند و دوباره بفرستد. سقف حجم `data` حدود ۵۱۲ کیلوبایت است و باید یک شیء JSON باشد.
+- `POST /api/v1/konkur/exam-results` با `{paper_key, percent, correct, wrong, blank, seconds}`: فقط بهترین درصد هر کاربر برای هر آزمون نگه داشته می‌شود. `paper_key` مثل `riazi-1403-r1` یا `tajrobi-1404-r2-abroad`.
+- `GET /api/v1/konkur/exam-results/stats?paper_key=` -> `{count, percentile, median, p25, p75}`؛ `percentile` سهم بقیه‌ی کاربرانی است که درصد پایین‌تری دارند (۰ تا ۱۰۰) و اگر کاربر نتیجه‌ای نداشته باشد `null` است. اپ فقط وقتی `count >= 20` باشد نمایش می‌دهد.
+- ادمین: `GET /admin/konkur/exam-stats` -> فهرست `{paper_key, count, average_percent, best_percent}`؛ در پنل ادمین زیرتب «نتایج آزمون‌ها» در بخش کنکور.
+- کد: `internal/service/konkurprogress` (سرویس + تست)، `internal/repository/postgres/konkurprogress`، `internal/delivery/httpserver/konkurprogress`.
+- موبایل: `src/services/konkurProgressSync.ts` (pull هنگام شروع/لاگین، push با debounce، خطاها بی‌صدا و با تلاش مجدد) و ادغام خالص در `src/content/konkur/progress.ts` (`mergeProgress`): تلاش‌ها بر اساس (سؤال، زمان) اجتماع می‌شوند، نشانک‌ها اجتماع می‌شوند (آخرین تغییر نشانک برنده است) و در تعارض فیلدهای «آخرین پاسخ» تلاش جدیدتر برنده است.
+
+## گزارش خطا و آمار استفاده (Telemetry، بدون سرویس خارجی)
+
+اپ کرش‌ها و خطاها و چند رویداد ساده را به خود API می‌فرسته؛ توی جدول `app_events` (مایگریشن `013_app_events.sql`) ذخیره می‌شه و توی پنل ادمین، تب «خطاها و آمار» دیده می‌شه.
+
+- `POST /api/v1/telemetry` (مثل بقیه‌ی مسیرهای اپ با `X-Device-Id` و rate limit): بدنه `{"events":[...]}` با حداکثر ۲۰ رویداد. هر رویداد: `kind` (`crash`/`error`/`screen`/`event`)، `name`، `message`، `stack`، `screen`، `app_version`، `platform`، `os_version`، `extra`، `ts` (میلی‌ثانیه، اختیاری). آیتم نامعتبر نادیده گرفته می‌شه و پاسخ همیشه `202` با `{"accepted":N}` است (اپ هرگز به‌خاطر telemetry خطا نمی‌گیره). طول‌ها کوتاه می‌شن (stack حدود ۸ کیلوبایت، message هزار نویسه).
+- ادمین: `GET /admin/telemetry/summary` (شمار هر نوع در ۲۴ ساعت و ۷ روز، ۱۰ خطای پرتکرار گروه‌شده با name+message همراه تعداد/آخرین زمان/نسخه‌ها/آخرین stack، پربازدیدترین صفحه‌ها، دستگاه‌های فعال روزانه در ۱۴ روز)، `GET /admin/telemetry/events?kind=&q=&limit=` (آخرین رویدادها، حداکثر ۲۰۰)، `POST /admin/telemetry/purge?days=N` (حذف قدیمی‌تر از N روز؛ پیش‌فرض ۶۰).
+- نگهداری: موقع بالا آمدن سرور و بعد هر ۲۴ ساعت، رویدادهای قدیمی‌تر از ۶۰ روز پاک می‌شن.
+- کد: `internal/service/telemetry` (اعتبارسنجی، حذف PII، گروه‌بندی)، `internal/repository/postgres/telemetry`، `internal/delivery/httpserver/telemetry`. تست: `service/telemetry/service_test.go` (repo جعلی). موبایل: `src/services/telemetry/*`. اجرای `go test` دست خود کاربره.
+
+**حریم خصوصی — چی جمع می‌شه:** متن و stack خطا، نام صفحه‌ها، نام چند رویداد (`exam_started`، `exam_finished`، `konkur_question_answered`، `solve_requested`، `scan_used`، `purchase_started`)، نسخه‌ی اپ و سیستم‌عامل، پلتفرم، شناسه‌ی تصادفی دستگاه/کاربر که API از قبل داره. **چی جمع نمی‌شه:** شماره‌تلفن، توکن، رمز، متن مسئله‌ی تایپ‌شده یا عکس. هر کلیدی در `extra` که اسمش شبیه `token`/`password`/`phone`/`mobile`/`secret`/`authorization`/`otp`/`cookie` باشه سمت سرور حذف می‌شه و `extra` بزرگ‌تر از ۲ کیلوبایت دور ریخته می‌شه.

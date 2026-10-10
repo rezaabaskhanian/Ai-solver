@@ -195,7 +195,27 @@ describe('buildExam / scoreExam', () => {
     const score = scoreExam(questions, answers);
     expect(score.total).toBe(4);
     expect(score.correct).toBe(2);
-    expect(score.percent).toBe(50);
+    expect(score.wrong).toBe(2);
+    expect(score.blank).toBe(0);
+    // Konkur marking: (3*2 - 2) / (3*4) = 33.3%
+    expect(score.points).toBe(4);
+    expect(score.percent).toBe(33.3);
     expect(score.byChapter[0].chapterId).toBe('g7_powers');
+  });
+
+  it('does not penalise blank answers and builds per-topic stats for konkur questions', () => {
+    const base = { textKey: '', choices: ['a', 'b', 'c', 'd'], skill: 'primes' as const, chapterId: 'c' };
+    const questions = [
+      { ...base, id: '0', answerIndex: 0, topicId: 't1', topicLabel: 'Topic 1' },
+      { ...base, id: '1', answerIndex: 1, topicId: 't1', topicLabel: 'Topic 1' },
+      { ...base, id: '2', answerIndex: 2, topicId: 't2', topicLabel: 'Topic 2' },
+    ];
+    const score = scoreExam(questions, [0, null, 0]);
+    expect(score).toMatchObject({ correct: 1, wrong: 1, blank: 1, points: 2 });
+    expect(score.byChapter).toEqual([]);
+    expect(score.byTopic.map(t => [t.label, t.correctPercent])).toEqual([
+      ['Topic 2', 0],
+      ['Topic 1', 50],
+    ]);
   });
 });

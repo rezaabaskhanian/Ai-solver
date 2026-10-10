@@ -8,12 +8,14 @@ import { AppText } from '../../components/common/AppText';
 import { Card } from '../../components/common/Card';
 import { Icon } from '../../components/common/Icon';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
+import { KonkurBookmarkButton } from '../../components/Konkur/KonkurBookmarkButton';
 import { KonkurLines } from '../../components/Konkur/KonkurLines';
 import { KonkurQuestionCard } from '../../components/Konkur/KonkurQuestionCard';
 import { CURRICULUM } from '../../content/curriculum';
+import { formulasForChapter } from '../../content/formulas';
 import { findKonkurTip, questionsForTip } from '../../content/konkur';
 import { useIsRTL } from '../../hooks/useIsRTL';
-import { useKonkurContent } from '../../store/useKonkurContentStore';
+import { useKonkurContent, useTrackKonkurContent } from '../../store/useKonkurContentStore';
 import type { RootStackParamList } from '../../navigation/types';
 import { makeStyles, radius, spacing, useColors } from '../../theme';
 
@@ -26,6 +28,7 @@ export function KonkurTipScreen({ route, navigation }: Props) {
   const styles = useStyles();
   const { t } = useTranslation();
   const content = useKonkurContent();
+  const trackContent = useTrackKonkurContent();
   const tip = findKonkurTip(route.params.tipId, content);
   const isRTL = useIsRTL();
   const [showExample, setShowExample] = useState(false);
@@ -39,7 +42,16 @@ export function KonkurTipScreen({ route, navigation }: Props) {
     return null;
   }
 
-  const questions = questionsForTip(tip.id, content);
+  // Opened from the notebook: just that one question, with a way back to all.
+  const onlyId = route.params.questionId;
+  // Questions of the student's track; a saved question of the other track
+  // (kept from before a track change) still opens on its own.
+  const trackQuestions = questionsForTip(tip.id, trackContent);
+  const allQuestions =
+    onlyId && !trackQuestions.some(q => q.id === onlyId) ? questionsForTip(tip.id, content) : trackQuestions;
+  const visible = onlyId ? allQuestions.filter(q => q.id === onlyId) : allQuestions;
+  const questions = visible.length > 0 ? visible : allQuestions;
+  const filtered = !!onlyId && visible.length > 0;
   const chapter = tip.chapterId
     ? CURRICULUM.flatMap(g => g.books.flatMap(b => b.chapters.map(c => ({ grade: g.grade, chapter: c }))))
         .find(entry => entry.chapter.id === tip.chapterId)
@@ -47,15 +59,18 @@ export function KonkurTipScreen({ route, navigation }: Props) {
 
   return (
     <ScreenContainer scroll>
-      <View style={styles.header}>
-        <AppText size="xs" color={colors.primaryText} weight="medium">
-          {chapter
-            ? `${t('topics.gradeChip', { grade: chapter.grade })} · ${chapter.chapter.title}`
-            : t('konkur.general')}
-        </AppText>
-        <AppText weight="bold" size="xl">
-          {tip.title}
-        </AppText>
+      <View style={[styles.titleRow, isRTL && styles.titleRowRTL]}>
+        <View style={styles.header}>
+          <AppText size="xs" color={colors.primaryText} weight="medium">
+            {chapter
+              ? `${t('topics.gradeChip', { grade: chapter.grade })} · ${chapter.chapter.title}`
+              : t('konkur.general')}
+          </AppText>
+          <AppText weight="bold" size="xl">
+            {tip.title}
+          </AppText>
+        </View>
+        <KonkurBookmarkButton kind="tip" id={tip.id} />
       </View>
 
       <Card style={styles.card}>
@@ -78,6 +93,16 @@ export function KonkurTipScreen({ route, navigation }: Props) {
           </Pressable>
           {showDetails && <KonkurLines lines={tip.details} />}
         </Card>
+      )}
+
+      {tip.chapterId && formulasForChapter(tip.chapterId) && (
+        <AppButton
+          label={t('konkur.formulas.chapterLink')}
+          variant="secondary"
+          size="sm"
+          icon="functions"
+          onPress={() => navigation.navigate('FormulaChapter', { chapterId: tip.chapterId! })}
+        />
       )}
 
       {tip.example && (
@@ -106,16 +131,39 @@ export function KonkurTipScreen({ route, navigation }: Props) {
       {questions.length === 0 ? (
         <AppText color={colors.textSecondary}>{t('konkur.noTests')}</AppText>
       ) : (
-        questions.map((question, i) => (
-          <KonkurQuestionCard key={question.id} question={question} index={i} currentTipId={tip.id} />
+        questions.map(question => (
+          <KonkurQuestionCard
+            key={question.id}
+            question={question}
+            index={allQuestions.indexOf(question)}
+            currentTipId={tip.id}
+          />
         ))
+      )}
+      {filtered && (
+        <AppButton
+          label={t('konkur.progress.showAllTests', { count: allQuestions.length })}
+          variant="secondary"
+          size="sm"
+          icon="list"
+          onPress={() => navigation.setParams({ questionId: undefined })}
+        />
       )}
     </ScreenContainer>
   );
 }
 
 const useStyles = makeStyles(colors => StyleSheet.create({
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.sm,
+  },
+  titleRowRTL: {
+    flexDirection: 'row-reverse',
+  },
   header: {
+    flex: 1,
     gap: spacing.xs,
   },
   card: {

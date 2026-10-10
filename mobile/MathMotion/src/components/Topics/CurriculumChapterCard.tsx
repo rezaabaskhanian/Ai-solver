@@ -7,7 +7,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import type { CurriculumChapter, CurriculumGrade } from '../../content/curriculum';
 import { findGrade, type GradeId } from '../../content/examSyllabus';
 import { tipsForChapter } from '../../content/konkur';
-import { useKonkurContent } from '../../store/useKonkurContentStore';
+import { useTrackKonkurContent } from '../../store/useKonkurContentStore';
 import { findTopic } from '../../content/topics';
 import { useIsRTL } from '../../hooks/useIsRTL';
 import type { RootStackParamList } from '../../navigation/types';
@@ -30,7 +30,7 @@ export function CurriculumChapterCard({ grade, number, chapter }: Props) {
   const { t } = useTranslation();
   const isRTL = useIsRTL();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const konkurContent = useKonkurContent();
+  const konkurContent = useTrackKonkurContent();
   const [open, setOpen] = useState(false);
   const row = [styles.row, isRTL && styles.rowRTL];
 

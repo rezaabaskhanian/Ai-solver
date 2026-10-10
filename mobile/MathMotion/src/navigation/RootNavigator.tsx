@@ -11,7 +11,11 @@ import { GeometryScreen } from '../screens/Geometry/GeometryScreen';
 import { GuideScreen } from '../screens/Guide/GuideScreen';
 import { HistoryScreen } from '../screens/History/HistoryScreen';
 import { HomeScreen } from '../screens/Home/HomeScreen';
+import { FormulaChapterScreen } from '../screens/Formulas/FormulaChapterScreen';
+import { FormulaSheetScreen } from '../screens/Formulas/FormulaSheetScreen';
+import { KonkurDailyScreen } from '../screens/Konkur/KonkurDailyScreen';
 import { KonkurScreen } from '../screens/Konkur/KonkurScreen';
+import { KonkurNotebookScreen } from '../screens/Konkur/KonkurNotebookScreen';
 import { KonkurTipScreen } from '../screens/Konkur/KonkurTipScreen';
 import { PremiumScreen } from '../screens/Premium/PremiumScreen';
 import { ProblemInputScreen } from '../screens/ProblemInput/ProblemInputScreen';
@@ -100,6 +104,18 @@ export function RootNavigator() {
       <Stack.Screen name="Topics" component={TopicsScreen} options={{ title: t('topics.title') }} />
       <Stack.Screen name="Konkur" component={KonkurScreen} options={{ title: t('konkur.title') }} />
       <Stack.Screen name="KonkurTip" component={KonkurTipScreen} />
+      <Stack.Screen
+        name="KonkurNotebook"
+        component={KonkurNotebookScreen}
+        options={{ title: t('konkur.progress.title') }}
+      />
+      <Stack.Screen name="KonkurDaily" component={KonkurDailyScreen} options={{ title: t('konkur.daily.title') }} />
+      <Stack.Screen name="FormulaSheet" component={FormulaSheetScreen} options={{ title: t('konkur.formulas.title') }} />
+      <Stack.Screen
+        name="FormulaChapter"
+        component={FormulaChapterScreen}
+        options={{ title: t('konkur.formulas.title') }}
+      />
       {/* Title is set by TopicScreen itself from the topic's i18n key. */}
       <Stack.Screen name="Topic" component={TopicScreen} />
     </Stack.Navigator>

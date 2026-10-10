@@ -16,6 +16,9 @@ export function normalizeTip(d: Record<string, unknown> | undefined): KonkurTip 
     id: typeof x.id === "string" ? x.id : "",
     grade: typeof g === "number" && GRADES.includes(g as KonkurGrade) ? (g as KonkurGrade) : null,
     chapterId: typeof x.chapterId === "string" && x.chapterId ? x.chapterId : undefined,
+    tracks: Array.isArray(x.tracks) && x.tracks.length > 0
+      ? (x.tracks.filter((v) => v === "riazi" || v === "tajrobi") as ("riazi" | "tajrobi")[])
+      : undefined,
     title: typeof x.title === "string" ? x.title : "",
     body: Array.isArray(x.body) ? (x.body as KonkurLine[]) : [],
     details: Array.isArray(x.details) && x.details.length > 0 ? (x.details as KonkurLine[]) : undefined,
@@ -80,6 +83,7 @@ export default function TipForm({
     const details = cleanLines(tip.details || []);
     if (details.length) out.details = details;
     if (tip.chapterId && tip.chapterId.trim()) out.chapterId = tip.chapterId.trim();
+    if (tip.tracks && tip.tracks.length > 0) out.tracks = tip.tracks;
     if (tip.example) {
       const q = cleanLines(tip.example.question);
       const s = cleanLines(tip.example.solution);
@@ -127,6 +131,19 @@ export default function TipForm({
       <label className="field">
         شناسه‌ی فصل (اختیاری)
         <input dir="ltr" value={tip.chapterId || ""} onChange={(e) => setTip({ ...tip, chapterId: e.target.value })} />
+      </label>
+      <label className="field">
+        رشته (اختیاری)
+        <select
+          value={tip.tracks && tip.tracks.length === 1 ? tip.tracks[0] : ""}
+          onChange={(e) =>
+            setTip({ ...tip, tracks: e.target.value ? [e.target.value as "riazi" | "tajrobi"] : undefined })
+          }
+        >
+          <option value="">همه‌ی رشته‌ها</option>
+          <option value="riazi">فقط ریاضی و فیزیک</option>
+          <option value="tajrobi">فقط علوم تجربی</option>
+        </select>
       </label>
       <label className="field">
         عنوان

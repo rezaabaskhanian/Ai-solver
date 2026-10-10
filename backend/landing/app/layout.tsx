@@ -2,15 +2,15 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "MathMotion — حل قدم‌به‌قدم ریاضی با یک عکس",
+  title: "مجهول — حل قدم‌به‌قدم ریاضی با یک عکس",
   description:
     "اپلیکیشن حل مسئله‌ی ریاضی: از مسئله عکس بگیر یا تایپش کن و راه‌حل قدم‌به‌قدم با توضیح فارسی بگیر — معادله، مشتق، انتگرال، حد، لگاریتم و رسم نمودار.",
   metadataBase: new URL("https://mathmotion.ir"),
   openGraph: {
-    title: "MathMotion — حل قدم‌به‌قدم ریاضی",
+    title: "مجهول — حل قدم‌به‌قدم ریاضی",
     description: "از مسئله عکس بگیر؛ راه‌حل قدم‌به‌قدم با توضیح فارسی.",
     url: "https://mathmotion.ir",
-    siteName: "MathMotion",
+    siteName: "مجهول",
     locale: "fa_IR",
     type: "website",
   },

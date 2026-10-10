@@ -1,4 +1,9 @@
 {
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "body": "The app hit an unexpected error. An anonymous report was sent to us. Please try again.",
+    "retry": "Try again"
+  },
   "common": {
     "or": "or",
     "appName": "MathMotion",
@@ -440,6 +445,7 @@
     "history": "Solved problems",
     "exam": "Exam prep",
     "konkur": "Konkur & test tips",
+    "konkurNotebook": "My notebook",
     "geometry": "Geometry calculator",
     "guide": "How to use",
     "settings": "Appearance",
@@ -474,6 +480,15 @@
     "incorrect": "The correct answer is option {{n}}.",
     "solution": "Worked solution",
     "tipsUsed": "Tips used in this question",
+    "solveWithEngine": "Solve step by step with the engine",
+    "search": {
+      "placeholder": "Search tips and questions…",
+      "clear": "Clear search",
+      "tips": "Tips ({{count}})",
+      "questions": "Questions ({{count}})",
+      "empty": "Nothing found. Try another word or an exam year.",
+      "hint": "Type at least two characters."
+    },
     "tryAgain": "Try again",
     "understand": "First understand it: what's given, what's asked?",
     "given": "What does the question give us?",
@@ -487,7 +502,75 @@
     "nextStep": "Next step",
     "showAllSteps": "Show all steps",
     "trap": "The trap in this question",
-    "sourceNote": "\"تست تألیفی\" means the question was written for this app in the exam's style. Real Konkur questions are labelled with their year and track (math or science)."
+    "sourceNote": "\"تست تألیفی\" means the question was written for this app in the exam's style. Real Konkur questions are labelled with their year and track (math or science).",
+    "daily": {
+      "title": "Question of the day",
+      "subtitle": "A real exam question, picked for today",
+      "doneToday": "Solved today",
+      "streak": "{{n}}-day streak",
+      "streakNone": "Solve a question today to start your streak",
+      "longest": "Longest streak: {{n}} days",
+      "goalProgress": "{{done}} of {{goal}} questions today",
+      "goalReached": "Today's goal reached!",
+      "goalTitle": "Daily goal",
+      "goalHint": "How many questions do you want to solve each day?",
+      "goalValue": "{{n}} questions a day",
+      "goalDecrease": "Lower the daily goal",
+      "goalIncrease": "Raise the daily goal",
+      "empty": "No question is ready for today yet.",
+      "reviewDue": "Review today: {{n}} questions"
+    },
+    "review": {
+      "title": "Review today",
+      "entry": "{{n}} questions ready to review today",
+      "entryNone": "Nothing to review today; your mistakes come back on schedule",
+      "intro": "Your mistakes come back after 1, 3, 7 and 14 days. Get one right and it moves up a step; get it wrong and it starts over.",
+      "none": "Nothing to review today. Any question you get wrong shows up here tomorrow.",
+      "level": "Step {{n}} of {{total}}",
+      "overdue": "{{n}} days late",
+      "dueToday": "Due today"
+    },
+    "formulas": {
+      "title": "Formula sheet",
+      "entry": "The key formulas of each chapter, for quick review",
+      "intro": "The key formulas of each textbook chapter, for a quick review before an exam.",
+      "marked": "Bookmarked",
+      "count": "{{n}} items",
+      "chapterLink": "Formula sheet for this chapter",
+      "tipsLink": "Konkur tips for this chapter",
+      "empty": "No formula sheets for this grade yet.",
+      "bookmark": "Bookmark this sheet",
+      "unbookmark": "Remove bookmark from this sheet"
+    },
+    "progress": {
+      "title": "Mistakes notebook & my stats",
+      "bookmark": "Bookmark",
+      "unbookmark": "Remove bookmark",
+      "showAllTests": "Show all {{count}} tests of this tip",
+      "tab": {
+        "mistakes": "Mistakes",
+        "bookmarks": "Bookmarks",
+        "stats": "My stats",
+        "review": "Review"
+      },
+      "mistakesIntro": "Tests you got wrong last time. Solve one again correctly and it leaves this notebook.",
+      "noMistakes": "Your notebook is empty! Any test you get wrong shows up here for review.",
+      "attempts": "{{n}} attempts",
+      "noBookmarks": "Nothing bookmarked yet. Tap the star on a tip or test to find it here.",
+      "markedTips": "Bookmarked tips",
+      "noStats": "You haven't answered any test yet. After a few, per-topic stats appear here.",
+      "overall": "You have solved {{answered}} of {{total}} tests",
+      "overallCorrect": "{{percent}}% of your answers were correct ({{attempts}} answers)",
+      "weakTopics": "Weak topics",
+      "noWeak": "No weak topics for now. Keep going!",
+      "practiced": "Practiced topics",
+      "weakNote": "A topic counts as weak with at least {{attempts}} answers and under {{percent}}% correct.",
+      "tipStats": "{{answered}} of {{total}} tests · {{percent}}% correct",
+      "percent": "{{percent}}% correct",
+      "weak": "weak",
+      "entryMistakes": "{{n}} tests waiting in the mistakes notebook",
+      "entryEmpty": "Mistakes, bookmarks and your progress"
+    }
   },
   "topics": {
     "title": "Topics",
@@ -611,7 +694,32 @@
     "finish": "Finish exam",
     "finishEarly": "End exam now",
     "confirmTitle": "Finish the exam?",
-    "confirmUnanswered": "{{count}} questions are unanswered. Unanswered questions count as wrong.",
+    "confirmUnanswered": "{{count}} questions are unanswered. Blank questions carry no penalty, but earn no points either.",
+    "timeLeft": "Time left",
+    "timeUp": "Time is up",
+    "clearAnswer": "Clear answer (leave blank)",
+    "scoring": "Correct = +3, wrong = -1, blank = 0.",
+    "points": "Raw score: {{points}}",
+    "correctCount": "Correct",
+    "wrongCount": "Wrong",
+    "blankCount": "Blank",
+    "timeUsed": "Time used",
+    "avgPerQuestion": "Average per question",
+    "seconds": "{{value}} s",
+    "rank": {
+      "above": "Your percent is higher than {{percent}}% of participants",
+      "notEnough": "Not enough data to compare yet"
+    },
+    "timedOutNote": "Time ran out and your answers were submitted automatically.",
+    "byTopic": "Correct rate by topic",
+    "durationTitle": "Time per question",
+    "durationOption": "{{sec}} s",
+    "durationTotal": "Total exam time: {{minutes}} min",
+    "minutes": "{{count}} min",
+    "konkurTitle": "Full konkur exam",
+    "konkurHint": "Every math question of one konkur year, back to back, timed (1.5 minutes per question) with negative marking.",
+    "konkurPaper": "{{count}} questions · {{minutes}} min",
+    "konkurRetry": "Retake this exam",
     "keepGoing": "Keep going",
     "percent": "{{percent}}%",
     "scoreLine": "{{correct}} of {{total}}",
@@ -743,7 +851,21 @@
       "g11h_triangle": "Geometry 2 — Lengths in a triangle",
       "g12h_matrices": "Geometry 3 — Matrices",
       "g12h_conics": "Geometry 3 — Conic sections",
-      "g12h_vectors": "Geometry 3 — Vectors"
+      "g12h_vectors": "Geometry 3 — Vectors",
+      "g11t_analytic": "Math 2 (experimental) — Analytic geometry and algebra",
+      "g11t_geometry": "Math 2 (experimental) — Geometry",
+      "g11t_function": "Math 2 (experimental) — Functions",
+      "g11t_trig": "Math 2 (experimental) — Trigonometry",
+      "g11t_exp_log": "Math 2 (experimental) — Exponential and logarithmic functions",
+      "g11t_limits": "Math 2 (experimental) — Limits and continuity",
+      "g11t_statistics": "Math 2 (experimental) — Statistics and probability",
+      "g12t_function": "Math 3 (experimental) — Functions",
+      "g12t_trig": "Math 3 (experimental) — Trigonometry",
+      "g12t_limits": "Math 3 (experimental) — Infinite limits and limits at infinity",
+      "g12t_derivative": "Math 3 (experimental) — Derivatives",
+      "g12t_applications": "Math 3 (experimental) — Applications of derivatives",
+      "g12t_geometry": "Math 3 (experimental) — Geometry",
+      "g12t_probability": "Math 3 (experimental) — Probability"
     }
   },
   "guide": {
@@ -806,6 +928,16 @@
         "premium": "After that, a one-time Premium purchase gives unlimited solves."
       }
     }
+  },
+  "track": {
+    "title": "Study track",
+    "hint": "Books, konkur tips and exams follow your track. You can change it any time in Settings.",
+    "riazi": "Math & Physics",
+    "tajrobi": "Experimental Sciences",
+    "riaziSub": "Math konkur",
+    "tajrobiSub": "Experimental konkur",
+    "onboardingTitle": "Which track are you in?",
+    "comingSoon": "Experimental-sciences content is coming soon."
   },
   "settings": {
     "title": "Settings",

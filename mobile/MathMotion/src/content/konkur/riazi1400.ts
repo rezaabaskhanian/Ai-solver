@@ -1,7 +1,7 @@
 import type { KonkurQuestion, KonkurSource } from './types';
 
 // ریاضی ۱۴۰۰ — the math part of the combined booklet
-// (.source_kunkor/Riazi1400-Soal-PasokhTashrihi-[konkur.in].pdf, which
+// (the source booklet, which
 // carries the worked solutions too). Numbers are as printed (101…).
 // Keys were taken from the printed answer key of the booklet and each
 // answer was re-derived here (the questions whose key isn't in the

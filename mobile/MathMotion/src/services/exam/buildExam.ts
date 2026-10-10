@@ -1,16 +1,44 @@
 import { findGrade, type GradeId } from '../../content/examSyllabus';
+import type { StudyTrack } from '../../content/track';
+import type { ImageSourcePropType } from 'react-native';
+
 import { GENERATORS, shuffle, type GeneratedQuestion, type Rng, type SkillId } from './generators';
+import { groupScores, tally, type GroupScore } from './scoring';
+
+// Which real konkur paper a full-year exam is built from (one booklet:
+// 1402 and the abroad papers have several per year).
+export interface KonkurExamSelector {
+  year: number;
+  abroad?: boolean;
+  newSystem?: boolean;
+  round?: 1 | 2;
+  // The paper's study track; missing = riazi (older configs).
+  track?: StudyTrack;
+}
 
 export interface ExamConfig {
   grade: GradeId;
   chapterIds: string[];
   count: number;
+  // Time limit in seconds; when missing the exam uses 60 s per question.
+  durationSec?: number;
+  // Set for a «full konkur year» exam; questions then come from the
+  // konkur content instead of the generators.
+  konkur?: KonkurExamSelector;
 }
 
 export interface ExamQuestion extends GeneratedQuestion {
   id: string;
   chapterId: string;
   skill: SkillId;
+  // Konkur questions carry their own Persian text (textKey is '') and,
+  // optionally, the figure and the topic (main tip) they belong to.
+  text?: string;
+  figure?: ImageSourcePropType;
+  choicesMath?: boolean;
+  konkurId?: string;
+  topicId?: string;
+  topicLabel?: string;
 }
 
 // Spreads `count` questions evenly over the picked chapters' skills
@@ -52,32 +80,48 @@ export interface ChapterScore {
   total: number;
 }
 
-export interface ExamScore {
-  correct: number;
-  total: number;
-  percent: number;
-  byChapter: ChapterScore[];
+export interface TopicScore extends GroupScore {
+  label: string;
 }
 
-// answers[i] is the chosen choice index for questions[i] (null = skipped).
+export interface ExamScore {
+  correct: number;
+  wrong: number;
+  blank: number;
+  total: number;
+  // 3*correct - wrong.
+  points: number;
+  // Konkur percentage (3*correct - wrong) / (3*total) * 100; can be negative.
+  percent: number;
+  // Generated exams: per chapter, weakest first.
+  byChapter: ChapterScore[];
+  // Konkur exams: per topic (main tip) when the questions carry one.
+  byTopic: TopicScore[];
+}
+
+// answers[i] is the chosen choice index for questions[i] (null = blank).
 export function scoreExam(questions: ExamQuestion[], answers: (number | null)[]): ExamScore {
-  const byChapter = new Map<string, ChapterScore>();
-  let correct = 0;
-  questions.forEach((q, i) => {
-    const entry = byChapter.get(q.chapterId) ?? { chapterId: q.chapterId, correct: 0, total: 0 };
-    entry.total += 1;
-    if (answers[i] === q.answerIndex) {
-      entry.correct += 1;
-      correct += 1;
+  const counts = tally(
+    questions.map(q => q.answerIndex),
+    answers,
+  );
+  const chapters = groupScores(
+    questions.map(q => ({ key: q.topicId ? '' : q.chapterId, answerIndex: q.answerIndex })),
+    answers,
+  );
+  const topics = groupScores(
+    questions.map(q => ({ key: q.topicId ?? '', answerIndex: q.answerIndex })),
+    answers,
+  );
+  const labels = new Map<string, string>();
+  questions.forEach(q => {
+    if (q.topicId) {
+      labels.set(q.topicId, q.topicLabel ?? q.topicId);
     }
-    byChapter.set(q.chapterId, entry);
   });
-  const total = questions.length;
   return {
-    correct,
-    total,
-    percent: total ? Math.round((correct / total) * 100) : 0,
-    // Weakest chapter first — that's what to study next.
-    byChapter: [...byChapter.values()].sort((a, b) => a.correct / a.total - b.correct / b.total),
+    ...counts,
+    byChapter: chapters.map(g => ({ chapterId: g.key, correct: g.correct, total: g.total })),
+    byTopic: topics.map(g => ({ ...g, label: labels.get(g.key) ?? g.key })),
   };
 }

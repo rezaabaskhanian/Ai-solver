@@ -7,6 +7,7 @@ import type {
   SolveResult,
 } from '../../types/problem';
 import { apiClient } from './client';
+import { trackEvent } from '../telemetry';
 import { toApiError } from './apiError';
 
 export async function parseProblem(input: string): Promise<ParseResult> {
@@ -19,6 +20,7 @@ export async function parseProblem(input: string): Promise<ParseResult> {
 }
 
 export async function solveProblem(problem: string): Promise<SolveResult> {
+  trackEvent('solve_requested');
   try {
     const { data } = await apiClient.post<SolveResult>('/api/v1/problems/solve', { problem });
     return data;

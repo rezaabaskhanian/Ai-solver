@@ -1,6 +1,7 @@
 import type { ImageSourcePropType } from 'react-native';
 
 import type { CurriculumGrade } from '../curriculum';
+import type { StudyTrack } from '../track';
 
 // «نکات کنکوری و تست‌زنی»: short test-taking tips, each tied to a
 // textbook chapter (content/curriculum.ts ids), plus multiple-choice
@@ -17,6 +18,8 @@ export interface KonkurTip {
   // null = a general test-taking tip, shown for every grade.
   grade: CurriculumGrade | null;
   chapterId?: string;
+  // Only these study tracks see the tip; missing = every track.
+  tracks?: StudyTrack[];
   title: string;
   body: KonkurLine[];
   // Optional long-form explanation («توضیح کامل»), collapsed by default;

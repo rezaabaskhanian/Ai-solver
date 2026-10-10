@@ -1,7 +1,7 @@
 import type { KonkurQuestion, KonkurSource } from './types';
 
 // ریاضی ۱۴۰۵ (۳۰ مرداد) — from the worked-solutions booklet
-// .source_kunkor/R1405-Riaziat-Nastaran-Vandadi-[konkur.in].pdf, which
+// the source booklet, which
 // reprints each question. Every key matches that booklet and was
 // re-derived here.
 // Left out: 18 (the booklet's figure is annotated with the answer), 27, 30, 35 (the figure in the worked-solutions

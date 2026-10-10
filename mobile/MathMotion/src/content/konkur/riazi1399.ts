@@ -1,9 +1,9 @@
 import type { KonkurQuestion, KonkurSource } from './types';
 
 // ریاضی ۱۳۹۹ (داخل کشور) — booklet 121-A
-// (.source_kunkor/Riazi99-J-[konkur.in].pdf, a low-quality scan).
+// (the source booklet, a low-quality scan).
 // Keys are from the official Sanjesh primary key
-// (Key-R99-J-[konkur.in].pdf); every answer was also re-derived here.
+// (Key-R99-J-[the source booklet); every answer was also re-derived here.
 // Numbers are as printed (101…).
 // Left out: 101 (symbols unreadable in the scan); 124, 126, 127, 128,
 // 131, 132 (figures), 148, 154 (figures), 153 (graph not unique from the

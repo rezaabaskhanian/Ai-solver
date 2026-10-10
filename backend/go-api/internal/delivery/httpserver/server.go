@@ -12,10 +12,12 @@ import (
 	aiusagehandler "mathmotion/go-api/internal/delivery/httpserver/aiusage"
 	billinghandler "mathmotion/go-api/internal/delivery/httpserver/billing"
 	konkurhandler "mathmotion/go-api/internal/delivery/httpserver/konkur"
+	konkurprogresshandler "mathmotion/go-api/internal/delivery/httpserver/konkurprogress"
 	landinghandler "mathmotion/go-api/internal/delivery/httpserver/landing"
 	problemhandler "mathmotion/go-api/internal/delivery/httpserver/problem"
 	proxyhandler "mathmotion/go-api/internal/delivery/httpserver/proxy"
 	settingshandler "mathmotion/go-api/internal/delivery/httpserver/settings"
+	telemetryhandler "mathmotion/go-api/internal/delivery/httpserver/telemetry"
 	visionhandler "mathmotion/go-api/internal/delivery/httpserver/vision"
 	"mathmotion/go-api/internal/delivery/middleware"
 	"mathmotion/go-api/internal/pkg/locale"
@@ -24,30 +26,34 @@ import (
 	authservice "mathmotion/go-api/internal/service/auth"
 	billingservice "mathmotion/go-api/internal/service/billing"
 	konkurservice "mathmotion/go-api/internal/service/konkur"
+	konkurprogressservice "mathmotion/go-api/internal/service/konkurprogress"
 	landingservice "mathmotion/go-api/internal/service/landing"
 	problemservice "mathmotion/go-api/internal/service/problem"
 	proxyservice "mathmotion/go-api/internal/service/proxy"
 	quotaservice "mathmotion/go-api/internal/service/quota"
 	settingsservice "mathmotion/go-api/internal/service/settings"
+	telemetryservice "mathmotion/go-api/internal/service/telemetry"
 	userservice "mathmotion/go-api/internal/service/user"
 	visionservice "mathmotion/go-api/internal/service/vision"
 )
 
 type Service struct {
-	cfg             config.Config
-	problemHandler  problemhandler.Handler
-	billingHandler  billinghandler.Handler
-	visionHandler   visionhandler.Handler
-	proxyHandler    proxyhandler.Handler
-	settingsHandler settingshandler.Handler
-	accountHandler  accounthandler.Handler
-	landingHandler  landinghandler.Handler
-	aiUsageHandler  aiusagehandler.Handler
-	konkurHandler   konkurhandler.Handler
-	uploadDir       string
-	userSvc         userservice.Service
-	authSvc         authservice.Service
-	rateLimiter     *middleware.RateLimiter
+	cfg                   config.Config
+	problemHandler        problemhandler.Handler
+	billingHandler        billinghandler.Handler
+	visionHandler         visionhandler.Handler
+	proxyHandler          proxyhandler.Handler
+	settingsHandler       settingshandler.Handler
+	accountHandler        accounthandler.Handler
+	landingHandler        landinghandler.Handler
+	aiUsageHandler        aiusagehandler.Handler
+	konkurHandler         konkurhandler.Handler
+	telemetryHandler      *telemetryhandler.Handler
+	konkurProgressHandler konkurprogresshandler.Handler
+	uploadDir             string
+	userSvc               userservice.Service
+	authSvc               authservice.Service
+	rateLimiter           *middleware.RateLimiter
 }
 
 func New(
@@ -65,24 +71,34 @@ func New(
 	landingSvc landingservice.Service,
 	aiUsageSvc aiusageservice.Service,
 	konkurSvc konkurservice.Service,
+	konkurProgressSvc konkurprogressservice.Service,
 	uploadDir string,
 ) Service {
 	return Service{
-		cfg:             cfg,
-		problemHandler:  problemhandler.New(problemSvc),
-		billingHandler:  billinghandler.New(billingSvc),
-		visionHandler:   visionhandler.New(visionSvc),
-		proxyHandler:    proxyhandler.New(proxySvc, settingsSvc),
-		settingsHandler: settingshandler.New(settingsSvc, visionClient, quotaSvc),
-		accountHandler:  accounthandler.New(accountSvc),
-		landingHandler:  landinghandler.New(landingSvc, uploadDir),
-		aiUsageHandler:  aiusagehandler.New(aiUsageSvc),
-		konkurHandler:   konkurhandler.New(konkurSvc),
-		uploadDir:       uploadDir,
-		userSvc:         userSvc,
-		authSvc:         authSvc,
-		rateLimiter:     middleware.NewRateLimiter(cfg.RateLimit.RPS, cfg.RateLimit.Burst),
+		cfg:                   cfg,
+		problemHandler:        problemhandler.New(problemSvc),
+		billingHandler:        billinghandler.New(billingSvc),
+		visionHandler:         visionhandler.New(visionSvc),
+		proxyHandler:          proxyhandler.New(proxySvc, settingsSvc),
+		settingsHandler:       settingshandler.New(settingsSvc, visionClient, quotaSvc),
+		accountHandler:        accounthandler.New(accountSvc),
+		landingHandler:        landinghandler.New(landingSvc, uploadDir),
+		aiUsageHandler:        aiusagehandler.New(aiUsageSvc),
+		konkurHandler:         konkurhandler.New(konkurSvc, uploadDir),
+		konkurProgressHandler: konkurprogresshandler.New(konkurProgressSvc),
+		uploadDir:             uploadDir,
+		userSvc:               userSvc,
+		authSvc:               authSvc,
+		rateLimiter:           middleware.NewRateLimiter(cfg.RateLimit.RPS, cfg.RateLimit.Burst),
 	}
+}
+
+// WithTelemetry turns on the self-hosted error / usage reporting endpoints
+// (POST /api/v1/telemetry and the /admin/telemetry/* report).
+func (s Service) WithTelemetry(svc telemetryservice.Service) Service {
+	h := telemetryhandler.New(svc)
+	s.telemetryHandler = &h
+	return s
 }
 
 func (s Service) Server() {
@@ -116,6 +132,7 @@ func (s Service) Server() {
 	s.billingHandler.SetBillingRoutes(e, s.rateLimiter.Middleware, device)
 	s.visionHandler.SetVisionRoutes(e, s.rateLimiter.Middleware, device)
 	s.accountHandler.SetRoutes(e, s.rateLimiter.Middleware, device)
+	s.konkurProgressHandler.SetRoutes(e, s.rateLimiter.Middleware, device)
 
 	// The mathmotion.ir landing page (backend/landing) reads its content
 	// here, and the images uploaded from the admin panel are served from disk.
@@ -123,6 +140,9 @@ func (s Service) Server() {
 	e.Static(landinghandler.UploadURLPath, s.uploadDir)
 	// «نکات کنکوری» (tips + questions) the mobile app syncs from.
 	s.konkurHandler.SetPublicRoutes(e, s.rateLimiter.Middleware)
+	if s.telemetryHandler != nil {
+		s.telemetryHandler.SetRoutes(e, s.rateLimiter.Middleware, device)
+	}
 
 	// Operator-only (the admin panel), no device resolution or rate
 	// limiting — gated by a static bearer token instead (see middleware.Admin).
@@ -133,6 +153,10 @@ func (s Service) Server() {
 	s.landingHandler.SetAdminRoutes(admin)
 	s.aiUsageHandler.SetAdminRoutes(admin)
 	s.konkurHandler.SetAdminRoutes(admin)
+	if s.telemetryHandler != nil {
+		s.telemetryHandler.SetAdminRoutes(admin)
+	}
+	s.konkurProgressHandler.SetAdminRoutes(admin)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", s.cfg.HttpServer.Port)))
 }

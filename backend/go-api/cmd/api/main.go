@@ -17,10 +17,12 @@ import (
 	postgresaiusage "mathmotion/go-api/internal/repository/postgres/aiusage"
 	postgresbilling "mathmotion/go-api/internal/repository/postgres/billing"
 	postgreskonkur "mathmotion/go-api/internal/repository/postgres/konkur"
+	postgreskonkurprogress "mathmotion/go-api/internal/repository/postgres/konkurprogress"
 	postgreslanding "mathmotion/go-api/internal/repository/postgres/landing"
 	postgresotp "mathmotion/go-api/internal/repository/postgres/otp"
 	postgresproblem "mathmotion/go-api/internal/repository/postgres/problem"
 	postgressettings "mathmotion/go-api/internal/repository/postgres/settings"
+	postgrestelemetry "mathmotion/go-api/internal/repository/postgres/telemetry"
 	postgresusage "mathmotion/go-api/internal/repository/postgres/usage"
 	postgresuser "mathmotion/go-api/internal/repository/postgres/user"
 	accountservice "mathmotion/go-api/internal/service/account"
@@ -28,6 +30,7 @@ import (
 	authservice "mathmotion/go-api/internal/service/auth"
 	billingservice "mathmotion/go-api/internal/service/billing"
 	konkurservice "mathmotion/go-api/internal/service/konkur"
+	konkurprogressservice "mathmotion/go-api/internal/service/konkurprogress"
 	landingservice "mathmotion/go-api/internal/service/landing"
 	otpservice "mathmotion/go-api/internal/service/otp"
 	problemservice "mathmotion/go-api/internal/service/problem"
@@ -35,6 +38,7 @@ import (
 	quotaservice "mathmotion/go-api/internal/service/quota"
 	settingsservice "mathmotion/go-api/internal/service/settings"
 	smsservice "mathmotion/go-api/internal/service/sms"
+	telemetryservice "mathmotion/go-api/internal/service/telemetry"
 	userservice "mathmotion/go-api/internal/service/user"
 	visionservice "mathmotion/go-api/internal/service/vision"
 )
@@ -225,6 +229,13 @@ func main() {
 	konkurSvc := konkurservice.New(postgreskonkur.New(db.Pool)).
 		WithExtractor(visionClient).WithUsageRecorder(aiUsageSvc)
 
+	konkurProgressSvc := konkurprogressservice.New(postgreskonkurprogress.New(db.Pool))
+
+	// Self-hosted crash / usage reports from the app (admin panel «خطاها و آمار»);
+	// events older than 60 days are deleted on startup and daily after.
+	telemetrySvc := telemetryservice.New(postgrestelemetry.New(db.Pool))
+	go telemetrySvc.StartRetention(context.Background(), 60)
+
 	httpserver.New(cfg, userSvc, problemSvc, billingSvc, visionSvc, visionClient, proxySvc, settingsSvc, quotaSvc,
-		accountSvc, authSvc, landingSvc, aiUsageSvc, konkurSvc, uploadDir).Server()
+		accountSvc, authSvc, landingSvc, aiUsageSvc, konkurSvc, konkurProgressSvc, uploadDir).WithTelemetry(telemetrySvc).Server()
 }

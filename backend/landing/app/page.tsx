@@ -50,10 +50,10 @@ export default async function HomePage() {
           <div className="navpill">
             <div className="brand">
               <span className="brand-dot" />
-              MathMotion
+              مجهول
             </div>
             <nav className="tabnav">
-              <a href="#why">چرا MathMotion؟</a>
+              <a href="#why">چرا مجهول؟</a>
               <a href="#how">چطور کار می‌کنه</a>
               <a href="#faq">سوالات متداول</a>
             </nav>
@@ -78,7 +78,7 @@ export default async function HomePage() {
             </h1>
             <p>
               {settings.hero_subtitle ||
-                "از مسئله عکس بگیر یا تایپش کن؛ MathMotion راه‌حل رو مرحله‌به‌مرحله و با توضیح فارسی نشونت می‌ده."}
+                "از مسئله عکس بگیر یا تایپش کن؛ مجهول راه‌حل رو مرحله‌به‌مرحله و با توضیح فارسی نشونت می‌ده."}
             </p>
             <div id="download">
               <DownloadButtons googlePlayUrl={settings.google_play_url} bazaarUrl={settings.bazaar_url} />
@@ -105,7 +105,7 @@ export default async function HomePage() {
         <section id="why">
           <div className="wrap">
             <div className="section-head">
-              <span className="eyebrow">چرا MathMotion؟</span>
+              <span className="eyebrow">چرا مجهول؟</span>
               <h2>معلم خصوصی ریاضی، همیشه توی جیبت</h2>
             </div>
             <div className="highlights-inner">
@@ -218,10 +218,10 @@ export default async function HomePage() {
           <div className="footer-grid">
             <div className="brand">
               <span className="brand-dot" />
-              MathMotion
+              مجهول
             </div>
             <nav className="footer-nav">
-              {highlights.features.length > 0 && <a href="#why">چرا MathMotion؟</a>}
+              {highlights.features.length > 0 && <a href="#why">چرا مجهول؟</a>}
               {highlights.steps.length > 0 && <a href="#how">چطور کار می‌کنه</a>}
               {faqs.length > 0 && <a href="#faq">سوالات متداول</a>}
             </nav>
@@ -232,7 +232,7 @@ export default async function HomePage() {
             />
           </div>
           <div className="footer-bottom">
-            <span>© {new Date().getFullYear()} MathMotion</span>
+            <span>© {new Date().getFullYear()} مجهول</span>
             <a href="/privacy">حریم خصوصی</a>
             <span>mathmotion.ir</span>
           </div>

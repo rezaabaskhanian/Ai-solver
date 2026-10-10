@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"io"
+	"io/fs"
 	"net/http"
 	"strconv"
 	"strings"
@@ -26,11 +27,13 @@ var extractMediaTypes = map[string]bool{
 }
 
 type Handler struct {
-	svc konkurservice.Service
+	svc       konkurservice.Service
+	uploadDir string
+	seed      fs.FS
 }
 
-func New(svc konkurservice.Service) Handler {
-	return Handler{svc: svc}
+func New(svc konkurservice.Service, uploadDir string) Handler {
+	return Handler{svc: svc, uploadDir: uploadDir, seed: konkurservice.EmbeddedSeed()}
 }
 
 // SetPublicRoutes registers the endpoints the app calls (no auth).
@@ -52,6 +55,8 @@ func (h Handler) SetAdminRoutes(admin *echo.Group) {
 	admin.DELETE("/konkur/questions/:id", h.DeleteQuestion)
 
 	admin.POST("/konkur/import", h.Import)
+	admin.GET("/konkur/seed", h.SeedStatus)
+	admin.POST("/konkur/seed", h.ApplySeed)
 	admin.POST("/konkur/extract", h.Extract)
 	admin.POST("/konkur/guide", h.GenerateGuide)
 
@@ -228,6 +233,53 @@ func (h Handler) Import(c echo.Context) error {
 		return errorhandling.ErrorHandling(err, c)
 	}
 	return c.JSON(http.StatusOK, res)
+}
+
+// ---------- bundled seed ----------
+
+// SeedStatus handles GET /admin/konkur/seed: how many of the app's
+// bundled items are not on the server yet.
+func (h Handler) SeedStatus(c echo.Context) error {
+	st, err := h.svc.SeedStatus(c.Request().Context(), h.seed)
+	if err != nil {
+		return errorhandling.ErrorHandling(err, c)
+	}
+	return c.JSON(http.StatusOK, st)
+}
+
+// ApplySeed handles POST /admin/konkur/seed, with an optional body
+// {"overwrite": true}. Only missing items are added by default.
+func (h Handler) ApplySeed(c echo.Context) error {
+	var req struct {
+		Overwrite bool `json:"overwrite"`
+	}
+	if c.Request().ContentLength != 0 {
+		if err := c.Bind(&req); err != nil {
+			return invalidBody(c)
+		}
+	}
+	// Figures first, so a question never goes live with a missing image.
+	figures, err := konkurservice.CopySeedFigures(h.seed, h.uploadDir)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "seed_figures_failed", "message": "کپی تصویرهای سؤال‌ها ناموفق بود: " + err.Error(),
+		})
+	}
+	res, err := h.svc.ApplySeed(c.Request().Context(), h.seed, req.Overwrite)
+	if err != nil {
+		return errorhandling.ErrorHandling(err, c)
+	}
+	return c.JSON(http.StatusOK, map[string]any{
+		"added_tips":        res.AddedTips,
+		"added_questions":   res.AddedQuestions,
+		"skipped_tips":      res.SkippedTips,
+		"skipped_questions": res.SkippedQuestions,
+		"invalid_tips":      res.InvalidTips,
+		"invalid_questions": res.InvalidQuestions,
+		"problems":          res.Problems,
+		"figures_copied":    figures,
+		"version":           res.Version,
+	})
 }
 
 // ---------- solving guide ----------

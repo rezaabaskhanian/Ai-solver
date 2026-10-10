@@ -165,6 +165,8 @@ export interface KonkurTip {
   // null = نکته‌ی عمومی (برای همه‌ی پایه‌ها)
   grade: KonkurGrade | null;
   chapterId?: string;
+  // رشته‌هایی که این نکته را می‌بینند؛ خالی/نبودن = همه‌ی رشته‌ها
+  tracks?: ("riazi" | "tajrobi")[];
   title: string;
   body: KonkurLine[];
   // توضیح کامل (اختیاری)
@@ -243,4 +245,70 @@ export interface KonkurExtractMeta {
   round?: string;
   abroad?: boolean;
   page_label?: string;
+}
+
+// ---------- محتوای آماده‌ی اپ (seed داخل ایمیج API) ----------
+export interface KonkurSeedStatus {
+  tips: number;
+  questions: number;
+  missing_tips: number;
+  missing_questions: number;
+  figures: number;
+}
+
+export interface KonkurSeedResult {
+  added_tips: number;
+  added_questions: number;
+  skipped_tips: number;
+  skipped_questions: number;
+  invalid_tips: number;
+  invalid_questions: number;
+  problems: string[];
+  figures_copied: number;
+  version: number;
+}
+
+// ---------- خطاها و آمار (GET /admin/telemetry/*) ----------
+export interface TelemetryKindCounts {
+  crash: number;
+  error: number;
+  screen: number;
+  event: number;
+}
+
+export interface TelemetryErrorGroup {
+  kind: "crash" | "error";
+  name: string;
+  message: string;
+  count: number;
+  last_seen: string;
+  app_versions: string[];
+  latest_stack: string;
+  latest_id: number;
+}
+
+export interface TelemetrySummary {
+  last_24h: TelemetryKindCounts;
+  last_7d: TelemetryKindCounts;
+  top_errors: TelemetryErrorGroup[];
+  top_screens: { screen: string; views: number }[];
+  daily_active: { date: string; devices: number }[];
+}
+
+export type TelemetryKind = "crash" | "error" | "screen" | "event";
+
+export interface TelemetryEvent {
+  id: number;
+  created_at: string;
+  user_id: string;
+  device_id: string;
+  kind: TelemetryKind;
+  name: string;
+  message: string;
+  stack: string;
+  screen: string;
+  app_version: string;
+  platform: string;
+  os_version: string;
+  extra: Record<string, unknown>;
 }

@@ -9,11 +9,11 @@ import { Card } from '../../components/common/Card';
 import { Icon } from '../../components/common/Icon';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 import { CurriculumChapterCard } from '../../components/Topics/CurriculumChapterCard';
-import { CURRICULUM_GRADES, findCurriculumGrade } from '../../content/curriculum';
+import { booksForTrack, CURRICULUM_GRADES, findCurriculumGrade } from '../../content/curriculum';
 import { TOPICS } from '../../content/topics';
 import { useIsRTL } from '../../hooks/useIsRTL';
 import type { RootStackParamList } from '../../navigation/types';
-import { usePreferencesStore } from '../../store/usePreferencesStore';
+import { usePreferencesStore, useTrack } from '../../store/usePreferencesStore';
 import { makeStyles, radius, spacing, useColors } from '../../theme';
 
 // «مباحث درسی»: "all topics" (the app's own subject list) or one school
@@ -27,7 +27,9 @@ export function TopicsScreen() {
   const isRTL = useIsRTL();
   const grade = usePreferencesStore(s => s.grade);
   const setGrade = usePreferencesStore(s => s.setGrade);
+  const track = useTrack();
   const curriculum = grade ? findCurriculumGrade(grade) : undefined;
+  const books = curriculum ? booksForTrack(curriculum, track) : [];
 
   const tabs: { key: string; label: string; value: typeof grade }[] = [
     { key: 'all', label: t('topics.allTopics'), value: null },
@@ -62,7 +64,15 @@ export function TopicsScreen() {
           <AppText size="sm" color={colors.textSecondary}>
             {t('topics.gradeIntro')}
           </AppText>
-          {curriculum.books.map(book => (
+          {books.length === 0 && (
+            <Card style={styles.soon}>
+              <Icon name="hourglass-empty" color={colors.primaryText} />
+              <AppText style={styles.flexOne} color={colors.textSecondary}>
+                {t('track.comingSoon')}
+              </AppText>
+            </Card>
+          )}
+          {books.map(({ book, chapters }) => (
             <View key={book.id} style={styles.book}>
               <View style={[styles.bookHeader, isRTL && styles.rowRTL]}>
                 <Icon name="auto-stories" color={colors.primaryText} />
@@ -77,14 +87,14 @@ export function TopicsScreen() {
                   ) : null}
                 </View>
               </View>
-              {book.chapters.map((chapter, i) => (
-                <CurriculumChapterCard key={chapter.id} grade={curriculum.grade} number={i + 1} chapter={chapter} />
+              {chapters.map(({ chapter, number }) => (
+                <CurriculumChapterCard key={chapter.id} grade={curriculum.grade} number={number} chapter={chapter} />
               ))}
             </View>
           ))}
           {curriculum.grade >= 10 && (
             <AppText size="xs" color={colors.textSecondary}>
-              {t('topics.tracksNote')}
+              {t(track === 'tajrobi' ? 'track.comingSoon' : 'topics.tracksNote')}
             </AppText>
           )}
         </>
@@ -152,6 +162,12 @@ const useStyles = makeStyles(colors => StyleSheet.create({
   },
   list: {
     gap: spacing.sm,
+  },
+  soon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    padding: spacing.md,
   },
   card: {
     flexDirection: 'row',

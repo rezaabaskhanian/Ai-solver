@@ -1,3 +1,4 @@
+import { visibleForTrack, type StudyTrack } from './track';
 import type { TopicId } from './topics';
 
 // Official Iranian math textbooks, grades 7–12, chapter by chapter —
@@ -12,8 +13,9 @@ import type { TopicId } from './topics';
 // syllabus ids (content/examSyllabus.ts), which is how a chapter finds
 // its "take an exam" link.
 //
-// Not covered yet: the تجربی-track books for grades 11–12 — no
-// screenshots of those were provided.
+// The تجربی-track books for grades 11–12 (ریاضی ۲ and ریاضی ۳) carry
+// tracks: ['tajrobi']; grade 10's ریاضی (۱) is shared by both tracks.
+// Transcribed from the official PDFs (C111211, C112211).
 export type CurriculumGrade = 7 | 8 | 9 | 10 | 11 | 12;
 
 export interface CurriculumChapter {
@@ -21,6 +23,8 @@ export interface CurriculumChapter {
   title: string;
   lessons: string[];
   topics?: TopicId[];
+  // Only these study tracks see the chapter; missing = every track.
+  tracks?: StudyTrack[];
 }
 
 export interface CurriculumBook {
@@ -28,6 +32,9 @@ export interface CurriculumBook {
   title: string;
   // Which tracks use this book (shown under the title for grades 10–12).
   track?: string;
+  // Only these study tracks see the book (and its chapters); missing =
+  // every track. Add experimental-track books with tracks: ['tajrobi'].
+  tracks?: StudyTrack[];
   chapters: CurriculumChapter[];
 }
 
@@ -251,6 +258,7 @@ export const CURRICULUM: CurriculumGradeEntry[] = [
         id: 'geometry1',
         title: 'هندسه (۱)',
         track: 'رشته‌ی ریاضی و فیزیک',
+        tracks: ['riazi'],
         chapters: [
           {
             id: 'g10h_constructions',
@@ -283,6 +291,7 @@ export const CURRICULUM: CurriculumGradeEntry[] = [
         id: 'calculus1',
         title: 'حسابان (۱)',
         track: 'رشته‌ی ریاضی و فیزیک',
+        tracks: ['riazi'],
         chapters: [
           {
             id: 'g11c_algebra',
@@ -327,6 +336,7 @@ export const CURRICULUM: CurriculumGradeEntry[] = [
         id: 'stats11',
         title: 'آمار و احتمال',
         track: 'رشته‌ی ریاضی و فیزیک',
+        tracks: ['riazi'],
         chapters: [
           { id: 'g11s_logic', title: 'آشنایی با مبانی ریاضیات', lessons: ['آشنایی با منطق ریاضی', 'جبر مجموعه‌ها'] },
           {
@@ -346,6 +356,7 @@ export const CURRICULUM: CurriculumGradeEntry[] = [
         id: 'geometry2',
         title: 'هندسه (۲)',
         track: 'رشته‌ی ریاضی و فیزیک',
+        tracks: ['riazi'],
         chapters: [
           {
             id: 'g11h_circle',
@@ -364,6 +375,53 @@ export const CURRICULUM: CurriculumGradeEntry[] = [
           },
         ],
       },
+      {
+        id: 'math2t',
+        title: 'ریاضی (۲)',
+        track: 'رشته‌ی علوم تجربی',
+        tracks: ['tajrobi'],
+        chapters: [
+          {
+            id: 'g11t_analytic',
+            title: 'هندسه‌ی تحلیلی و جبر',
+            lessons: ['هندسه‌ی تحلیلی', 'معادله‌ی درجه دوم و تابع درجه ۲', 'معادله‌های گویا و معادله‌های رادیکالی'],
+            topics: ['quadratic', 'linear'],
+          },
+          {
+            id: 'g11t_geometry',
+            title: 'هندسه',
+            lessons: ['ترسیم‌های هندسی', 'استدلال و قضیه‌ی تالس', 'تشابه مثلث‌ها'],
+          },
+          {
+            id: 'g11t_function',
+            title: 'تابع',
+            lessons: ['آشنایی با برخی از انواع توابع', 'وارون یک تابع و تابع یک‌به‌یک', 'اعمال جبری روی توابع'],
+          },
+          {
+            id: 'g11t_trig',
+            title: 'مثلثات',
+            lessons: ['واحدهای اندازه‌گیری زاویه', 'روابط تکمیلی بین نسبت‌های مثلثاتی', 'توابع مثلثاتی'],
+            topics: ['trig'],
+          },
+          {
+            id: 'g11t_exp_log',
+            title: 'توابع نمایی و لگاریتمی',
+            lessons: ['تابع نمایی و ویژگی‌های آن', 'تابع لگاریتمی و ویژگی‌های آن', 'نمودارها و کاربردهای توابع نمایی و لگاریتمی'],
+            topics: ['logarithm'],
+          },
+          {
+            id: 'g11t_limits',
+            title: 'حد و پیوستگی',
+            lessons: ['فرایندهای حدی', 'محاسبه‌ی حد توابع', 'پیوستگی'],
+            topics: ['limit'],
+          },
+          {
+            id: 'g11t_statistics',
+            title: 'آمار و احتمال',
+            lessons: ['احتمال شرطی و پیشامدهای مستقل', 'آمار توصیفی'],
+          },
+        ],
+      },
     ],
   },
   {
@@ -373,6 +431,7 @@ export const CURRICULUM: CurriculumGradeEntry[] = [
         id: 'calculus2',
         title: 'حسابان (۲)',
         track: 'رشته‌ی ریاضی و فیزیک',
+        tracks: ['riazi'],
         chapters: [
           {
             id: 'g12c_function',
@@ -408,6 +467,7 @@ export const CURRICULUM: CurriculumGradeEntry[] = [
         id: 'discrete12',
         title: 'ریاضیات گسسته',
         track: 'رشته‌ی ریاضی و فیزیک',
+        tracks: ['riazi'],
         chapters: [
           {
             id: 'g12d_numbers',
@@ -427,6 +487,7 @@ export const CURRICULUM: CurriculumGradeEntry[] = [
         id: 'geometry3',
         title: 'هندسه (۳)',
         track: 'رشته‌ی ریاضی و فیزیک',
+        tracks: ['riazi'],
         chapters: [
           {
             id: 'g12h_matrices',
@@ -443,6 +504,44 @@ export const CURRICULUM: CurriculumGradeEntry[] = [
             title: 'بردارها',
             lessons: ['معرفی فضای ℝ³', 'ضرب داخلی و ضرب خارجی بردارها'],
           },
+        ],
+      },
+      {
+        id: 'math3t',
+        title: 'ریاضی (۳)',
+        track: 'رشته‌ی علوم تجربی',
+        tracks: ['tajrobi'],
+        chapters: [
+          {
+            id: 'g12t_function',
+            title: 'تابع',
+            lessons: ['توابع چندجمله‌ای — توابع صعودی و نزولی', 'ترکیب توابع', 'تابع وارون'],
+          },
+          { id: 'g12t_trig', title: 'مثلثات', lessons: ['تناوب و تانژانت', 'معادلات مثلثاتی'], topics: ['trig'] },
+          {
+            id: 'g12t_limits',
+            title: 'حد بی‌نهایت و حد در بی‌نهایت',
+            lessons: ['حد بی‌نهایت', 'حد در بی‌نهایت'],
+            topics: ['limit'],
+          },
+          {
+            id: 'g12t_derivative',
+            title: 'مشتق',
+            lessons: ['آشنایی با مفهوم مشتق', 'مشتق‌پذیری و پیوستگی', 'آهنگ تغییر'],
+            topics: ['derivative'],
+          },
+          {
+            id: 'g12t_applications',
+            title: 'کاربرد مشتق',
+            lessons: ['اکسترمم‌های تابع', 'بهینه‌سازی'],
+            topics: ['derivative'],
+          },
+          {
+            id: 'g12t_geometry',
+            title: 'هندسه',
+            lessons: ['تفکر تجسمی و آشنایی با مقاطع مخروطی', 'دایره'],
+          },
+          { id: 'g12t_probability', title: 'احتمال', lessons: ['قانون احتمال کل'] },
         ],
       },
     ],
@@ -463,12 +562,56 @@ export interface ChapterRef {
 }
 
 // Where a topic appears in the textbooks (for "in your books" on a topic page).
-export function chaptersForTopic(topicId: TopicId): ChapterRef[] {
+export function chaptersForTopic(topicId: TopicId, track?: StudyTrack): ChapterRef[] {
   return CURRICULUM.flatMap(({ grade, books }) =>
-    books.flatMap(book =>
-      book.chapters.flatMap((chapter, i) =>
-        chapter.topics?.includes(topicId) ? [{ grade, book: book.title, number: i + 1, chapter }] : [],
+    books
+      .filter(book => !track || visibleForTrack(book, track))
+      .flatMap(book =>
+        book.chapters.flatMap((chapter, i) =>
+          chapter.topics?.includes(topicId) && (!track || visibleForTrack(chapter, track))
+            ? [{ grade, book: book.title, number: i + 1, chapter }]
+            : [],
+        ),
       ),
-    ),
   );
+}
+
+// A chapter as listed for one track: `number` is its position in the
+// full book, so hiding a chapter never renumbers the others.
+export interface TrackChapter {
+  chapter: CurriculumChapter;
+  number: number;
+}
+
+export interface TrackBook {
+  book: CurriculumBook;
+  chapters: TrackChapter[];
+}
+
+// The books (and their chapters) a track sees; books left without any
+// visible chapter are dropped.
+export function booksForTrack(entry: CurriculumGradeEntry, track: StudyTrack): TrackBook[] {
+  return entry.books
+    .filter(book => visibleForTrack(book, track))
+    .map(book => ({
+      book,
+      chapters: book.chapters
+        .map((chapter, i) => ({ chapter, number: i + 1 }))
+        .filter(item => visibleForTrack(item.chapter, track)),
+    }))
+    .filter(item => item.chapters.length > 0);
+}
+
+// Whether a chapter id is shown to a track. Ids the curriculum doesn't
+// know (e.g. exam-only chapters) count as shared.
+export function chapterVisibleForTrack(chapterId: string, track: StudyTrack): boolean {
+  for (const { books } of CURRICULUM) {
+    for (const book of books) {
+      const chapter = book.chapters.find(c => c.id === chapterId);
+      if (chapter) {
+        return visibleForTrack(book, track) && visibleForTrack(chapter, track);
+      }
+    }
+  }
+  return true;
 }

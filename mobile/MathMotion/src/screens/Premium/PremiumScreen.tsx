@@ -13,6 +13,7 @@ import { usePurchasePremium } from '../../hooks/usePurchasePremium';
 import { translationKeyForApiError } from '../../services/api/apiError';
 import { fetchPlans } from '../../services/api/billing';
 import { getProductPrices, isPurchaseSupported } from '../../services/billing/poolakey';
+import { trackEvent } from '../../services/telemetry';
 import { makeStyles, radius, spacing, useColors } from '../../theme';
 import type { Plan, ProductPrice } from '../../types/billing';
 
@@ -54,6 +55,9 @@ export function PremiumScreen() {
     (p.price_toman > 0 ? t('premium.toman', { price: p.price_toman.toLocaleString('fa-IR') }) : null);
 
   const buy = async () => {
+    if (plan) {
+      trackEvent('purchase_started', { plan: plan.product_id });
+    }
     if (plan && (await purchase(plan))) {
       setBought(true);
     }

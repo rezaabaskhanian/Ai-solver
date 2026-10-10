@@ -1,5 +1,7 @@
 import type {
   AIUsageReport,
+  TelemetryEvent,
+  TelemetrySummary,
   AppUser,
   GrantAction,
   LandingFAQ,
@@ -12,6 +14,8 @@ import type {
   KonkurGuide,
   KonkurQuestion,
   KonkurQuestionFilters,
+  KonkurSeedResult,
+  KonkurSeedStatus,
   KonkurTip,
   LandingSettings,
   Plan,
@@ -317,6 +321,16 @@ export async function generateKonkurGuide(q: KonkurQuestion): Promise<KonkurGuid
   return jsonOrThrow<KonkurGuide>(await authFetch("/admin/konkur/guide", jsonBody("POST", q)));
 }
 
+export async function getKonkurSeedStatus(): Promise<KonkurSeedStatus> {
+  return jsonOrThrow<KonkurSeedStatus>(await authFetch("/admin/konkur/seed", { method: "GET" }));
+}
+
+export async function applyKonkurSeed(overwrite = false): Promise<KonkurSeedResult> {
+  return jsonOrThrow<KonkurSeedResult>(
+    await authFetch("/admin/konkur/seed", jsonBody("POST", overwrite ? { overwrite: true } : {}))
+  );
+}
+
 export async function importKonkur(payload: { tips: unknown[]; questions: unknown[] }): Promise<unknown> {
   return jsonOrThrow(await authFetch("/admin/konkur/import", jsonBody("POST", payload)));
 }
@@ -362,4 +376,37 @@ export async function deleteKonkurDraft(id: string): Promise<void> {
 // آدرس قابل نمایشِ عکس (مسیر نسبیِ /uploads/... به آدرس API وصل می‌شود)
 export function assetUrl(url: string): string {
   return /^https?:\/\//i.test(url) ? url : `${API_BASE}${url.startsWith("/") ? "" : "/"}${url}`;
+}
+
+// ---------- خطاها و آمار ----------
+export async function getTelemetrySummary(): Promise<TelemetrySummary> {
+  return jsonOrThrow<TelemetrySummary>(await authFetch("/admin/telemetry/summary", { method: "GET" }));
+}
+
+export async function getTelemetryEvents(kind: string, q: string, limit = 50): Promise<TelemetryEvent[]> {
+  const params = new URLSearchParams({ limit: String(limit) });
+  if (kind) params.set("kind", kind);
+  if (q.trim()) params.set("q", q.trim());
+  const res = await jsonOrThrow<{ events: TelemetryEvent[] }>(
+    await authFetch(`/admin/telemetry/events?${params.toString()}`, { method: "GET" })
+  );
+  return res.events;
+}
+
+export async function purgeTelemetry(days: number): Promise<number> {
+  const res = await jsonOrThrow<{ deleted: number }>(
+    await authFetch(`/admin/telemetry/purge?days=${days}`, { method: "POST" })
+  );
+  return res.deleted;
+}
+
+export interface KonkurExamStatRow {
+  paper_key: string;
+  count: number;
+  average_percent: number;
+  best_percent: number;
+}
+
+export async function getKonkurExamStats(): Promise<KonkurExamStatRow[]> {
+  return jsonOrThrow<KonkurExamStatRow[]>(await authFetch("/admin/konkur/exam-stats", { method: "GET" }));
 }

@@ -5,9 +5,13 @@ import { useTranslation } from 'react-i18next';
 import { Image, Pressable, type ImageSourcePropType, StyleSheet, View } from 'react-native';
 
 import { findKonkurTip, sourceLabel, type KonkurQuestion } from '../../content/konkur';
+import { engineExpressionFor } from '../../content/konkur/engineExpression';
 import { hasUnderstandStep, hintsFor, solutionSteps } from '../../content/konkur/solvingPath';
 import { API_BASE_URL } from '../../config/env';
+import { trackEvent } from '../../services/telemetry';
 import { useKonkurContent } from '../../store/useKonkurContentStore';
+import { useKonkurProgressStore } from '../../store/useKonkurProgressStore';
+import { useKonkurStudyStore } from '../../store/useKonkurStudyStore';
 import { useIsRTL } from '../../hooks/useIsRTL';
 import type { RootStackParamList } from '../../navigation/types';
 import { makeStyles, radius, spacing, useColors } from '../../theme';
@@ -18,6 +22,7 @@ import { Card } from '../common/Card';
 import { Icon } from '../common/Icon';
 import { MathExpression } from '../MathExpression/MathExpression';
 import { QuizChoice } from '../Quiz/QuizChoice';
+import { KonkurBookmarkButton } from './KonkurBookmarkButton';
 import { KonkurLines } from './KonkurLines';
 
 // A choice like «وجود ندارد» is prose, not math, even in a math question.
@@ -57,6 +62,8 @@ export function KonkurQuestionCard({ question, index, currentTipId }: Props) {
   const { t } = useTranslation();
   const isRTL = useIsRTL();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const recordAttempt = useKonkurProgressStore(s => s.recordAttempt);
+  const recordStudyAnswer = useKonkurStudyStore(s => s.recordAnswer);
   const [picked, setPicked] = useState<number | null>(null);
   const [gaveUp, setGaveUp] = useState(false);
   const [showUnderstand, setShowUnderstand] = useState(false);
@@ -68,6 +75,7 @@ export function KonkurQuestionCard({ question, index, currentTipId }: Props) {
   const hints = hintsFor(question, content);
   const steps = solutionSteps(question.solution);
   const correct = picked === question.answer;
+  const engineExpression = engineExpressionFor(question);
 
   const reset = () => {
     setPicked(null);
@@ -75,6 +83,15 @@ export function KonkurQuestionCard({ question, index, currentTipId }: Props) {
     setShowUnderstand(false);
     setHintsShown(0);
     setStepsShown(1);
+  };
+
+  // One pick = one attempt (choices lock until «دوباره امتحان کن»).
+  const pick = (i: number) => {
+    setPicked(i);
+    recordAttempt(question.id, i, i === question.answer);
+    // Streak, daily goal and the spaced-review schedule.
+    recordStudyAnswer(question.id, i === question.answer);
+    trackEvent('konkur_question_answered', { correct: i === question.answer });
   };
 
   const stateOf = (i: number) => {
@@ -94,6 +111,7 @@ export function KonkurQuestionCard({ question, index, currentTipId }: Props) {
           {t('konkur.question', { n: index + 1 })}
         </AppText>
         <Badge label={sourceLabel(question.source)} tone={question.source.kind === 'konkur' ? 'primary' : 'neutral'} />
+        <KonkurBookmarkButton kind="question" id={question.id} />
       </View>
 
       <AppText weight="medium">{question.text}</AppText>
@@ -101,6 +119,15 @@ export function KonkurQuestionCard({ question, index, currentTipId }: Props) {
         <View style={styles.expression}>
           <MathExpression expression={question.expression} size="lg" />
         </View>
+      )}
+      {engineExpression && (
+        <AppButton
+          label={t('konkur.solveWithEngine')}
+          variant="secondary"
+          size="sm"
+          icon="functions"
+          onPress={() => navigation.navigate('ProblemInput', { initialProblem: engineExpression })}
+        />
       )}
 
       {figureSource && (
@@ -177,7 +204,7 @@ export function KonkurQuestionCard({ question, index, currentTipId }: Props) {
                 math={question.choicesMath !== false && !PERSIAN_LETTERS.test(choice)}
                 disabled={answered}
                 state={stateOf(i)}
-                onPress={() => setPicked(i)}
+                onPress={() => pick(i)}
               />
             </View>
           </View>

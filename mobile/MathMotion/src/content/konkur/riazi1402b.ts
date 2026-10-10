@@ -1,7 +1,7 @@
 import type { KonkurQuestion, KonkurSource } from './types';
 
 // ریاضی ۱۴۰۲ نوبت دوم (تیر) — booklet 121-A
-// (.source_kunkor/104822_PDF_Gama.ir_nVU1nN.pdf). No worked solutions
+// (the source booklet). No worked solutions
 // were available, so every key was solved here from scratch and
 // cross-checked — compare with the official Sanjesh key when found
 // (see TODO.md).

@@ -1,8 +1,8 @@
 import type { KonkurQuestion, KonkurSource } from './types';
 
 // ریاضی ۱۴۰۳ نوبت اول (اردیبهشت) — booklet 121A
-// (.source_kunkor/115441_PDF_Gama.ir_wYuSqq.pdf); keys from the گزینه دو
-// worked solutions (R1403-Ord-Pasokh-Tashrihi-[konkur.in].pdf), each
+// (the source booklet); keys from the گزینه دو
+// worked solutions (R1403-Ord-Pasokh-Tashrihi-[the source booklet), each
 // re-derived here.
 // Left out: 26–36 (هندسه books, not in
 // content/curriculum.ts yet).

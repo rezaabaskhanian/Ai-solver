@@ -39,11 +39,27 @@ export type RootStackParamList = {
   // Optional preselection, e.g. from a textbook chapter on Topics.
   ExamSetup: { grade?: number; chapterIds?: string[] } | undefined;
   Exam: { config: ExamConfig };
-  ExamResult: { config: ExamConfig; questions: ExamQuestion[]; answers: (number | null)[] };
+  ExamResult: {
+    config: ExamConfig;
+    questions: ExamQuestion[];
+    answers: (number | null)[];
+    // Seconds actually spent, and the time limit the exam had.
+    elapsedSec: number;
+    durationSec: number;
+    timedOut?: boolean;
+  };
   // «نکات کنکوری و تست‌زنی»: tips by grade/chapter, and one tip with
   // the multiple-choice questions tagged with it (content/konkur).
   Konkur: undefined;
-  KonkurTip: { tipId: string };
+  // questionId shows only that question (opened from the notebook).
+  KonkurTip: { tipId: string; questionId?: string };
+  // «دفتر غلط‌ها»: mistakes, bookmarks and weak topics (local progress).
+  KonkurNotebook: { tab?: 'mistakes' | 'bookmarks' | 'stats' | 'review' } | undefined;
+  // «تست روز»: today's real exam question, the streak and the daily goal.
+  KonkurDaily: undefined;
+  // «برگه‌ی فرمول»: the chapters' key formulas, and one chapter's sheet.
+  FormulaSheet: undefined;
+  FormulaChapter: { chapterId: string };
   // «ماشین‌حساب هندسه»: pick a shape and measurements; solved like any
   // typed problem.
   Geometry: undefined;

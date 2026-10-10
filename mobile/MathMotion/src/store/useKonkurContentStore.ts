@@ -1,8 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useMemo } from 'react';
 import { create } from 'zustand';
 
 import { BUNDLED_KONKUR_CONTENT, type KonkurContent } from '../content/konkur';
+import { contentForTrack } from '../content/konkur/trackContent';
 import { parseKonkurContent } from '../content/konkur/validate';
+import { useTrack } from './usePreferencesStore';
 import { fetchKonkurPayload, fetchKonkurVersion } from '../services/api/konkur';
 
 // «نکات کنکوری»: starts with the bundled content (synchronously), swaps
@@ -96,6 +99,15 @@ void useKonkurContentStore
 
 export function useKonkurContent(): KonkurContent {
   return useKonkurContentStore(s => s.content);
+}
+
+// The content the student's study track sees (tips + questions): use it
+// for lists, search and exams. useKonkurContent() stays unfiltered so a
+// saved question or a deep link can still be looked up by id.
+export function useTrackKonkurContent(): KonkurContent {
+  const content = useKonkurContent();
+  const track = useTrack();
+  return useMemo(() => contentForTrack(content, track), [content, track]);
 }
 
 // Call from screens that show konkur content / on app foreground;

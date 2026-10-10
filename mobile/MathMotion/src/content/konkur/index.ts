@@ -7,6 +7,7 @@ import { GRADE7_QUESTIONS, GRADE7_TIPS } from './grade7';
 import { GRADE8_QUESTIONS, GRADE8_TIPS } from './grade8';
 import { GRADE9_QUESTIONS, GRADE9_TIPS } from './grade9';
 import { PAST_QUESTIONS } from './past';
+import { TAJROBI_QUESTIONS, TAJROBI_TIPS } from './tajrobi';
 import type { KonkurQuestion, KonkurSource, KonkurTip } from './types';
 
 export type { KonkurGuide, KonkurLine, KonkurQuestion, KonkurSource, KonkurTip, KonkurTrack } from './types';
@@ -19,6 +20,7 @@ export const KONKUR_TIPS: KonkurTip[] = [
   ...GRADE10_TIPS,
   ...GRADE11_TIPS,
   ...GRADE12_TIPS,
+  ...TAJROBI_TIPS,
 ];
 
 export const KONKUR_QUESTIONS: KonkurQuestion[] = [
@@ -29,6 +31,7 @@ export const KONKUR_QUESTIONS: KonkurQuestion[] = [
   ...GRADE10_QUESTIONS,
   ...GRADE11_QUESTIONS,
   ...GRADE12_QUESTIONS,
+  ...TAJROBI_QUESTIONS,
   ...PAST_QUESTIONS,
 ];
 

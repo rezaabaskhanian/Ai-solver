@@ -1,5 +1,5 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -7,9 +7,15 @@ import { AppButton } from '../../components/common/AppButton';
 import { AppText } from '../../components/common/AppText';
 import { Card } from '../../components/common/Card';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
+import { sourceLabel } from '../../content/konkur';
+import { chapterVisibleForTrack } from '../../content/curriculum';
 import { EXAM_SYLLABUS, findGrade, type GradeId } from '../../content/examSyllabus';
+import { visibleForTrack } from '../../content/track';
 import { useIsRTL } from '../../hooks/useIsRTL';
-import { usePreferencesStore } from '../../store/usePreferencesStore';
+import { konkurExamConfig, konkurPapers } from '../../services/exam/konkurExam';
+import { localizeDigits } from '../../services/exam/scoring';
+import { useKonkurContent } from '../../store/useKonkurContentStore';
+import { usePreferencesStore, useTrack } from '../../store/usePreferencesStore';
 import type { RootStackParamList } from '../../navigation/types';
 import { makeStyles, radius, spacing, useColors } from '../../theme';
 import { Icon } from '../../components/common/Icon';
@@ -17,6 +23,8 @@ import { Icon } from '../../components/common/Icon';
 type Props = NativeStackScreenProps<RootStackParamList, 'ExamSetup'>;
 
 const QUESTION_COUNTS = [5, 10, 15, 20];
+// Seconds allowed per question; the exam's time limit is count x this.
+const SECONDS_PER_QUESTION = [45, 60, 90, 120];
 
 // «آمادگی برای امتحان»: the student picks a grade and exactly the chapters
 // their exam covers ("only these for grade 6"), then how many questions.
@@ -36,8 +44,18 @@ export function ExamSetupScreen({ navigation, route }: Props) {
   });
   const [chapterIds, setChapterIds] = useState<string[]>(() => route.params?.chapterIds ?? []);
   const [count, setCount] = useState(10);
+  const [secondsPerQuestion, setSecondsPerQuestion] = useState(60);
+  const konkurContent = useKonkurContent();
+  const track = useTrack();
+  const papers = useMemo(() => konkurPapers(konkurContent, track), [konkurContent, track]);
+  const num = (value: number | string) => localizeDigits(value, isRTL);
 
-  const chapters = findGrade(grade)?.chapters ?? [];
+  // Chapters of the student's track; the number inside the book stays as
+  // authored (chapter.number), the running index only applies to grades
+  // without explicit numbers.
+  const chapters = (findGrade(grade)?.chapters ?? []).filter(
+    ch => visibleForTrack(ch, track) && chapterVisibleForTrack(ch.id, track),
+  );
   const available = chapters.filter(ch => ch.skills.length > 0).map(ch => ch.id);
   const allSelected = available.length > 0 && available.every(id => chapterIds.includes(id));
   const rowStyle = [styles.row, isRTL && styles.rowRTL];
@@ -90,6 +108,9 @@ export function ExamSetupScreen({ navigation, route }: Props) {
           {t('exam.chaptersHint')}
         </AppText>
 
+        {chapters.length === 0 && (
+          <AppText color={colors.textSecondary}>{t('track.comingSoon')}</AppText>
+        )}
         {chapters.map((chapter, index) => {
           const enabled = chapter.skills.length > 0;
           const checked = chapterIds.includes(chapter.id);
@@ -136,12 +157,74 @@ export function ExamSetupScreen({ navigation, route }: Props) {
         </View>
       </Card>
 
+      <Card style={styles.section}>
+        <AppText weight="bold" size="lg">
+          {t('exam.durationTitle')}
+        </AppText>
+        <View style={rowStyle}>
+          {SECONDS_PER_QUESTION.map(sec => (
+            <Chip
+              key={sec}
+              label={t('exam.durationOption', { sec: num(sec) })}
+              active={sec === secondsPerQuestion}
+              onPress={() => setSecondsPerQuestion(sec)}
+            />
+          ))}
+        </View>
+        <AppText size="sm" color={colors.textSecondary}>
+          {t('exam.durationTotal', { minutes: num(Math.ceil((count * secondsPerQuestion) / 60)) })}
+        </AppText>
+        <AppText size="sm" color={colors.textSecondary}>
+          {t('exam.scoring')}
+        </AppText>
+      </Card>
+
       <AppButton
         label={chapterIds.length ? t('exam.start') : t('exam.pickChapters')}
         icon="play-arrow"
         disabled={chapterIds.length === 0}
-        onPress={() => navigation.navigate('Exam', { config: { grade, chapterIds, count } })}
+        onPress={() =>
+          navigation.navigate('Exam', {
+            config: { grade, chapterIds, count, durationSec: count * secondsPerQuestion },
+          })
+        }
       />
+
+      {papers.length === 0 && track === 'tajrobi' && (
+        <Card style={styles.section}>
+          <AppText weight="bold" size="lg">
+            {t('exam.konkurTitle')}
+          </AppText>
+          <AppText size="sm" color={colors.textSecondary}>
+            {t('track.comingSoon')}
+          </AppText>
+        </Card>
+      )}
+
+      {papers.length > 0 && (
+        <Card style={styles.section}>
+          <AppText weight="bold" size="lg">
+            {t('exam.konkurTitle')}
+          </AppText>
+          <AppText size="sm" color={colors.textSecondary}>
+            {t('exam.konkurHint')}
+          </AppText>
+          {papers.map(paper => {
+            const config = konkurExamConfig(paper);
+            const label = sourceLabel({ kind: 'konkur', track, ...paper.selector });
+            const minutes = Math.ceil((config.durationSec ?? 0) / 60);
+            return (
+              <AppButton
+                key={`${paper.selector.year}-${paper.selector.abroad ? 'a' : ''}${paper.selector.newSystem ? 'n' : ''}${paper.selector.round ?? 0}`}
+                label={`${label} — ${t('exam.konkurPaper', { count: num(paper.questionCount), minutes: num(minutes) })}`}
+                variant="secondary"
+                size="sm"
+                onPress={() => navigation.navigate('Exam', { config })}
+              />
+            );
+          })}
+        </Card>
+      )}
     </ScreenContainer>
   );
 }
