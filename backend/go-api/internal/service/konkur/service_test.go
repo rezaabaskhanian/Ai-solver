@@ -22,6 +22,7 @@ type fakeRepo struct {
 	questions map[string]Question
 	drafts    map[string]Draft
 	draftSeq  []string
+	exercises map[string]Exercise
 }
 
 func newFakeRepo() *fakeRepo {
@@ -30,6 +31,7 @@ func newFakeRepo() *fakeRepo {
 		tips:      map[string]Tip{},
 		questions: map[string]Question{},
 		drafts:    map[string]Draft{},
+		exercises: map[string]Exercise{},
 	}
 }
 

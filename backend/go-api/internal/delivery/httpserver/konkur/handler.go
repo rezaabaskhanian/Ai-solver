@@ -40,6 +40,7 @@ func New(svc konkurservice.Service, uploadDir string) Handler {
 func (h Handler) SetPublicRoutes(e *echo.Echo, mws ...echo.MiddlewareFunc) {
 	e.GET("/api/v1/public/konkur", h.Public, mws...)
 	e.GET("/api/v1/public/konkur/version", h.Version, mws...)
+	e.GET("/api/v1/public/textbook", h.PublicTextbook, mws...)
 }
 
 // SetAdminRoutes registers the admin panel's endpoints on the admin group.
@@ -64,6 +65,11 @@ func (h Handler) SetAdminRoutes(admin *echo.Group) {
 	admin.PUT("/konkur/drafts/:id", h.UpdateDraft)
 	admin.POST("/konkur/drafts/:id/approve", h.ApproveDraft)
 	admin.DELETE("/konkur/drafts/:id", h.RejectDraft)
+
+	admin.GET("/textbook/exercises", h.ListExercises)
+	admin.POST("/textbook/exercises", h.CreateExercise)
+	admin.PUT("/textbook/exercises/:id", h.ReplaceExercise)
+	admin.DELETE("/textbook/exercises/:id", h.DeleteExercise)
 }
 
 func invalidBody(c echo.Context) error {
@@ -114,6 +120,32 @@ func (h Handler) Public(c echo.Context) error {
 	}
 	res.Header().Set("ETag", etagFor(snap.Version))
 	// no-cache = always revalidate with If-None-Match, which is cheap.
+	res.Header().Set("Cache-Control", "no-cache")
+	return c.JSON(http.StatusOK, snap)
+}
+
+// PublicTextbook handles GET /api/v1/public/textbook (same ETag scheme;
+// the version is shared with the konkur content).
+func (h Handler) PublicTextbook(c echo.Context) error {
+	ctx := c.Request().Context()
+	res := c.Response()
+
+	if inm := c.Request().Header.Get("If-None-Match"); inm != "" {
+		v, err := h.svc.Version(ctx)
+		if err != nil {
+			return errorhandling.ErrorHandling(err, c)
+		}
+		if matchesETag(inm, etagFor(v)) {
+			res.Header().Set("ETag", etagFor(v))
+			return c.NoContent(http.StatusNotModified)
+		}
+	}
+
+	snap, err := h.svc.PublicTextbook(ctx)
+	if err != nil {
+		return errorhandling.ErrorHandling(err, c)
+	}
+	res.Header().Set("ETag", etagFor(snap.Version))
 	res.Header().Set("Cache-Control", "no-cache")
 	return c.JSON(http.StatusOK, snap)
 }
@@ -215,6 +247,52 @@ func (h Handler) DeleteQuestion(c echo.Context) error {
 	return ok(c)
 }
 
+// ---------- textbook exercises ----------
+
+// ListExercises supports ?bookId=&chapterId=&q=.
+func (h Handler) ListExercises(c echo.Context) error {
+	ex, err := h.svc.ListExercises(c.Request().Context(), konkurservice.ExerciseFilter{
+		BookID:    strings.TrimSpace(c.QueryParam("bookId")),
+		ChapterID: strings.TrimSpace(c.QueryParam("chapterId")),
+		Query:     strings.TrimSpace(c.QueryParam("q")),
+	})
+	if err != nil {
+		return errorhandling.ErrorHandling(err, c)
+	}
+	return c.JSON(http.StatusOK, map[string]any{"exercises": ex})
+}
+
+func (h Handler) CreateExercise(c echo.Context) error {
+	var req konkurservice.Exercise
+	if err := c.Bind(&req); err != nil {
+		return invalidBody(c)
+	}
+	saved, err := h.svc.CreateExercise(c.Request().Context(), req)
+	if err != nil {
+		return errorhandling.ErrorHandling(err, c)
+	}
+	return c.JSON(http.StatusCreated, saved)
+}
+
+func (h Handler) ReplaceExercise(c echo.Context) error {
+	var req konkurservice.Exercise
+	if err := c.Bind(&req); err != nil {
+		return invalidBody(c)
+	}
+	saved, err := h.svc.ReplaceExercise(c.Request().Context(), c.Param("id"), req)
+	if err != nil {
+		return errorhandling.ErrorHandling(err, c)
+	}
+	return c.JSON(http.StatusOK, saved)
+}
+
+func (h Handler) DeleteExercise(c echo.Context) error {
+	if err := h.svc.DeleteExercise(c.Request().Context(), c.Param("id")); err != nil {
+		return errorhandling.ErrorHandling(err, c)
+	}
+	return ok(c)
+}
+
 // ---------- import ----------
 
 type importRequest struct {
@@ -276,6 +354,9 @@ func (h Handler) ApplySeed(c echo.Context) error {
 		"skipped_questions": res.SkippedQuestions,
 		"invalid_tips":      res.InvalidTips,
 		"invalid_questions": res.InvalidQuestions,
+		"added_exercises":   res.AddedExercises,
+		"skipped_exercises": res.SkippedExercises,
+		"invalid_exercises": res.InvalidExercises,
 		"problems":          res.Problems,
 		"figures_copied":    figures,
 		"version":           res.Version,
@@ -310,7 +391,9 @@ func truthy(v string) bool {
 }
 
 // Extract handles POST /admin/konkur/extract (multipart: image, kind,
-// source_name, optional year/track/round/abroad/page_label).
+// source_name, optional year/track/round/abroad/page_label; for kind
+// "exercises" also book_id, chapter_id, page and optional lesson; for
+// kind "notes" grade and chapter_id).
 func (h Handler) Extract(c echo.Context) error {
 	fail := func(msg string) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "extract_failed", "message": msg})
@@ -344,7 +427,19 @@ func (h Handler) Extract(c echo.Context) error {
 		Kind:        strings.TrimSpace(c.FormValue("kind")),
 		Track:       strings.TrimSpace(c.FormValue("track")),
 		Abroad:      truthy(c.FormValue("abroad")),
+		Rewrite:     truthy(c.FormValue("rewrite")),
 		PageLabel:   c.FormValue("page_label"),
+		BookID:      strings.TrimSpace(c.FormValue("book_id")),
+		ChapterID:   strings.TrimSpace(c.FormValue("chapter_id")),
+	}
+	for field, dst := range map[string]*int{"page": &in.Page, "lesson": &in.Lesson, "grade": &in.Grade} {
+		if v := strings.TrimSpace(c.FormValue(field)); v != "" {
+			n, err := strconv.Atoi(v)
+			if err != nil {
+				return fail(field + " نامعتبر است")
+			}
+			*dst = n
+		}
 	}
 	if v := strings.TrimSpace(c.FormValue("year")); v != "" {
 		n, err := strconv.Atoi(v)

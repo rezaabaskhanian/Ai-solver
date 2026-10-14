@@ -40,6 +40,7 @@ func EmbeddedSeed() fs.FS {
 type seedDoc struct {
 	Tips      []Tip      `json:"tips"`
 	Questions []Question `json:"questions"`
+	Exercises []Exercise `json:"exercises"`
 }
 
 func loadSeed(fsys fs.FS) (seedDoc, error) {
@@ -72,6 +73,8 @@ type SeedStatus struct {
 	Questions        int `json:"questions"`
 	MissingTips      int `json:"missing_tips"`
 	MissingQuestions int `json:"missing_questions"`
+	Exercises        int `json:"exercises"`
+	MissingExercises int `json:"missing_exercises"`
 	Figures          int `json:"figures"`
 }
 
@@ -84,6 +87,9 @@ type SeedResult struct {
 	SkippedQuestions int      `json:"skipped_questions"`
 	InvalidTips      int      `json:"invalid_tips"`
 	InvalidQuestions int      `json:"invalid_questions"`
+	AddedExercises   int      `json:"added_exercises"`
+	SkippedExercises int      `json:"skipped_exercises"`
+	InvalidExercises int      `json:"invalid_exercises"`
 	Problems         []string `json:"problems"`
 	Version          int64    `json:"version"`
 }
@@ -109,6 +115,18 @@ func (s Service) existingIDs(ctx context.Context) (tips, questions map[string]bo
 	return tips, questions, nil
 }
 
+func (s Service) existingExerciseIDs(ctx context.Context) (map[string]bool, error) {
+	ex, err := s.repo.ListExercises(ctx, ExerciseFilter{})
+	if err != nil {
+		return nil, err
+	}
+	ids := make(map[string]bool, len(ex))
+	for _, e := range ex {
+		ids[e.ID] = true
+	}
+	return ids, nil
+}
+
 // SeedStatus counts the seed's items and how many are not on the server.
 func (s Service) SeedStatus(ctx context.Context, fsys fs.FS) (SeedStatus, error) {
 	const op = "konkurservice.SeedStatus"
@@ -120,7 +138,19 @@ func (s Service) SeedStatus(ctx context.Context, fsys fs.FS) (SeedStatus, error)
 	if err != nil {
 		return SeedStatus{}, wrap(op, err)
 	}
-	st := SeedStatus{Tips: len(doc.Tips), Questions: len(doc.Questions), Figures: len(seedFigureNames(fsys))}
+	haveEx, err := s.existingExerciseIDs(ctx)
+	if err != nil {
+		return SeedStatus{}, wrap(op, err)
+	}
+	st := SeedStatus{
+		Tips: len(doc.Tips), Questions: len(doc.Questions), Exercises: len(doc.Exercises),
+		Figures: len(seedFigureNames(fsys)),
+	}
+	for _, e := range doc.Exercises {
+		if !haveEx[strings.TrimSpace(e.ID)] {
+			st.MissingExercises++
+		}
+	}
 	for _, t := range doc.Tips {
 		if !haveTips[strings.TrimSpace(t.ID)] {
 			st.MissingTips++
@@ -145,9 +175,12 @@ func (s Service) ApplySeed(ctx context.Context, fsys fs.FS, overwrite bool) (See
 	if err != nil {
 		return res, wrap(op, err)
 	}
-	haveTips, haveQs := map[string]bool{}, map[string]bool{}
+	haveTips, haveQs, haveEx := map[string]bool{}, map[string]bool{}, map[string]bool{}
 	if !overwrite {
 		if haveTips, haveQs, err = s.existingIDs(ctx); err != nil {
+			return res, wrap(op, err)
+		}
+		if haveEx, err = s.existingExerciseIDs(ctx); err != nil {
 			return res, wrap(op, err)
 		}
 	}
@@ -182,12 +215,33 @@ func (s Service) ApplySeed(ctx context.Context, fsys fs.FS, overwrite bool) (See
 		}
 	}
 
+	var exercises []Exercise
+	for _, e := range doc.Exercises {
+		e = normalizeExercise(e)
+		if e.ID == "" {
+			e.ID = exerciseID(e)
+		}
+		if p := exerciseProblems(e); len(p) > 0 {
+			res.InvalidExercises++
+			addProblem("تمرین " + e.ID + ": " + strings.Join(p, "؛ "))
+		} else if haveEx[e.ID] {
+			res.SkippedExercises++
+		} else {
+			exercises = append(exercises, e)
+		}
+	}
+
 	if len(tips)+len(questions) > 0 {
 		if err := s.repo.Import(ctx, tips, questions); err != nil {
 			return res, wrap(op, err)
 		}
 	}
-	res.AddedTips, res.AddedQuestions = len(tips), len(questions)
+	if len(exercises) > 0 {
+		if err := s.repo.ImportExercises(ctx, exercises); err != nil {
+			return res, wrap(op, err)
+		}
+	}
+	res.AddedTips, res.AddedQuestions, res.AddedExercises = len(tips), len(questions), len(exercises)
 	if res.Version, err = s.repo.Version(ctx); err != nil {
 		return res, wrap(op, err)
 	}

@@ -40,6 +40,16 @@ type Repository interface {
 	// non-nil) as published, bumps the version and marks the draft
 	// approved. Without overwrite an existing id yields ErrExists.
 	ApproveDraft(ctx context.Context, id string, tip *Tip, question *Question, overwrite bool) error
+
+	// «تمرین‌های کتاب» (textbook.go); every write bumps the same version.
+	PublishedExercises(ctx context.Context) ([]Exercise, error)
+	ListExercises(ctx context.Context, f ExerciseFilter) ([]Exercise, error)
+	SaveExercise(ctx context.Context, e Exercise, mode SaveMode) error
+	DeleteExercise(ctx context.Context, id string) error
+	// ImportExercises upserts everything as published, bumping once.
+	ImportExercises(ctx context.Context, exercises []Exercise) error
+	// ApproveExerciseDraft is ApproveDraft for a kind 'exercise' draft.
+	ApproveExerciseDraft(ctx context.Context, id string, e Exercise, overwrite bool) error
 }
 
 // Extractor is the vision client (visionservice.Client): one image plus a
@@ -268,6 +278,17 @@ func (s Service) ListDrafts(ctx context.Context, status string) ([]Draft, error)
 // normalized document (re-marshaled) plus its problems as warnings.
 func parseDraftData(kind string, data json.RawMessage) (json.RawMessage, []string, error) {
 	switch kind {
+	case KindExercise:
+		var e Exercise
+		if err := json.Unmarshal(data, &e); err != nil {
+			return nil, nil, err
+		}
+		e = normalizeExercise(e)
+		if e.ID == "" {
+			e.ID = exerciseID(e)
+		}
+		out, err := json.Marshal(e)
+		return out, nonNil(exerciseProblems(e)), err
 	case KindTip:
 		var t Tip
 		if err := json.Unmarshal(data, &t); err != nil {
@@ -324,6 +345,25 @@ func (s Service) ApproveDraft(ctx context.Context, id string, overwrite bool) (D
 	}
 	if d.Status != StatusPending {
 		return Draft{}, invalid(op, "این پیش‌نویس قبلاً بررسی شده است")
+	}
+
+	if d.Kind == KindExercise {
+		var e Exercise
+		if err := json.Unmarshal(d.Data, &e); err != nil {
+			return Draft{}, invalid(op, "ساختار داده نامعتبر است: "+err.Error())
+		}
+		e, err := checkExercise(op, e)
+		if err != nil {
+			return Draft{}, err
+		}
+		if err := s.repo.ApproveExerciseDraft(ctx, id, e, overwrite); err != nil {
+			if errors.Is(err, ErrExists) {
+				return Draft{}, invalid(op, "این شناسه از قبل وجود دارد؛ برای جایگزینی با overwrite=true دوباره بفرستید")
+			}
+			return Draft{}, wrap(op, err)
+		}
+		d.Status = StatusApproved
+		return d, nil
 	}
 
 	var tip *Tip

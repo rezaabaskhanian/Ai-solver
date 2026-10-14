@@ -20,6 +20,10 @@ const (
 
 	KindExtractQuestions = "questions"
 	KindExtractTips      = "tips"
+	KindExtractExercises = "exercises"
+	// KindExtractNotes reads a teaching booklet (جزوه) page into tips of
+	// one textbook chapter, rewritten in our own words.
+	KindExtractNotes = "notes"
 )
 
 const questionsPrompt = `You will be shown one page of a Persian (Farsi) Iranian university-entrance ` +
@@ -60,6 +64,48 @@ Rules: ` +
 	`with ASCII digits 0-9. Keep Persian text as printed; do not translate or invent content. ` +
 	`If the page contains no tip respond with exactly: []`
 
+const exercisesPrompt = `You will be shown one page of an official Iranian school math textbook (in Persian), ` +
+	`as an image. Extract EVERY numbered exercise on the page from the sections titled «تمرین», «کار در کلاس» ` +
+	`and «فعالیت» (ignore the lesson's explanations and solved examples). Respond with ONLY a JSON array (no ` +
+	`prose, no markdown fences), one object per exercise, in page order, with exactly these fields:
+{
+  "number": <the printed exercise number as an integer>,
+  "section": "<exercise for «تمرین», classwork for «کار در کلاس», activity for «فعالیت»>",
+  "text": ["<the statement in Persian exactly as printed>", {"math": "<a displayed math line as plain ASCII>"}],
+  "parts": [{"label": "<الف / ب / پ / ...>", "text": ["<the part's statement>", {"math": "<math>"}], "answer": ["<short final answer>"], "solution": ["<step>", {"math": "<math>"}]}],
+  "answer": ["<short final answer of the whole exercise, when it has no parts>"],
+  "solution": ["<one step of a worked solution, simple Persian>", {"math": "<one line of math, plain ASCII>"}],
+  "tipIds": ["<id of each study note below that the solution uses, most important first>"]
+}
+Rules: ` +
+	`Copy the statement word for word; never shorten or reword it. Use "parts" only when the exercise has lettered ` +
+	`parts (الف، ب، پ، ت ...), with the shared lead-in sentence in "text"; otherwise use []. Then SOLVE every ` +
+	`exercise yourself, for a grade-school student, in short, clear Persian steps: write the solution in your own ` +
+	`words (never copy one from a solutions book), and put each part's steps in that part's "solution". Every step ` +
+	`must be mathematically correct; if you are not sure, leave "solution" as [] rather than guess. Math always goes ` +
+	`on its own line as {"math": "..."} in plain ASCII (x^2, sqrt(x), (a+b)/c, 3/4, a*b), never inside Persian prose. ` +
+	`Write numbers with ASCII digits 0-9. If the exercise refers to a figure, describe what is drawn in one short ` +
+	`Persian sentence at the end of "text". If the page contains no exercise respond with exactly: []`
+
+const notesPrompt = `You will be shown one page of a Persian (Farsi) school math teaching booklet (jozve) as an ` +
+	`image. Turn the page's teaching content into short, self-contained study notes for a student. Respond with ONLY ` +
+	`a JSON array (no prose, no markdown fences), one object per distinct concept, rule, formula or method on the ` +
+	`page, in page order, with exactly these fields:
+{
+  "title": "<short Persian title of the concept>",
+  "body": ["<one line of Persian prose>", {"math": "<one line of math, plain ASCII>"}],
+  "details": ["<line>", {"math": "<line>"}],
+  "example": {"question": ["<line>", {"math": "<line>"}], "solution": ["<line>", {"math": "<line>"}]}
+}
+Rules: ` +
+	`Write every note IN YOUR OWN WORDS in simple, friendly Persian: never copy the booklet's sentences, and never ` +
+	`mention the booklet, its author, a teacher, a publisher, a school or a website. "body" is the 2-4 line summary; ` +
+	`"details" is an optional longer explanation; "example" is optional — if you include one, make up your own small ` +
+	`example rather than copying the booklet's, and solve it correctly. Skip covers, tables of contents, ads and ` +
+	`exercises without teaching content. Math always goes on its own line as {"math": "..."} in plain ASCII ` +
+	`(x^2, sqrt(x), (a+b)/c, 3/4), never inside Persian prose. Write numbers with ASCII digits 0-9. ` +
+	`If the page has no teaching content respond with exactly: []`
+
 // ExtractInput is one page to read.
 type ExtractInput struct {
 	ImageBase64 string
@@ -72,6 +118,20 @@ type ExtractInput struct {
 	Round     int
 	Abroad    bool
 	PageLabel string
+
+	// Textbook exercises (Kind "exercises") and booklet notes (Kind
+	// "notes"): where the page belongs. Grade is the book's grade, set on
+	// the notes.
+	BookID    string
+	ChapterID string
+	Lesson    int
+	Page      int
+	Grade     int
+
+	// Questions only: ChapterID (optional) links them to that chapter's
+	// tips, which fills the chapter's exam; Rewrite turns a test book's
+	// questions into our own (new numbers and wording, solved again).
+	Rewrite bool
 }
 
 // Skipped is an item of the model's reply that could not become a draft.
@@ -92,14 +152,42 @@ func (s Service) Extract(ctx context.Context, in ExtractInput) (ExtractResult, e
 	const op = "konkurservice.Extract"
 	res := ExtractResult{Drafts: []Draft{}, Skipped: []Skipped{}}
 
-	var prompt string
+	var (
+		prompt string
+		// The chapter's study notes an exercise solution may cite.
+		notes []Tip
+	)
 	switch in.Kind {
 	case KindExtractQuestions:
 		prompt = questionsPrompt
+		if in.Rewrite {
+			prompt += rewriteInstruction
+		}
+		if strings.TrimSpace(in.ChapterID) != "" {
+			var err error
+			if notes, err = s.chapterNotes(ctx, in.ChapterID); err != nil {
+				return res, wrap(op, err)
+			}
+			prompt += questionTipsField + notesContext(notes)
+		}
 	case KindExtractTips:
 		prompt = tipsPrompt
+	case KindExtractExercises:
+		if strings.TrimSpace(in.BookID) == "" || strings.TrimSpace(in.ChapterID) == "" || in.Page <= 0 {
+			return res, invalid(op, "برای تمرین کتاب، کتاب، فصل و شماره‌ی صفحه لازم است")
+		}
+		var err error
+		if notes, err = s.chapterNotes(ctx, in.ChapterID); err != nil {
+			return res, wrap(op, err)
+		}
+		prompt = exercisesPrompt + notesContext(notes)
+	case KindExtractNotes:
+		if strings.TrimSpace(in.ChapterID) == "" || !validGrade(in.Grade) {
+			return res, invalid(op, "برای جزوه، پایه و فصل لازم است")
+		}
+		prompt = notesPrompt
 	default:
-		return res, invalid(op, "kind باید questions یا tips باشد")
+		return res, invalid(op, "kind باید questions، tips، exercises یا notes باشد")
 	}
 	if in.Track != "" && !validTrack(in.Track) {
 		return res, invalid(op, "track باید riazi یا tajrobi باشد")
@@ -115,10 +203,17 @@ func (s Service) Extract(ctx context.Context, in ExtractInput) (ExtractResult, e
 			WithMessage("مدل بینایی تنظیم نشده است")
 	}
 
+	feature := "konkur_extract"
+	switch in.Kind {
+	case KindExtractExercises:
+		feature = "textbook_extract"
+	case KindExtractNotes:
+		feature = "notes_extract"
+	}
 	text, usage, err := s.extractor.Complete(ctx, prompt, extractMaxTokens, in.ImageBase64, in.MediaType)
 	if err == nil && s.usage != nil {
 		s.usage.Record(ctx, aiusage.Entry{
-			Feature: "konkur_extract", Provider: usage.Provider, Model: usage.Model,
+			Feature: feature, Provider: usage.Provider, Model: usage.Model,
 			InputTokens: usage.InputTokens, OutputTokens: usage.OutputTokens,
 			CostUSD: usage.CostUSD, CostReported: usage.CostReported,
 		})
@@ -146,12 +241,39 @@ func (s Service) Extract(ctx context.Context, in ExtractInput) (ExtractResult, e
 			kind     string
 			rerr     error
 		)
-		if in.Kind == KindExtractTips {
+		if in.Kind == KindExtractExercises {
+			kind = KindExercise
+			var e Exercise
+			e, warnings, rerr = exerciseFromRaw(raw, in)
+			if rerr == nil {
+				e.TipIDs = knownTipIDs(e.TipIDs, notes)
+			}
+			data = e
+		} else if in.Kind == KindExtractTips || in.Kind == KindExtractNotes {
 			kind = KindTip
-			data, warnings, rerr = tipFromRaw(raw)
+			var t Tip
+			t, warnings, rerr = tipFromRaw(raw)
+			if rerr == nil && in.Kind == KindExtractNotes {
+				grade := in.Grade
+				t.Grade = &grade
+				t.ChapterID = strings.TrimSpace(in.ChapterID)
+				warnings = append(warnings, "متن را هوش مصنوعی بازنویسی کرده؛ قبل از تأیید بخوان که درست و به زبان خودمان باشد")
+			}
+			data = t
 		} else {
 			kind = KindQuestion
-			data, warnings, rerr = questionFromRaw(raw, in)
+			var q Question
+			q, warnings, rerr = questionFromRaw(raw, in)
+			if rerr == nil && strings.TrimSpace(in.ChapterID) != "" {
+				q.TipIDs = nonNilStrings(knownTipIDs(q.TipIDs, notes))
+				if len(q.TipIDs) == 0 {
+					warnings = append(warnings, "هیچ نکته‌ای از این فصل به سؤال وصل نشد؛ قبل از تأیید یک نکته انتخاب کن")
+				}
+			}
+			if rerr == nil && in.Rewrite {
+				warnings = append(warnings, "سؤال را هوش مصنوعی بازنویسی و دوباره حل کرده؛ جواب و راه‌حل را با دقت چک کن")
+			}
+			data = q
 		}
 		if rerr != nil {
 			res.Skipped = append(res.Skipped, Skipped{Index: i, Reason: rerr.Error()})
@@ -220,6 +342,7 @@ func rawLines(field string, raws []json.RawMessage, warnings *[]string) []Line {
 }
 
 type rawQuestion struct {
+	TipIDs     []string          `json:"tipIds"`
 	Number     *int              `json:"number"`
 	Text       string            `json:"text"`
 	Expression *string           `json:"expression"`
@@ -259,6 +382,10 @@ func questionFromRaw(raw json.RawMessage, in ExtractInput) (Question, []string, 
 	if rq.Expression != nil {
 		q.Expression = strings.TrimSpace(*rq.Expression)
 	}
+	// Only with a chapter were notes offered (Extract keeps the known ones).
+	if strings.TrimSpace(in.ChapterID) != "" {
+		q.TipIDs = nonNilStrings(rq.TipIDs)
+	}
 	for _, c := range rq.Choices {
 		q.Choices = append(q.Choices, strings.TrimSpace(rawToString(c)))
 	}
@@ -273,13 +400,16 @@ func questionFromRaw(raw json.RawMessage, in ExtractInput) (Question, []string, 
 		}
 	}
 
+	// A rewritten question is our own (authored), whatever the page was.
 	q.Source = Source{Kind: SourceAuthored}
-	if in.Year > 0 && validTrack(in.Track) {
+	switch {
+	case in.Rewrite:
+	case in.Year > 0 && validTrack(in.Track):
 		q.Source = Source{Kind: SourceKonkur, Year: in.Year, Track: in.Track, Round: in.Round, Abroad: in.Abroad}
 		if rq.Number != nil && *rq.Number > 0 {
 			q.Source.Number = *rq.Number
 		}
-	} else {
+	default:
 		warnings = append(warnings, "منبع کنکوری (سال و رشته) مشخص نشده؛ به‌صورت authored ثبت شد")
 	}
 	q.ID = questionID(q.Source)
@@ -345,4 +475,165 @@ func tipFromRaw(raw json.RawMessage) (Tip, []string, error) {
 		warnings = append(warnings, p)
 	}
 	return t, warnings, nil
+}
+
+type rawExercisePart struct {
+	Label    string            `json:"label"`
+	Text     []json.RawMessage `json:"text"`
+	Answer   []json.RawMessage `json:"answer"`
+	Solution []json.RawMessage `json:"solution"`
+}
+
+type rawExercise struct {
+	TipIDs   []string          `json:"tipIds"`
+	Number   *int              `json:"number"`
+	Section  string            `json:"section"`
+	Text     []json.RawMessage `json:"text"`
+	Parts    []rawExercisePart `json:"parts"`
+	Answer   []json.RawMessage `json:"answer"`
+	Solution []json.RawMessage `json:"solution"`
+}
+
+func exerciseFromRaw(raw json.RawMessage, in ExtractInput) (Exercise, []string, error) {
+	var re rawExercise
+	if err := json.Unmarshal(raw, &re); err != nil {
+		return Exercise{}, nil, fmt.Errorf("آیتم یک تمرین معتبر نیست: %v", err)
+	}
+	var warnings []string
+	e := Exercise{
+		BookID:    strings.TrimSpace(in.BookID),
+		ChapterID: strings.TrimSpace(in.ChapterID),
+		Lesson:    in.Lesson,
+		Section:   strings.TrimSpace(re.Section),
+		Page:      in.Page,
+		Text:      rawLines("text", re.Text, &warnings),
+		Solution:  rawLines("solution", re.Solution, &warnings),
+	}
+	if len(re.Answer) > 0 {
+		e.Answer = rawLines("answer", re.Answer, &warnings)
+	}
+	if !validSection(e.Section) {
+		if e.Section != "" {
+			warnings = append(warnings, "نوع تمرین تشخیص داده نشد؛ «تمرین» در نظر گرفته شد")
+		}
+		e.Section = SectionExercise
+	}
+	if re.Number != nil && *re.Number > 0 {
+		e.Number = *re.Number
+	}
+	e.TipIDs = re.TipIDs
+	for i, rp := range re.Parts {
+		part := ExercisePart{
+			Label:    strings.TrimSpace(rp.Label),
+			Text:     rawLines(fmt.Sprintf("parts[%d].text", i), rp.Text, &warnings),
+			Solution: rawLines(fmt.Sprintf("parts[%d].solution", i), rp.Solution, &warnings),
+		}
+		if len(rp.Answer) > 0 {
+			part.Answer = rawLines(fmt.Sprintf("parts[%d].answer", i), rp.Answer, &warnings)
+		}
+		e.Parts = append(e.Parts, part)
+	}
+	if len(e.Text) == 0 && len(e.Parts) == 0 {
+		return Exercise{}, nil, errors.New("صورت تمرین خالی است")
+	}
+	e = normalizeExercise(e)
+	e.ID = exerciseID(e)
+	// The model solved it, not the book: always flag it for a careful check.
+	warnings = append(warnings, "راه‌حل را هوش مصنوعی نوشته؛ قبل از تأیید، درستی هر قدم را بررسی کن")
+	warnings = append(warnings, exerciseProblems(e)...)
+	return e, warnings, nil
+}
+
+// maxContextNotes caps how many of a chapter's notes go into the
+// exercise prompt (a long chapter would otherwise blow up the prompt).
+const maxContextNotes = 40
+
+// chapterNotes is every tip of the chapter (published or not; the admin
+// may still be reviewing a booklet's notes).
+func (s Service) chapterNotes(ctx context.Context, chapterID string) ([]Tip, error) {
+	tips, err := s.repo.ListTips(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var out []Tip
+	for _, t := range tips {
+		if t.ChapterID == strings.TrimSpace(chapterID) {
+			out = append(out, t)
+		}
+	}
+	if len(out) > maxContextNotes {
+		out = out[:maxContextNotes]
+	}
+	return out, nil
+}
+
+func linesText(lines []Line) string {
+	parts := make([]string, 0, len(lines))
+	for _, l := range lines {
+		if l.IsMath {
+			parts = append(parts, l.Math)
+		} else {
+			parts = append(parts, l.Text)
+		}
+	}
+	return strings.Join(parts, " / ")
+}
+
+// notesContext appends the chapter's study notes to the exercise prompt,
+// so solutions are built on what the app teaches and cite it in tipIds.
+func notesContext(notes []Tip) string {
+	if len(notes) == 0 {
+		return "\n\nThere are no study notes for this chapter yet: use [] for \"tipIds\"."
+	}
+	var b strings.Builder
+	b.WriteString("\n\nSTUDY NOTES of this chapter (the app teaches these). Build each solution on these notes, ")
+	b.WriteString("using the same method and wording where possible, and list the ids of the notes it uses in \"tipIds\". ")
+	b.WriteString("Use only ids from this list; if no note fits, use []:\n")
+	for _, t := range notes {
+		fmt.Fprintf(&b, "- id: %s | %s: %s\n", t.ID, t.Title, linesText(t.Body))
+	}
+	return b.String()
+}
+
+// knownTipIDs keeps only ids of the given notes (the model may invent
+// some), in order and without duplicates.
+func knownTipIDs(ids []string, notes []Tip) []string {
+	known := make(map[string]bool, len(notes))
+	for _, t := range notes {
+		known[t.ID] = true
+	}
+	var out []string
+	seen := map[string]bool{}
+	for _, id := range ids {
+		id = strings.TrimSpace(id)
+		if known[id] && !seen[id] {
+			seen[id] = true
+			out = append(out, id)
+		}
+	}
+	return out
+}
+
+// rewriteInstruction turns a test book's questions into our own: the
+// book's questions belong to its publisher, so only the idea is kept.
+const rewriteInstruction = `
+
+REWRITE MODE: this page is from a commercial test book, so do NOT copy its questions. For each question, ` +
+	`write a NEW question that tests the same idea at the same difficulty, in your own Persian wording and with ` +
+	`different numbers, and four new choices (one correct, three plausible distractors). Then solve YOUR question ` +
+	`yourself: "answer" is the index of its correct choice and "solution" its worked steps (both are required in ` +
+	`this mode). Check the arithmetic twice. Use null for "number". Never mention the book, publisher or author.`
+
+// questionTipsField asks for the study notes a question uses (filled by
+// notesContext below it).
+const questionTipsField = `
+
+Also add to each object a field "tipIds": the ids of the study notes below that the question tests, most ` +
+	`important first.`
+
+func nonNilStrings(s []string) []string {
+	if s == nil {
+		return []string{}
+	}
+	return s
 }
