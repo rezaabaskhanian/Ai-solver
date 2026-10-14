@@ -17,6 +17,8 @@ import type {
   KonkurSeedResult,
   KonkurSeedStatus,
   KonkurTip,
+  TextbookExercise,
+  TextbookExerciseFilters,
   LandingSettings,
   Plan,
   ProxyStatus,
@@ -346,6 +348,12 @@ export async function extractKonkurPage(image: Blob, meta: KonkurExtractMeta): P
   if (meta.round) fd.append("round", meta.round);
   if (meta.abroad) fd.append("abroad", "true");
   if (meta.page_label) fd.append("page_label", meta.page_label);
+  if (meta.book_id) fd.append("book_id", meta.book_id);
+  if (meta.chapter_id) fd.append("chapter_id", meta.chapter_id);
+  if (meta.lesson) fd.append("lesson", meta.lesson);
+  if (meta.page) fd.append("page", meta.page);
+  if (meta.grade) fd.append("grade", meta.grade);
+  if (meta.rewrite) fd.append("rewrite", "true");
   const data = await jsonOrThrow<Partial<KonkurExtractResult>>(
     await authFetch("/admin/konkur/extract", { method: "POST", body: fd })
   );
@@ -371,6 +379,33 @@ export async function approveKonkurDraft(id: string, overwrite = false): Promise
 
 export async function deleteKonkurDraft(id: string): Promise<void> {
   await jsonOrThrow(await authFetch(`/admin/konkur/drafts/${encodeURIComponent(id)}`, { method: "DELETE" }));
+}
+
+// ---------- تمرین‌های کتاب درسی ----------
+export async function listTextbookExercises(f: TextbookExerciseFilters = {}): Promise<TextbookExercise[]> {
+  const params = new URLSearchParams();
+  if (f.bookId) params.set("bookId", f.bookId);
+  if (f.chapterId) params.set("chapterId", f.chapterId);
+  if (f.q) params.set("q", f.q);
+  const suffix = params.toString() ? `?${params}` : "";
+  const data = await jsonOrThrow<{ exercises?: TextbookExercise[] }>(
+    await authFetch(`/admin/textbook/exercises${suffix}`, { method: "GET" })
+  );
+  return data.exercises || [];
+}
+
+export async function createTextbookExercise(e: TextbookExercise): Promise<TextbookExercise> {
+  return jsonOrThrow<TextbookExercise>(await authFetch("/admin/textbook/exercises", jsonBody("POST", e)));
+}
+
+export async function updateTextbookExercise(id: string, e: TextbookExercise): Promise<TextbookExercise> {
+  return jsonOrThrow<TextbookExercise>(
+    await authFetch(`/admin/textbook/exercises/${encodeURIComponent(id)}`, jsonBody("PUT", e))
+  );
+}
+
+export async function deleteTextbookExercise(id: string): Promise<void> {
+  await jsonOrThrow(await authFetch(`/admin/textbook/exercises/${encodeURIComponent(id)}`, { method: "DELETE" }));
 }
 
 // آدرس قابل نمایشِ عکس (مسیر نسبیِ /uploads/... به آدرس API وصل می‌شود)

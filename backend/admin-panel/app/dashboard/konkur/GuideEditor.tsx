@@ -15,8 +15,8 @@ export default function GuideEditor({
 }: {
   guide: KonkurGuide;
   onChange: (g: KonkurGuide) => void;
-  // سؤالِ فعلی فرم، برای پیشنهاد هوش مصنوعی
-  question: () => KonkurQuestion;
+  // سؤالِ فعلی فرم، برای پیشنهاد هوش مصنوعی (بدون آن دکمه‌ی پیشنهاد نمایش داده نمی‌شود)
+  question?: () => KonkurQuestion;
   notify: (msg: string, type?: "ok" | "err") => void;
 }) {
   const [busy, setBusy] = useState(false);
@@ -29,6 +29,7 @@ export default function GuideEditor({
   async function suggest() {
     const hasContent = !!(guide.given?.length || guide.asked?.length || hints.length || guide.trap?.length);
     if (hasContent && !confirm("مسیر حل فعلی با پیشنهاد هوش مصنوعی جایگزین شود؟")) return;
+    if (!question) return;
     setBusy(true);
     try {
       const g = await generateKonkurGuide(question());
@@ -44,12 +45,14 @@ export default function GuideEditor({
   return (
     <fieldset className="field" style={{ border: "1px solid var(--border)", borderRadius: 8, padding: 10 }}>
       <legend style={{ fontSize: 13, padding: "0 6px" }}>مسیر حل (اختیاری) — قبل از پاسخ تشریحی به دانش‌آموز نشان داده می‌شود</legend>
-      <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8 }}>
-        <button type="button" className="btn btn-sm" onClick={suggest} disabled={busy}>
-          {busy ? "در حال ساخت..." : "پیشنهاد با هوش مصنوعی"}
-        </button>
-        <span className="hint">بدون مسیر حل، اپ نکته‌ی سؤال و قدم اول پاسخ را به‌عنوان راهنمایی نشان می‌دهد.</span>
-      </div>
+      {question && (
+        <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8 }}>
+          <button type="button" className="btn btn-sm" onClick={suggest} disabled={busy}>
+            {busy ? "در حال ساخت..." : "پیشنهاد با هوش مصنوعی"}
+          </button>
+          <span className="hint">بدون مسیر حل، اپ نکته‌ی سؤال و قدم اول پاسخ را به‌عنوان راهنمایی نشان می‌دهد.</span>
+        </div>
+      )}
       <LinesEditor label="سؤال چی داده؟ (داده‌ها)" lines={guide.given || []} onChange={(given) => onChange({ ...guide, given })} />
       <LinesEditor label="چی خواسته؟" lines={guide.asked || []} onChange={(asked) => onChange({ ...guide, asked })} />
       {hints.map((h, i) => (

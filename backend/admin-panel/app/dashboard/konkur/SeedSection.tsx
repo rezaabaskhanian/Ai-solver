@@ -25,12 +25,12 @@ export default function SeedSection({ notify }: { notify: Notify }) {
     load();
   }, [load]);
 
-  const missing = status ? status.missing_tips + status.missing_questions : 0;
+  const missing = status ? status.missing_tips + status.missing_questions + (status.missing_exercises ?? 0) : 0;
 
   async function run() {
     const msg = overwrite
       ? "هشدار: همه‌ی نکته‌ها و سؤال‌های آماده‌ی اپ جایگزین نسخه‌ی روی سرور می‌شوند و هر ویرایش دستی روی آن‌ها از بین می‌رود. ادامه می‌دهی؟"
-      : `${status?.missing_tips ?? 0} نکته و ${status?.missing_questions ?? 0} سؤال که هنوز روی سرور نیستند اضافه شوند؟ (چیزی که قبلاً ویرایش کرده‌ای دست نمی‌خورد)`;
+      : `${status?.missing_tips ?? 0} نکته، ${status?.missing_questions ?? 0} سؤال و ${status?.missing_exercises ?? 0} تمرین کتاب که هنوز روی سرور نیستند اضافه شوند؟ (چیزی که قبلاً ویرایش کرده‌ای دست نمی‌خورد)`;
     if (!window.confirm(msg)) return;
     setBusy(true);
     try {
@@ -56,12 +56,12 @@ export default function SeedSection({ notify }: { notify: Notify }) {
 
       {status ? (
         <p>
-          در بسته‌ی اپ: {status.tips} نکته، {status.questions} سؤال، {status.figures} تصویر.{" "}
+          در بسته‌ی اپ: {status.tips} نکته، {status.questions} سؤال، {status.exercises ?? 0} تمرین کتاب، {status.figures} تصویر.{" "}
           {missing === 0 ? (
             <strong>همه‌چیز روی سرور هست.</strong>
           ) : (
             <strong>
-              روی سرور نیست: {status.missing_tips} نکته و {status.missing_questions} سؤال.
+              روی سرور نیست: {status.missing_tips} نکته، {status.missing_questions} سؤال و {status.missing_exercises ?? 0} تمرین.
             </strong>
           )}
         </p>
@@ -87,13 +87,13 @@ export default function SeedSection({ notify }: { notify: Notify }) {
       {result && (
         <div style={{ marginTop: 12, fontSize: 14 }}>
           <div>
-            اضافه شد: {result.added_tips} نکته، {result.added_questions} سؤال، {result.figures_copied} تصویر جدید.
+            اضافه شد: {result.added_tips} نکته، {result.added_questions} سؤال، {result.added_exercises ?? 0} تمرین، {result.figures_copied} تصویر جدید.
           </div>
           <div>
-            ردشده چون از قبل بود: {result.skipped_tips} نکته، {result.skipped_questions} سؤال.
+            ردشده چون از قبل بود: {result.skipped_tips} نکته، {result.skipped_questions} سؤال، {result.skipped_exercises ?? 0} تمرین.
           </div>
           <div>
-            نامعتبر (وارد نشد): {result.invalid_tips} نکته، {result.invalid_questions} سؤال.
+            نامعتبر (وارد نشد): {result.invalid_tips} نکته، {result.invalid_questions} سؤال، {result.invalid_exercises ?? 0} تمرین.
           </div>
           {result.problems.length > 0 && (
             <ul>

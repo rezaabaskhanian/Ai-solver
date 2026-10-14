@@ -224,7 +224,7 @@ export type KonkurDraftStatus = "pending" | "approved" | "rejected";
 // data می‌تواند ناقص باشد (خروجی هوش مصنوعی)
 export interface KonkurDraft {
   id: string;
-  kind: "question" | "tip";
+  kind: "question" | "tip" | "exercise";
   source_name: string;
   status: KonkurDraftStatus;
   data: Record<string, unknown>;
@@ -239,12 +239,57 @@ export interface KonkurExtractResult {
 
 export interface KonkurExtractMeta {
   source_name: string;
-  kind: "questions" | "tips";
+  kind: "questions" | "tips" | "exercises" | "notes";
   year?: string;
   track?: string;
   round?: string;
   abroad?: boolean;
   page_label?: string;
+  // فقط برای تمرین کتاب
+  book_id?: string;
+  chapter_id?: string;
+  lesson?: string;
+  page?: string;
+  // فقط برای جزوه (نکته‌های یک فصل)
+  grade?: string;
+  // فقط برای سؤال: بازنویسی سؤال‌های کتاب تست با عدد و متن تازه
+  rewrite?: boolean;
+}
+
+// ---------- تمرین‌های کتاب درسی (GET /admin/textbook/exercises) ----------
+export type TextbookSection = "exercise" | "classwork" | "activity";
+
+export interface TextbookExercisePart {
+  label: string;
+  text: KonkurLine[];
+  answer?: KonkurLine[];
+  solution: KonkurLine[];
+}
+
+// صورت تمرین عین کتاب، راه‌حل نوشته‌ی خودمان
+export interface TextbookExercise {
+  id: string;
+  bookId: string;
+  chapterId: string;
+  lesson?: number;
+  section: TextbookSection;
+  page: number;
+  number: number;
+  text: KonkurLine[];
+  figureUrl?: string;
+  parts?: TextbookExercisePart[];
+  answer?: KonkurLine[];
+  solution: KonkurLine[];
+  guide?: KonkurGuide;
+  // نکته‌هایی (مثلاً از جزوه) که راه‌حل بر اساسشان نوشته شده؛ اپ زیر راه‌حل به آن‌ها لینک می‌دهد
+  tipIds?: string[];
+  free?: boolean;
+}
+
+export interface TextbookExerciseFilters {
+  bookId?: string;
+  chapterId?: string;
+  q?: string;
 }
 
 // ---------- محتوای آماده‌ی اپ (seed داخل ایمیج API) ----------
@@ -253,6 +298,8 @@ export interface KonkurSeedStatus {
   questions: number;
   missing_tips: number;
   missing_questions: number;
+  exercises?: number;
+  missing_exercises?: number;
   figures: number;
 }
 
@@ -263,6 +310,9 @@ export interface KonkurSeedResult {
   skipped_questions: number;
   invalid_tips: number;
   invalid_questions: number;
+  added_exercises?: number;
+  skipped_exercises?: number;
+  invalid_exercises?: number;
   problems: string[];
   figures_copied: number;
   version: number;

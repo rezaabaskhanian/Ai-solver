@@ -8,12 +8,14 @@ import DraftsSection from "./konkur/DraftsSection";
 import ImportSection from "./konkur/ImportSection";
 import SeedSection from "./konkur/SeedSection";
 import ExamStatsSection from "./konkur/ExamStatsSection";
+import ExercisesSection from "./konkur/ExercisesSection";
 
-type SubTab = "tips" | "questions" | "pdf" | "drafts" | "import" | "exams";
+type SubTab = "tips" | "questions" | "exercises" | "pdf" | "drafts" | "import" | "exams";
 
 const SUB_TABS: { key: SubTab; label: string }[] = [
   { key: "tips", label: "نکته‌ها" },
   { key: "questions", label: "سؤال‌ها" },
+  { key: "exercises", label: "تمرین‌های کتاب" },
   { key: "pdf", label: "آپلود PDF" },
   { key: "drafts", label: "بازبینی پیش‌نویس‌ها" },
   { key: "import", label: "ورود از JSON" },
@@ -47,6 +49,7 @@ export default function KonkurPanel({
 
       {subTab === "tips" && <TipsSection notify={notify} />}
       {subTab === "questions" && <QuestionsSection notify={notify} />}
+      {subTab === "exercises" && <ExercisesSection notify={notify} />}
       {subTab === "pdf" && <PdfUploadSection notify={notify} onDraftsAdded={() => setDraftsKey((k) => k + 1)} />}
       {subTab === "drafts" && <DraftsSection notify={notify} reloadKey={draftsKey} />}
       {subTab === "import" && <ImportSection notify={notify} />}

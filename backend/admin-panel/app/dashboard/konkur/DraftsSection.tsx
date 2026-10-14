@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { approveKonkurDraft, deleteKonkurDraft, listKonkurDrafts, updateKonkurDraft } from "@/lib/api";
-import type { KonkurDraft, KonkurQuestion, KonkurTip } from "@/lib/types";
+import type { KonkurDraft, KonkurQuestion, KonkurTip, TextbookExercise } from "@/lib/types";
+import ExerciseForm, { normalizeExercise } from "./ExerciseForm";
 import QuestionForm, { normalizeQuestion } from "./QuestionForm";
 import TipForm, { normalizeTip } from "./TipForm";
 import type { Notify } from "./types";
@@ -141,7 +142,7 @@ export default function DraftsSection({ notify, reloadKey }: { notify: Notify; r
           {list.map((d) => (
             <div key={d.id} className="card" style={{ borderColor: errors[d.id] ? "#dc2626" : undefined }}>
               <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8 }}>
-                <span className="pill">{d.kind === "question" ? "سؤال" : "نکته"}</span>
+                <span className="pill">{d.kind === "question" ? "سؤال" : d.kind === "exercise" ? "تمرین کتاب" : "نکته"}</span>
                 <span className="mono" dir="ltr">{d.id}</span>
               </div>
               {d.warnings && d.warnings.length > 0 && (
@@ -164,7 +165,22 @@ export default function DraftsSection({ notify, reloadKey }: { notify: Notify; r
                   </div>
                 </div>
               )}
-              {d.kind === "question" ? (
+              {d.kind === "exercise" ? (
+                <ExerciseForm
+                  initial={normalizeExercise(d.data)}
+                  saving={busyId === d.id}
+                  notify={notify}
+                  lenient
+                  submitLabel="ذخیره"
+                  onSubmit={(e: TextbookExercise) => save(d, e as unknown as Record<string, unknown>)}
+                  onApprove={(e: TextbookExercise) => approve(d, e as unknown as Record<string, unknown>)}
+                  extraActions={
+                    <button type="button" className="btn btn-danger btn-sm" onClick={() => reject(d)} disabled={busyId === d.id}>
+                      رد
+                    </button>
+                  }
+                />
+              ) : d.kind === "question" ? (
                 <QuestionForm
                   initial={normalizeQuestion(d.data)}
                   saving={busyId === d.id}

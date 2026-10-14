@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { extractKonkurPage } from "@/lib/api";
-import type { KonkurDraft } from "@/lib/types";
+import { TEXTBOOKS, findBook } from "@/lib/textbooks";
 import type { Notify } from "./types";
 
 // pdf.js داخل bundle نمی‌آید (نسخه‌ی 4 با پارسر Next 14 نمی‌سازد)؛ موقع اجرا از CDN
@@ -70,7 +70,14 @@ export default function PdfUploadSection({ notify, onDraftsAdded }: { notify: No
   const [from, setFrom] = useState("1");
   const [to, setTo] = useState("1");
   const [sourceName, setSourceName] = useState("");
-  const [kind, setKind] = useState<"questions" | "tips">("questions");
+  const [kind, setKind] = useState<"questions" | "tips" | "exercises" | "notes">("questions");
+  // تمرین کتاب: کتاب/فصل/درس و فاصله‌ی شماره‌ی صفحه‌ی PDF با شماره‌ی چاپ‌شده در کتاب
+  const [bookId, setBookId] = useState("math9");
+  const [chapterId, setChapterId] = useState("");
+  const [lesson, setLesson] = useState("");
+  const [pageOffset, setPageOffset] = useState("0");
+  // سؤال: فصل (اختیاری، برای پر شدن امتحان فصلی) و بازنویسی سؤال‌های کتاب تست
+  const [rewrite, setRewrite] = useState(false);
   const [year, setYear] = useState("");
   const [track, setTrack] = useState("");
   const [round, setRound] = useState("");
@@ -118,15 +125,39 @@ export default function PdfUploadSection({ notify, onDraftsAdded }: { notify: No
     setPage(n, { status: "running" });
     try {
       const blob = await renderPage(doc, n);
-      const res = await extractKonkurPage(blob, {
-        source_name: sourceName.trim(),
-        kind,
-        year: year || undefined,
-        track: track || undefined,
-        round: round || undefined,
-        abroad: abroad || undefined,
-        page_label: String(n),
-      });
+      const bookPage = n - (Math.floor(Number(pageOffset)) || 0);
+      const res = await extractKonkurPage(
+        blob,
+        kind === "notes"
+          ? {
+              source_name: sourceName.trim(),
+              kind,
+              page_label: String(n),
+              grade: String(findBook(bookId)?.grade ?? ""),
+              chapter_id: chapterId,
+            }
+          : kind === "exercises"
+          ? {
+              source_name: sourceName.trim(),
+              kind,
+              page_label: `صفحه‌ی کتاب ${bookPage}`,
+              book_id: bookId,
+              chapter_id: chapterId,
+              lesson: lesson || undefined,
+              page: String(bookPage),
+            }
+          : {
+              source_name: sourceName.trim(),
+              kind,
+              year: rewrite ? undefined : year || undefined,
+              track: rewrite ? undefined : track || undefined,
+              round: rewrite ? undefined : round || undefined,
+              abroad: rewrite ? undefined : abroad || undefined,
+              page_label: String(n),
+              chapter_id: kind === "questions" && chapterId ? chapterId : undefined,
+              rewrite: kind === "questions" && rewrite ? true : undefined,
+            }
+      );
       setPage(n, { status: "done", drafts: res.drafts.length });
       setDraftCount((c) => c + res.drafts.length);
       if (res.skipped && res.skipped.length) {
@@ -147,6 +178,9 @@ export default function PdfUploadSection({ notify, onDraftsAdded }: { notify: No
     const b = Math.min(numPages, Math.floor(Number(to) || numPages));
     if (!sourceName.trim()) return notify("نام منبع را وارد کن", "err");
     if (a > b) return notify("بازه‌ی صفحه‌ها نامعتبر است", "err");
+    if ((kind === "exercises" || kind === "notes") && !chapterId) return notify("فصل کتاب را انتخاب کن", "err");
+    if (kind === "exercises" && a - (Number(pageOffset) || 0) < 1)
+      return notify("با این فاصله، شماره‌ی صفحه‌ی کتاب منفی می‌شود؛ فاصله را درست کن", "err");
     cancelRef.current = false;
     setRunning(true);
     setTotal(b - a + 1);
@@ -202,11 +236,150 @@ export default function PdfUploadSection({ notify, onDraftsAdded }: { notify: No
         </label>
         <label>
           نوع
-          <select value={kind} onChange={(e) => setKind(e.target.value as "questions" | "tips")} disabled={running}>
+          <select
+            value={kind}
+            onChange={(e) => setKind(e.target.value as "questions" | "tips" | "exercises" | "notes")}
+            disabled={running}
+          >
             <option value="questions">سؤال</option>
             <option value="tips">نکته</option>
+            <option value="exercises">تمرین کتاب درسی</option>
+            <option value="notes">جزوه‌ی آموزشی (نکته‌های یک فصل)</option>
           </select>
         </label>
+        {kind === "exercises" || kind === "notes" ? (
+          <>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+              <label>
+                کتاب{" "}
+                <select
+                  value={bookId}
+                  onChange={(e) => {
+                    setBookId(e.target.value);
+                    setChapterId("");
+                    setLesson("");
+                  }}
+                  disabled={running}
+                >
+                  {TEXTBOOKS.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.title}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                فصل{" "}
+                <select
+                  value={chapterId}
+                  onChange={(e) => {
+                    setChapterId(e.target.value);
+                    setLesson("");
+                  }}
+                  disabled={running}
+                >
+                  <option value="">— انتخاب کن —</option>
+                  {findBook(bookId)?.chapters.map((c, i) => (
+                    <option key={c.id} value={c.id}>
+                      فصل {i + 1}: {c.title}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {kind === "exercises" && (
+              <label>
+                درس{" "}
+                <select value={lesson} onChange={(e) => setLesson(e.target.value)} disabled={running}>
+                  <option value="">—</option>
+                  {findBook(bookId)
+                    ?.chapters.find((c) => c.id === chapterId)
+                    ?.lessons.map((l, i) => (
+                      <option key={i} value={String(i + 1)}>
+                        درس {i + 1}: {l}
+                      </option>
+                    ))}
+                </select>
+              </label>
+              )}
+            </div>
+            {kind === "notes" ? (
+              <span className="hint">
+                مطالب جزوه به نکته‌های همین فصل تبدیل می‌شود، به زبان خودمان و بدون نام نویسنده یا ناشر. بعد از تأیید در «بازبینی
+                پیش‌نویس‌ها»، راه‌حل تمرین‌های این فصل بر اساس همین نکته‌ها نوشته می‌شود و در اپ به آن‌ها لینک می‌دهد. پس بهتر است
+                اول جزوه‌ی فصل را بفرستی، بعد تمرین‌ها را.
+              </span>
+            ) : (
+            <>
+            <label>
+              فاصله‌ی شماره‌ی صفحه{" "}
+              <input
+                type="number"
+                style={{ width: 80 }}
+                value={pageOffset}
+                onChange={(e) => setPageOffset(e.target.value)}
+                disabled={running}
+              />
+              <span className="hint">
+                {" "}
+                شماره‌ی صفحه‌ی کتاب = صفحه‌ی PDF منهای این عدد (مثلاً اگر صفحه‌ی ۱ کتاب، صفحه‌ی ۹ PDF است، ۸ بنویس)
+              </span>
+            </label>
+            <span className="hint">
+              هر بار فقط صفحه‌های یک فصل (و اگر شد یک درس) را بفرست. راه‌حل‌ها را هوش مصنوعی بر اساس نکته‌های این فصل می‌نویسد؛ قبل
+              از تأیید، همه را بررسی کن.
+            </span>
+            </>
+            )}
+          </>
+        ) : (
+        <>
+        {kind === "questions" && (
+          <>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+              <label>
+                کتاب{" "}
+                <select
+                  value={bookId}
+                  onChange={(e) => {
+                    setBookId(e.target.value);
+                    setChapterId("");
+                  }}
+                  disabled={running}
+                >
+                  {TEXTBOOKS.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.title}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                فصل (اختیاری){" "}
+                <select value={chapterId} onChange={(e) => setChapterId(e.target.value)} disabled={running}>
+                  <option value="">—</option>
+                  {findBook(bookId)?.chapters.map((c, i) => (
+                    <option key={c.id} value={c.id}>
+                      فصل {i + 1}: {c.title}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <span className="hint">
+              با انتخاب فصل، سؤال‌ها خودکار به نکته‌های همان فصل وصل می‌شوند و بعد از تأیید در «آمادگی برای امتحان» همان فصل می‌آیند
+              (فصل باید حداقل یک نکته داشته باشد).
+            </span>
+            <label>
+              <input type="checkbox" checked={rewrite} onChange={(e) => setRewrite(e.target.checked)} disabled={running} />{" "}
+              کتاب تست است؛ سؤال‌ها را با عدد و متن تازه بازنویسی کن
+            </label>
+            <span className="hint">
+              سؤال‌های کتاب‌های تست مال ناشرشان است؛ با این گزینه فقط ایده‌ی سؤال برداشته می‌شود و هوش مصنوعی سؤال، گزینه‌ها و راه‌حل تازه
+              می‌سازد. برای دفترچه‌ی رسمی کنکور این گزینه را نزن.
+            </span>
+          </>
+        )}
+        {!(kind === "questions" && rewrite) && (
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
           <label>
             سال{" "}
@@ -232,6 +405,9 @@ export default function PdfUploadSection({ notify, onDraftsAdded }: { notify: No
             <input type="checkbox" checked={abroad} onChange={(e) => setAbroad(e.target.checked)} disabled={running} /> خارج از کشور
           </label>
         </div>
+        )}
+        </>
+        )}
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <label>
             از صفحه{" "}
