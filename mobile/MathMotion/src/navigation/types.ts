@@ -60,6 +60,10 @@ export type RootStackParamList = {
   // «برگه‌ی فرمول»: the chapters' key formulas, and one chapter's sheet.
   FormulaSheet: undefined;
   FormulaChapter: { chapterId: string };
+  // «تمرین‌های کتاب»: one textbook chapter's exercises (by lesson), and
+  // one exercise with its step-by-step solution (content/textbook).
+  TextbookChapter: { chapterId: string };
+  TextbookExercise: { exerciseId: string };
   // «ماشین‌حساب هندسه»: pick a shape and measurements; solved like any
   // typed problem.
   Geometry: undefined;

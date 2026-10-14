@@ -1,11 +1,12 @@
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { SubscriptionStatusCard } from '../../components/Billing/SubscriptionStatusCard';
 import { AppButton } from '../../components/common/AppButton';
+import { AppDialog } from '../../components/common/AppDialog';
 import { AppText } from '../../components/common/AppText';
 import { Card } from '../../components/common/Card';
 import { DailyGoalStepper } from '../../components/Konkur/DailyGoalStepper';
@@ -49,11 +50,8 @@ export function SettingsScreen() {
   const setTrack = usePreferencesStore(state => state.setTrack);
   const { user, logout } = useAuthStore();
 
-  const confirmLogout = () =>
-    Alert.alert(t('auth.logoutConfirmTitle'), t('auth.logoutConfirmBody'), [
-      { text: t('auth.cancel'), style: 'cancel' },
-      { text: t('auth.logout'), style: 'destructive', onPress: () => logout() },
-    ]);
+  const [logoutOpen, setLogoutOpen] = useState(false);
+  const confirmLogout = () => setLogoutOpen(true);
   const rowStyle = [styles.row, isRTL && styles.rowRTL];
 
   return (
@@ -229,6 +227,19 @@ export function SettingsScreen() {
       <AppText size="xs" align="center" color={colors.textSecondary}>
         {t('settings.version', { version: APP_VERSION })}
       </AppText>
+
+      <AppDialog
+        visible={logoutOpen}
+        icon="logout"
+        tone="danger"
+        title={t('auth.logoutConfirmTitle')}
+        message={t('auth.logoutConfirmBody')}
+        onDismiss={() => setLogoutOpen(false)}
+        actions={[
+          { label: t('auth.cancel'), onPress: () => setLogoutOpen(false) },
+          { label: t('auth.logout'), variant: 'danger', onPress: () => { setLogoutOpen(false); logout(); } },
+        ]}
+      />
     </ScreenContainer>
   );
 }

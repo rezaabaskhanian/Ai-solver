@@ -44,7 +44,12 @@ export interface ExamQuestion extends GeneratedQuestion {
 // Spreads `count` questions evenly over the picked chapters' skills
 // (round-robin, so 10 questions over 3 chapters never all come from one),
 // avoids exact repeats, then shuffles the order.
-export function buildExam(config: ExamConfig, rng: Rng = Math.random): ExamQuestion[] {
+//
+// `bank` is the chapters' question bank (services/exam/chapterBank.ts,
+// already interleaved by chapter): with generators too, up to half the
+// exam comes from it; a chapter without generators is examined from the
+// bank alone, so the exam may be shorter than `count`.
+export function buildExam(config: ExamConfig, rng: Rng = Math.random, bank: ExamQuestion[] = []): ExamQuestion[] {
   const grade = findGrade(config.grade);
   const pool = shuffle(
     rng,
@@ -52,13 +57,12 @@ export function buildExam(config: ExamConfig, rng: Rng = Math.random): ExamQuest
       .filter(ch => config.chapterIds.includes(ch.id))
       .flatMap(ch => ch.skills.map(skill => ({ chapterId: ch.id, skill }))),
   );
-  if (pool.length === 0) {
-    return [];
-  }
+  const fromBank = bank.slice(0, pool.length > 0 ? Math.ceil(config.count / 2) : config.count);
+  const generatedCount = pool.length > 0 ? config.count - fromBank.length : 0;
 
   const seen = new Set<string>();
   const questions: ExamQuestion[] = [];
-  for (let i = 0; i < config.count; i += 1) {
+  for (let i = 0; i < generatedCount; i += 1) {
     const { chapterId, skill } = pool[i % pool.length];
     let question = GENERATORS[skill](rng);
     for (let tries = 0; tries < 5 && seen.has(signature(question)); tries += 1) {
@@ -67,6 +71,7 @@ export function buildExam(config: ExamConfig, rng: Rng = Math.random): ExamQuest
     seen.add(signature(question));
     questions.push({ ...question, id: String(i), chapterId, skill });
   }
+  fromBank.forEach((q, i) => questions.push({ ...q, id: String(generatedCount + i) }));
   return shuffle(rng, questions);
 }
 

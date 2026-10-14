@@ -7,6 +7,9 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import type { CurriculumChapter, CurriculumGrade } from '../../content/curriculum';
 import { findGrade, type GradeId } from '../../content/examSyllabus';
 import { tipsForChapter } from '../../content/konkur';
+import { exercisesForChapter } from '../../content/textbook';
+import { chapterBankCounts } from '../../services/exam/chapterBank';
+import { useTextbookExercises } from '../../store/useTextbookStore';
 import { useTrackKonkurContent } from '../../store/useKonkurContentStore';
 import { findTopic } from '../../content/topics';
 import { useIsRTL } from '../../hooks/useIsRTL';
@@ -31,15 +34,18 @@ export function CurriculumChapterCard({ grade, number, chapter }: Props) {
   const isRTL = useIsRTL();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const konkurContent = useTrackKonkurContent();
+  const exerciseCount = exercisesForChapter(useTextbookExercises(), chapter.id).length;
   const [open, setOpen] = useState(false);
   const row = [styles.row, isRTL && styles.rowRTL];
 
   const topics = (chapter.topics ?? []).map(findTopic).filter(topic => topic !== undefined);
+  const examChapter = findGrade(grade as GradeId)?.chapters.find(c => c.id === chapter.id);
+  // Generators, or questions added to the chapter from the admin panel.
   const hasExam = Boolean(
-    findGrade(grade as GradeId)?.chapters.find(c => c.id === chapter.id && c.skills.length > 0),
+    examChapter && (examChapter.skills.length > 0 || (chapterBankCounts(konkurContent).get(chapter.id) ?? 0) > 0),
   );
   const hasTips = tipsForChapter(chapter.id, konkurContent).length > 0;
-  const supported = topics.length > 0 || hasExam || hasTips;
+  const supported = topics.length > 0 || hasExam || hasTips || exerciseCount > 0;
 
   return (
     <View style={[styles.card, open && styles.cardOpen]}>
@@ -81,6 +87,18 @@ export function CurriculumChapterCard({ grade, number, chapter }: Props) {
 
           {supported ? (
             <View style={[styles.actions, isRTL && styles.rowRTL]}>
+              {exerciseCount > 0 && (
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => navigation.navigate('TextbookChapter', { chapterId: chapter.id })}
+                  style={({ pressed }) => [styles.chip, styles.examChip, isRTL && styles.rowRTL, pressed && styles.pressed]}
+                >
+                  <Icon name="menu-book" size={16} color={colors.onPrimary} />
+                  <AppText size="xs" weight="medium" color={colors.onPrimary}>
+                    {t('textbook.chapterButton', { count: exerciseCount })}
+                  </AppText>
+                </Pressable>
+              )}
               {topics.map(topic => (
                 <Pressable
                   key={topic.id}

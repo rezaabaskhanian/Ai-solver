@@ -10,7 +10,7 @@ import { ProblemCard } from '../../components/Solution/ProblemCard';
 import { StepProgressDots } from '../../components/StepViewer/StepProgressDots';
 import { AppButton } from '../../components/common/AppButton';
 import { AppText } from '../../components/common/AppText';
-import { Icon } from '../../components/common/Icon';
+import { Celebration } from '../../components/common/Celebration';
 import { Card } from '../../components/common/Card';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 import { MathExpression } from '../../components/MathExpression/MathExpression';
@@ -73,7 +73,7 @@ export function QuizScreen({ route, navigation }: Props) {
       {finished ? (
         <View style={styles.completeBlock}>
           <View style={styles.center}>
-            <Icon name="emoji-events" size={48} color={colors.warning} />
+            <Celebration kind="courseDone" size={140} />
             <AppText weight="bold" size="lg" align="center">
               {t('quiz.complete')}
             </AppText>
@@ -111,7 +111,7 @@ export function QuizScreen({ route, navigation }: Props) {
 
             {answeredCorrectly && (
               <View style={[styles.feedback, { backgroundColor: colors.successMuted }]}>
-                <Icon name="check-circle" color={colors.success} />
+                <Celebration key={currentIndex} kind="correct" size={36} />
                 <AppText color={colors.success} weight="medium">
                   {t('quiz.correct')}
                 </AppText>

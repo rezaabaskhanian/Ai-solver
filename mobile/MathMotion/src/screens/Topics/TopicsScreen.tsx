@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -14,6 +14,7 @@ import { TOPICS } from '../../content/topics';
 import { useIsRTL } from '../../hooks/useIsRTL';
 import type { RootStackParamList } from '../../navigation/types';
 import { usePreferencesStore, useTrack } from '../../store/usePreferencesStore';
+import { refreshTextbook } from '../../store/useTextbookStore';
 import { makeStyles, radius, spacing, useColors } from '../../theme';
 
 // «مباحث درسی»: "all topics" (the app's own subject list) or one school
@@ -30,6 +31,11 @@ export function TopicsScreen() {
   const track = useTrack();
   const curriculum = grade ? findCurriculumGrade(grade) : undefined;
   const books = curriculum ? booksForTrack(curriculum, track) : [];
+
+  // The chapter cards show «تمرین‌های کتاب» once the exercises are in.
+  useEffect(() => {
+    refreshTextbook();
+  }, []);
 
   const tabs: { key: string; label: string; value: typeof grade }[] = [
     { key: 'all', label: t('topics.allTopics'), value: null },

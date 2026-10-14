@@ -1,11 +1,12 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 
 import { AppButton } from '../../components/common/AppButton';
 import { AppText } from '../../components/common/AppText';
 import { Card } from '../../components/common/Card';
+import { CelebrationOverlay } from '../../components/common/Celebration';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 import { MathExpression } from '../../components/MathExpression/MathExpression';
 import { useIsRTL } from '../../hooks/useIsRTL';
@@ -55,6 +56,8 @@ export function ExamResultScreen({ route, navigation }: Props) {
   const isRTL = useIsRTL();
   const { config, questions, answers, elapsedSec, durationSec, timedOut } = route.params;
   const score = useMemo(() => scoreExam(questions, answers), [questions, answers]);
+  // Confetti once for a good score (70%+, the «good» verdict and up).
+  const [celebrate, setCelebrate] = useState(() => score.percent >= 70);
 
   const scoreColor =
     score.percent >= 70 ? colors.success : score.percent >= 50 ? colors.warning : colors.danger;
@@ -63,68 +66,102 @@ export function ExamResultScreen({ route, navigation }: Props) {
   const average = averageSecondsPerQuestion(elapsedSec, score.total);
 
   return (
-    <ScreenContainer scroll>
-      <Card style={styles.scoreCard}>
-        <AppText size="xxl" weight="bold" align="center" color={scoreColor}>
-          {t('exam.percent', { percent: num(score.percent) })}
-        </AppText>
-        <AppText align="center" weight="medium">
-          {t('exam.points', { points: num(score.points) })}
-        </AppText>
-        <AppText align="center" color={colors.textSecondary}>
-          {t(verdictKey(score.percent))}
-        </AppText>
-        {timedOut && (
-          <AppText size="sm" align="center" color={colors.danger}>
-            {t('exam.timedOutNote')}
+    <View style={styles.flexOne}>
+      <ScreenContainer scroll>
+        <Card style={styles.scoreCard}>
+          <AppText size="xxl" weight="bold" align="center" color={scoreColor}>
+            {t('exam.percent', { percent: num(score.percent) })}
           </AppText>
+          <AppText align="center" weight="medium">
+            {t('exam.points', { points: num(score.points) })}
+          </AppText>
+          <AppText align="center" color={colors.textSecondary}>
+            {t(verdictKey(score.percent))}
+          </AppText>
+          {timedOut && (
+            <AppText size="sm" align="center" color={colors.danger}>
+              {t('exam.timedOutNote')}
+            </AppText>
+          )}
+          <View style={[rowStyle, styles.stats]}>
+            <Stat label={t('exam.correctCount')} value={num(score.correct)} color={colors.success} />
+            <Stat label={t('exam.wrongCount')} value={num(score.wrong)} color={colors.danger} />
+            <Stat label={t('exam.blankCount')} value={num(score.blank)} color={colors.textSecondary} />
+          </View>
+          <View style={[rowStyle, styles.stats]}>
+            <Stat
+              label={t('exam.timeUsed')}
+              value={`${num(formatClock(elapsedSec))} / ${num(formatClock(durationSec))}`}
+              color={colors.textPrimary}
+            />
+            <Stat
+              label={t('exam.avgPerQuestion')}
+              value={t('exam.seconds', { value: num(average) })}
+              color={colors.textPrimary}
+            />
+          </View>
+        </Card>
+
+        {config.konkur && (
+          <ExamRankCard
+            paperKey={paperKeyOf(config.konkur)}
+            percent={score.percent}
+            correct={score.correct}
+            wrong={score.wrong}
+            blank={score.blank}
+            seconds={elapsedSec}
+          />
         )}
-        <View style={[rowStyle, styles.stats]}>
-          <Stat label={t('exam.correctCount')} value={num(score.correct)} color={colors.success} />
-          <Stat label={t('exam.wrongCount')} value={num(score.wrong)} color={colors.danger} />
-          <Stat label={t('exam.blankCount')} value={num(score.blank)} color={colors.textSecondary} />
-        </View>
-        <View style={[rowStyle, styles.stats]}>
-          <Stat
-            label={t('exam.timeUsed')}
-            value={`${num(formatClock(elapsedSec))} / ${num(formatClock(durationSec))}`}
-            color={colors.textPrimary}
-          />
-          <Stat
-            label={t('exam.avgPerQuestion')}
-            value={t('exam.seconds', { value: num(average) })}
-            color={colors.textPrimary}
-          />
-        </View>
-      </Card>
 
-      {config.konkur && (
-        <ExamRankCard
-          paperKey={paperKeyOf(config.konkur)}
-          percent={score.percent}
-          correct={score.correct}
-          wrong={score.wrong}
-          blank={score.blank}
-          seconds={elapsedSec}
-        />
-      )}
+        {score.byTopic.length > 0 && (
+          <Card style={styles.section}>
+            <AppText weight="bold" size="lg">
+              {t('exam.byTopic')}
+            </AppText>
+            {score.byTopic.map(topic => {
+              const ratio = topic.correctPercent / 100;
+              const barColor = ratio >= 0.7 ? colors.success : ratio >= 0.5 ? colors.warning : colors.danger;
+              return (
+                <View key={topic.key} style={styles.chapter}>
+                  <View style={rowStyle}>
+                    <AppText size="sm" style={styles.flexOne}>
+                      {topic.label}
+                    </AppText>
+                    <AppText size="sm" weight="bold" color={barColor}>
+                      {t('exam.percent', { percent: num(topic.correctPercent) })} · {t('exam.scoreLine', { correct: num(topic.correct), total: num(topic.total) })}
+                    </AppText>
+                  </View>
+                  <View style={styles.track}>
+                    <View
+                      style={[
+                        styles.fill,
+                        isRTL && styles.fillRTL,
+                        { width: `${topic.correctPercent}%` as const, backgroundColor: barColor },
+                      ]}
+                    />
+                  </View>
+                </View>
+              );
+            })}
+          </Card>
+        )}
 
-      {score.byTopic.length > 0 && (
+        {score.byChapter.length > 0 && (
         <Card style={styles.section}>
           <AppText weight="bold" size="lg">
-            {t('exam.byTopic')}
+            {t('exam.byChapter')}
           </AppText>
-          {score.byTopic.map(topic => {
-            const ratio = topic.correctPercent / 100;
+          {score.byChapter.map(ch => {
+            const ratio = ch.correct / ch.total;
             const barColor = ratio >= 0.7 ? colors.success : ratio >= 0.5 ? colors.warning : colors.danger;
             return (
-              <View key={topic.key} style={styles.chapter}>
+              <View key={ch.chapterId} style={styles.chapter}>
                 <View style={rowStyle}>
                   <AppText size="sm" style={styles.flexOne}>
-                    {topic.label}
+                    {t(`exam.chapters.${ch.chapterId}`)}
                   </AppText>
                   <AppText size="sm" weight="bold" color={barColor}>
-                    {t('exam.percent', { percent: num(topic.correctPercent) })} · {t('exam.scoreLine', { correct: num(topic.correct), total: num(topic.total) })}
+                    {t('exam.scoreLine', { correct: num(ch.correct), total: num(ch.total) })}
                   </AppText>
                 </View>
                 <View style={styles.track}>
@@ -132,7 +169,7 @@ export function ExamResultScreen({ route, navigation }: Props) {
                     style={[
                       styles.fill,
                       isRTL && styles.fillRTL,
-                      { width: `${topic.correctPercent}%` as const, backgroundColor: barColor },
+                      { width: `${Math.round(ratio * 100)}%` as const, backgroundColor: barColor },
                     ]}
                   />
                 </View>
@@ -140,103 +177,72 @@ export function ExamResultScreen({ route, navigation }: Props) {
             );
           })}
         </Card>
-      )}
+        )}
 
-      {score.byChapter.length > 0 && (
-      <Card style={styles.section}>
+        <View style={styles.actions}>
+          <AppButton
+            label={config.konkur ? t('exam.konkurRetry') : t('exam.retry')}
+            icon="refresh"
+            onPress={() => navigation.replace('Exam', { config })}
+          />
+          <AppButton label={t('exam.otherChapters')} variant="secondary" onPress={() => navigation.goBack()} />
+        </View>
+
         <AppText weight="bold" size="lg">
-          {t('exam.byChapter')}
+          {t('exam.review')}
         </AppText>
-        {score.byChapter.map(ch => {
-          const ratio = ch.correct / ch.total;
-          const barColor = ratio >= 0.7 ? colors.success : ratio >= 0.5 ? colors.warning : colors.danger;
+        {questions.map((q, i) => {
+          const chosen = answers[i];
+          const correct = chosen === q.answerIndex;
+          const blank = chosen === null;
           return (
-            <View key={ch.chapterId} style={styles.chapter}>
+            <Card key={q.id} style={[styles.section, correct ? styles.reviewCorrect : styles.reviewWrong]}>
               <View style={rowStyle}>
-                <AppText size="sm" style={styles.flexOne}>
-                  {t(`exam.chapters.${ch.chapterId}`)}
-                </AppText>
-                <AppText size="sm" weight="bold" color={barColor}>
-                  {t('exam.scoreLine', { correct: num(ch.correct), total: num(ch.total) })}
-                </AppText>
-              </View>
-              <View style={styles.track}>
-                <View
-                  style={[
-                    styles.fill,
-                    isRTL && styles.fillRTL,
-                    { width: `${Math.round(ratio * 100)}%` as const, backgroundColor: barColor },
-                  ]}
+                <Icon
+                  name={correct ? 'check-circle' : blank ? 'remove-circle-outline' : 'cancel'}
+                  size={20}
+                  color={correct ? colors.success : blank ? colors.textSecondary : colors.danger}
                 />
-              </View>
-            </View>
-          );
-        })}
-      </Card>
-      )}
-
-      <View style={styles.actions}>
-        <AppButton
-          label={config.konkur ? t('exam.konkurRetry') : t('exam.retry')}
-          icon="refresh"
-          onPress={() => navigation.replace('Exam', { config })}
-        />
-        <AppButton label={t('exam.otherChapters')} variant="secondary" onPress={() => navigation.goBack()} />
-      </View>
-
-      <AppText weight="bold" size="lg">
-        {t('exam.review')}
-      </AppText>
-      {questions.map((q, i) => {
-        const chosen = answers[i];
-        const correct = chosen === q.answerIndex;
-        const blank = chosen === null;
-        return (
-          <Card key={q.id} style={[styles.section, correct ? styles.reviewCorrect : styles.reviewWrong]}>
-            <View style={rowStyle}>
-              <Icon
-                name={correct ? 'check-circle' : blank ? 'remove-circle-outline' : 'cancel'}
-                size={20}
-                color={correct ? colors.success : blank ? colors.textSecondary : colors.danger}
-              />
-              <AppText size="sm" weight="medium" style={styles.flexOne}>
-                {t('exam.questionNumber', { n: num(i + 1) })} {q.text ?? t(`exam.q.${q.textKey}`, q.params)}
-              </AppText>
-            </View>
-            {q.expression && <MathExpression expression={q.expression} size="md" />}
-
-            <View style={rowStyle}>
-              <AppText size="sm" color={colors.textSecondary}>
-                {t('exam.yourAnswer')}
-              </AppText>
-              {chosen === null ? (
-                <AppText size="sm" color={colors.danger}>
-                  {t('exam.unanswered')}
+                <AppText size="sm" weight="medium" style={styles.flexOne}>
+                  {t('exam.questionNumber', { n: num(i + 1) })} {q.text ?? t(`exam.q.${q.textKey}`, q.params)}
                 </AppText>
-              ) : (
-                q.choicesMath === false ? (
-                  <AppText size="sm">{q.choices[chosen]}</AppText>
-                ) : (
-                  <MathExpression expression={q.choices[chosen]} size="sm" />
-                )
-              )}
-            </View>
-            {!correct && (
+              </View>
+              {q.expression && <MathExpression expression={q.expression} size="md" />}
+
               <View style={rowStyle}>
                 <AppText size="sm" color={colors.textSecondary}>
-                  {t('exam.correctAnswer')}
+                  {t('exam.yourAnswer')}
                 </AppText>
-                {q.choicesMath === false ? (
-                  <AppText size="sm" weight="bold">{q.choices[q.answerIndex]}</AppText>
+                {chosen === null ? (
+                  <AppText size="sm" color={colors.danger}>
+                    {t('exam.unanswered')}
+                  </AppText>
                 ) : (
-                  <MathExpression expression={q.choices[q.answerIndex]} size="sm" emphasize />
+                  q.choicesMath === false ? (
+                    <AppText size="sm">{q.choices[chosen]}</AppText>
+                  ) : (
+                    <MathExpression expression={q.choices[chosen]} size="sm" />
+                  )
                 )}
               </View>
-            )}
-          </Card>
-        );
-      })}
-    </ScreenContainer>
+              {!correct && (
+                <View style={rowStyle}>
+                  <AppText size="sm" color={colors.textSecondary}>
+                    {t('exam.correctAnswer')}
+                  </AppText>
+                  {q.choicesMath === false ? (
+                    <AppText size="sm" weight="bold">{q.choices[q.answerIndex]}</AppText>
+                  ) : (
+                    <MathExpression expression={q.choices[q.answerIndex]} size="sm" emphasize />
+                  )}
+                </View>
+              )}
+            </Card>
+          );
+        })}
+      </ScreenContainer>
+      <CelebrationOverlay kind="courseDone" visible={celebrate} onDone={() => setCelebrate(false)} />
+    </View>
   );
 }
 

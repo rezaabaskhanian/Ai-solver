@@ -16,6 +16,7 @@ import { useKonkurStudyStore } from '../../store/useKonkurStudyStore';
 import { makeStyles, radius, spacing, useColors } from '../../theme';
 import { AppText } from '../common/AppText';
 import { Card } from '../common/Card';
+import { Celebration } from '../common/Celebration';
 import { Icon } from '../common/Icon';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
@@ -71,7 +72,11 @@ export function StudyEntryCards({ content }: Props) {
             </AppText>
           </View>
           <View style={[...row, styles.streak]}>
-            <Icon name="local-fire-department" size={20} color={streak > 0 ? colors.warning : colors.textSecondary} />
+            {streak > 0 ? (
+              <Celebration kind="streak" size={28} loop />
+            ) : (
+              <Icon name="local-fire-department" size={20} color={colors.textSecondary} />
+            )}
             <AppText weight="bold" size="sm" color={streak > 0 ? colors.warning : colors.textSecondary}>
               {toPersianDigits(streak)}
             </AppText>

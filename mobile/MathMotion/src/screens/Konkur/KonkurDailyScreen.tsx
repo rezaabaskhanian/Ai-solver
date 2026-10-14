@@ -7,6 +7,7 @@ import { StyleSheet, View } from 'react-native';
 import { AppButton } from '../../components/common/AppButton';
 import { AppText } from '../../components/common/AppText';
 import { Card } from '../../components/common/Card';
+import { Celebration } from '../../components/common/Celebration';
 import { Icon } from '../../components/common/Icon';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 import { DailyGoalStepper } from '../../components/Konkur/DailyGoalStepper';
@@ -59,7 +60,11 @@ export function KonkurDailyScreen() {
     <ScreenContainer scroll>
       <Card style={styles.card}>
         <View style={row}>
-          <Icon name="local-fire-department" size={36} color={streak > 0 ? colors.warning : colors.textSecondary} />
+          {streak > 0 ? (
+            <Celebration kind="streak" size={52} loop />
+          ) : (
+            <Icon name="local-fire-department" size={36} color={colors.textSecondary} />
+          )}
           <View style={styles.flexOne}>
             <AppText weight="bold" size="lg">
               {streak > 0 ? t('konkur.daily.streak', { n: toPersianDigits(streak) }) : t('konkur.daily.streakNone')}

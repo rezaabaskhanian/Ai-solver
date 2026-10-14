@@ -19,6 +19,7 @@ import { AppButton } from '../common/AppButton';
 import { AppText } from '../common/AppText';
 import { Badge } from '../common/Badge';
 import { Card } from '../common/Card';
+import { Celebration } from '../common/Celebration';
 import { Icon } from '../common/Icon';
 import { MathExpression } from '../MathExpression/MathExpression';
 import { QuizChoice } from '../Quiz/QuizChoice';
@@ -224,10 +225,12 @@ export function KonkurQuestionCard({ question, index, currentTipId }: Props) {
       {answered && (
         <View style={styles.result}>
           <View style={row}>
-            <Icon
-              name={gaveUp ? 'school' : correct ? 'check-circle' : 'cancel'}
-              color={gaveUp ? colors.primaryText : correct ? colors.success : colors.danger}
-            />
+            {gaveUp ? (
+              <Icon name="school" color={colors.primaryText} />
+            ) : (
+              // Replays for every new pick (key), not on re-renders.
+              <Celebration key={`${question.id}-${picked}`} kind={correct ? 'correct' : 'wrong'} size={44} />
+            )}
             <AppText
               weight="bold"
               color={gaveUp ? colors.primaryText : correct ? colors.success : colors.danger}

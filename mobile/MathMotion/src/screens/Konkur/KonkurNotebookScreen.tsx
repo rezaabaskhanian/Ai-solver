@@ -7,6 +7,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { AppText } from '../../components/common/AppText';
 import { Badge } from '../../components/common/Badge';
 import { Card } from '../../components/common/Card';
+import { Celebration } from '../../components/common/Celebration';
 import { Icon } from '../../components/common/Icon';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 import { CURRICULUM } from '../../content/curriculum';
@@ -204,7 +205,16 @@ export function KonkurNotebookScreen({ route }: Props) {
             {t('konkur.review.intro')}
           </AppText>
           {due.length === 0
-            ? empty('konkur.review.none')
+            ? Object.keys(reviewState.items).length > 0
+              ? (
+                <View style={styles.empty}>
+                  <Celebration kind="reviewDone" size={160} />
+                  <AppText color={colors.textSecondary} align="center">
+                    {t('konkur.review.allDone')}
+                  </AppText>
+                </View>
+              )
+              : empty('konkur.review.none')
             : due.map(({ question, level, overdueDays }) =>
                 renderQuestionRow(
                   question,

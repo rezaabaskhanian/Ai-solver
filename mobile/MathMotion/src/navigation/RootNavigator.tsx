@@ -17,6 +17,8 @@ import { KonkurDailyScreen } from '../screens/Konkur/KonkurDailyScreen';
 import { KonkurScreen } from '../screens/Konkur/KonkurScreen';
 import { KonkurNotebookScreen } from '../screens/Konkur/KonkurNotebookScreen';
 import { KonkurTipScreen } from '../screens/Konkur/KonkurTipScreen';
+import { TextbookChapterScreen } from '../screens/Textbook/TextbookChapterScreen';
+import { TextbookExerciseScreen } from '../screens/Textbook/TextbookExerciseScreen';
 import { PremiumScreen } from '../screens/Premium/PremiumScreen';
 import { ProblemInputScreen } from '../screens/ProblemInput/ProblemInputScreen';
 import { QuizScreen } from '../screens/Quiz/QuizScreen';
@@ -116,6 +118,9 @@ export function RootNavigator() {
         component={FormulaChapterScreen}
         options={{ title: t('konkur.formulas.title') }}
       />
+      {/* Titles are set by the screens from the chapter / exercise. */}
+      <Stack.Screen name="TextbookChapter" component={TextbookChapterScreen} options={{ title: t('textbook.title') }} />
+      <Stack.Screen name="TextbookExercise" component={TextbookExerciseScreen} options={{ title: t('textbook.title') }} />
       {/* Title is set by TopicScreen itself from the topic's i18n key. */}
       <Stack.Screen name="Topic" component={TopicScreen} />
     </Stack.Navigator>

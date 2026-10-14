@@ -12,9 +12,10 @@ import { chapterVisibleForTrack } from '../../content/curriculum';
 import { EXAM_SYLLABUS, findGrade, type GradeId } from '../../content/examSyllabus';
 import { visibleForTrack } from '../../content/track';
 import { useIsRTL } from '../../hooks/useIsRTL';
+import { chapterBankCounts } from '../../services/exam/chapterBank';
 import { konkurExamConfig, konkurPapers } from '../../services/exam/konkurExam';
 import { localizeDigits } from '../../services/exam/scoring';
-import { useKonkurContent } from '../../store/useKonkurContentStore';
+import { useKonkurContent, useTrackKonkurContent } from '../../store/useKonkurContentStore';
 import { usePreferencesStore, useTrack } from '../../store/usePreferencesStore';
 import type { RootStackParamList } from '../../navigation/types';
 import { makeStyles, radius, spacing, useColors } from '../../theme';
@@ -48,6 +49,10 @@ export function ExamSetupScreen({ navigation, route }: Props) {
   const konkurContent = useKonkurContent();
   const track = useTrack();
   const papers = useMemo(() => konkurPapers(konkurContent, track), [konkurContent, track]);
+  // Chapters filled from the admin panel's question bank are open too.
+  const trackContent = useTrackKonkurContent();
+  const bankCounts = useMemo(() => chapterBankCounts(trackContent), [trackContent]);
+  const hasQuestions = (ch: { id: string; skills: unknown[] }) => ch.skills.length > 0 || (bankCounts.get(ch.id) ?? 0) > 0;
   const num = (value: number | string) => localizeDigits(value, isRTL);
 
   // Chapters of the student's track; the number inside the book stays as
@@ -56,7 +61,7 @@ export function ExamSetupScreen({ navigation, route }: Props) {
   const chapters = (findGrade(grade)?.chapters ?? []).filter(
     ch => visibleForTrack(ch, track) && chapterVisibleForTrack(ch.id, track),
   );
-  const available = chapters.filter(ch => ch.skills.length > 0).map(ch => ch.id);
+  const available = chapters.filter(hasQuestions).map(ch => ch.id);
   const allSelected = available.length > 0 && available.every(id => chapterIds.includes(id));
   const rowStyle = [styles.row, isRTL && styles.rowRTL];
 
@@ -112,7 +117,7 @@ export function ExamSetupScreen({ navigation, route }: Props) {
           <AppText color={colors.textSecondary}>{t('track.comingSoon')}</AppText>
         )}
         {chapters.map((chapter, index) => {
-          const enabled = chapter.skills.length > 0;
+          const enabled = hasQuestions(chapter);
           const checked = chapterIds.includes(chapter.id);
           return (
             <Pressable

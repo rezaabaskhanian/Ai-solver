@@ -6,7 +6,8 @@ import { radius, spacing, useColors, type AppColors } from '../../theme';
 import { AppText } from './AppText';
 import { Icon, type IconName } from './Icon';
 
-type Variant = 'primary' | 'secondary' | 'ghost';
+// `danger` is a filled red button for throwing work away (AppDialog).
+type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
 // `sm` is for rows of two or three buttons side by side (step controls,
 // exam navigation) where full-size pills crowd the screen.
 type Size = 'md' | 'sm';
@@ -59,7 +60,7 @@ export function AppButton({
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'primary' ? colors.onPrimary : colors.primaryText} />
+        <ActivityIndicator color={variant === 'primary' || variant === 'danger' ? contentColor : colors.primaryText} />
       ) : (
         <View style={[styles.content, isRTL && styles.contentRTL]}>
           {icon && <Icon name={icon} size={iconSize} color={contentColor} />}
@@ -119,10 +120,12 @@ const variantStyles = (colors: AppColors): Record<Variant, ViewStyle> => ({
   primary: { backgroundColor: colors.primary },
   secondary: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
   ghost: { backgroundColor: 'transparent' },
+  danger: { backgroundColor: colors.danger },
 });
 
 const textColor = (colors: AppColors): Record<Variant, string> => ({
   primary: colors.onPrimary,
   secondary: colors.textPrimary,
   ghost: colors.primaryText,
+  danger: colors.textInverse,
 });

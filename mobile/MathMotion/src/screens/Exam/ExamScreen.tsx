@@ -1,9 +1,10 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, AppState, Image, StyleSheet, View } from 'react-native';
+import { AppState, Image, StyleSheet, View } from 'react-native';
 
 import { AppButton } from '../../components/common/AppButton';
+import { AppDialog } from '../../components/common/AppDialog';
 import { AppText } from '../../components/common/AppText';
 import { Card } from '../../components/common/Card';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
@@ -11,9 +12,10 @@ import { MathExpression } from '../../components/MathExpression/MathExpression';
 import { QuizChoice } from '../../components/Quiz/QuizChoice';
 import { useIsRTL } from '../../hooks/useIsRTL';
 import type { RootStackParamList } from '../../navigation/types';
-import { useKonkurContent } from '../../store/useKonkurContentStore';
+import { useKonkurContent, useTrackKonkurContent } from '../../store/useKonkurContentStore';
 import { useKonkurProgressStore } from '../../store/useKonkurProgressStore';
 import { buildExam } from '../../services/exam/buildExam';
+import { chapterBankQuestions } from '../../services/exam/chapterBank';
 import { buildKonkurExam } from '../../services/exam/konkurExam';
 import { trackEvent } from '../../services/telemetry';
 import {
@@ -40,10 +42,14 @@ export function ExamScreen({ route, navigation }: Props) {
   const { config } = route.params;
 
   const content = useKonkurContent();
+  // A chapter exam also draws on the chapters' question bank (admin panel).
+  const trackContent = useTrackKonkurContent();
 
   // Generated once per exam — a re-render must not swap the questions.
   const [questions] = useState(() =>
-    config.konkur ? buildKonkurExam(content, config.konkur) : buildExam(config),
+    config.konkur
+      ? buildKonkurExam(content, config.konkur)
+      : buildExam(config, Math.random, chapterBankQuestions(trackContent, config.chapterIds)),
   );
   const [answers, setAnswers] = useState<(number | null)[]>(() => questions.map(() => null));
   const [index, setIndex] = useState(0);
@@ -113,17 +119,51 @@ export function ExamScreen({ route, navigation }: Props) {
     };
   }, [deadline, questions.length]);
 
+  // Which AppDialog is open: confirming an early finish, confirming leaving
+  // (back button / swipe), or the blocking "time's up" one.
+  const [dialog, setDialog] = useState<'finish' | 'leave' | 'timeUp' | null>(null);
+  const pendingLeaveRef = useRef<Parameters<typeof navigation.dispatch>[0] | null>(null);
+
+  // Time's up: the dialog covers the questions so nothing can change, and
+  // its only button (or the back button) shows the result.
   useEffect(() => {
-    if (questions.length > 0 && remaining <= 0) {
-      Alert.alert(t('exam.timeUp'), t('exam.timedOutNote'));
-      finish(true);
+    if (questions.length > 0 && remaining <= 0 && !finishedRef.current) {
+      setDialog('timeUp');
     }
-  }, [remaining, questions.length, finish, t]);
+  }, [remaining, questions.length]);
+
+  // Leaving mid-exam throws the answers away, so ask first. finish() sets
+  // finishedRef before its replace(), which skips this.
+  useEffect(() => {
+    if (questions.length === 0) {
+      return undefined;
+    }
+    return navigation.addListener('beforeRemove', e => {
+      if (finishedRef.current) {
+        return;
+      }
+      e.preventDefault();
+      pendingLeaveRef.current = e.data.action;
+      setDialog('leave');
+    });
+  }, [navigation, questions.length]);
+
+  const leave = () => {
+    const action = pendingLeaveRef.current;
+    finishedRef.current = true;
+    setDialog(null);
+    if (action) {
+      navigation.dispatch(action);
+    }
+  };
 
   if (questions.length === 0) {
     return (
       <ScreenContainer>
-        <AppText align="center">{t('exam.noQuestions')}</AppText>
+        <Card style={styles.card}>
+          <AppText align="center">{t('exam.noQuestions')}</AppText>
+          <AppButton label={t('exam.pickOther')} onPress={() => navigation.goBack()} />
+        </Card>
       </ScreenContainer>
     );
   }
@@ -142,20 +182,14 @@ export function ExamScreen({ route, navigation }: Props) {
     setAnswers(prev => prev.map((a, i) => (i === index ? null : a)));
   };
 
+  const unansweredCount = questions.length - answeredCount;
+
   const handleFinish = () => {
-    const unanswered = questions.length - answeredCount;
-    if (unanswered === 0) {
+    if (unansweredCount === 0) {
       finish(false);
       return;
     }
-    Alert.alert(
-      t('exam.confirmTitle'),
-      t('exam.confirmUnanswered', { count: localizeDigits(unanswered, isRTL) }),
-      [
-        { text: t('exam.keepGoing'), style: 'cancel' },
-        { text: t('exam.finish'), onPress: () => finish(false) },
-      ],
-    );
+    setDialog('finish');
   };
 
   return (
@@ -248,6 +282,60 @@ export function ExamScreen({ route, navigation }: Props) {
       {!isLast && (
         <AppButton label={t('exam.finishEarly')} variant="ghost" size="sm" onPress={handleFinish} />
       )}
+
+      <AppDialog
+        visible={dialog === 'finish'}
+        icon="flag"
+        title={t('exam.confirmTitle')}
+        message={t('exam.confirmUnanswered', { count: localizeDigits(unansweredCount, isRTL) })}
+        onDismiss={() => setDialog(null)}
+        actions={[
+          { label: t('exam.finish'), icon: 'flag', onPress: () => { setDialog(null); finish(false); } },
+          { label: t('exam.keepGoing'), variant: 'secondary', onPress: () => setDialog(null) },
+        ]}
+      >
+        <View style={[styles.dialogStats, isRTL && styles.rowRTL]}>
+          <View style={[styles.dialogStat, { backgroundColor: colors.successMuted }]}>
+            <AppText weight="bold" size="xl" color={colors.success} align="center">
+              {localizeDigits(answeredCount, isRTL)}
+            </AppText>
+            <AppText size="xs" color={colors.textSecondary} align="center">
+              {t('exam.answeredShort')}
+            </AppText>
+          </View>
+          <View style={[styles.dialogStat, { backgroundColor: colors.warningMuted }]}>
+            <AppText weight="bold" size="xl" color={colors.warning} align="center">
+              {localizeDigits(unansweredCount, isRTL)}
+            </AppText>
+            <AppText size="xs" color={colors.textSecondary} align="center">
+              {t('exam.blankCount')}
+            </AppText>
+          </View>
+        </View>
+      </AppDialog>
+
+      <AppDialog
+        visible={dialog === 'leave'}
+        icon="logout"
+        tone="danger"
+        title={t('exam.leaveTitle')}
+        message={t('exam.leaveBody')}
+        onDismiss={() => setDialog(null)}
+        actions={[
+          { label: t('exam.keepGoing'), icon: 'edit', onPress: () => setDialog(null) },
+          { label: t('exam.leave'), variant: 'danger', onPress: leave },
+        ]}
+      />
+
+      <AppDialog
+        visible={dialog === 'timeUp'}
+        icon="timer-off"
+        tone="warning"
+        title={t('exam.timeUp')}
+        message={t('exam.timedOutNote')}
+        onDismiss={() => finish(true)}
+        actions={[{ label: t('exam.seeResult'), icon: 'insights', onPress: () => finish(true) }]}
+      />
     </ScreenContainer>
   );
 }
@@ -311,5 +399,15 @@ const useStyles = makeStyles(colors => StyleSheet.create({
   },
   flexOne: {
     flex: 1,
+  },
+  dialogStats: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.sm,
+  },
+  dialogStat: {
+    flex: 1,
+    borderRadius: radius.md,
+    paddingVertical: spacing.sm,
   },
 }));

@@ -526,6 +526,7 @@
       "entryNone": "Nothing to review today; your mistakes come back on schedule",
       "intro": "Your mistakes come back after 1, 3, 7 and 14 days. Get one right and it moves up a step; get it wrong and it starts over.",
       "none": "Nothing to review today. Any question you get wrong shows up here tomorrow.",
+      "allDone": "Well done! Today's review is finished. The rest come back on later days.",
       "level": "Step {{n}} of {{total}}",
       "overdue": "{{n}} days late",
       "dueToday": "Due today"
@@ -721,6 +722,12 @@
     "konkurPaper": "{{count}} questions · {{minutes}} min",
     "konkurRetry": "Retake this exam",
     "keepGoing": "Keep going",
+    "answeredShort": "Answered",
+    "seeResult": "See the result",
+    "leaveTitle": "Leave the exam?",
+    "leaveBody": "The exam isn't finished yet. If you leave now, your answers won't be saved or scored.",
+    "leave": "Leave without saving",
+    "pickOther": "Go back and pick other chapters",
     "percent": "{{percent}}%",
     "scoreLine": "{{correct}} of {{total}}",
     "verdict": {
@@ -1469,5 +1476,37 @@
         "maxDegree": "A degree equal to or larger than the number of vertices in a simple graph. In a 4-vertex graph each vertex has at most 3 neighbours (the other vertices), since loops and repeated edges are not allowed."
       }
     }
+  },
+  "textbook": {
+    "title": "Textbook exercises",
+    "chapterButton": "Textbook exercises ({{count}})",
+    "chapterOf": "{{book}} · chapter {{n}}",
+    "progress": "You understood {{done}} of {{total}} exercises",
+    "lessonTitle": "Lesson {{n}}: {{title}}",
+    "lessonShort": "Lesson {{n}}",
+    "otherExercises": "Other exercises",
+    "free": "Free",
+    "page": "Page {{n}}",
+    "section": {
+      "exercise": "Exercise",
+      "classwork": "Classwork",
+      "activity": "Activity"
+    },
+    "exerciseTitle": "{{section}} {{n}}",
+    "showSolution": "Show the solution",
+    "partSolution": "Solution of part {{label}}",
+    "finalAnswer": "Final answer",
+    "trap": "Watch out",
+    "notesUsed": "This solution uses these notes",
+    "markUnderstood": "I understand it",
+    "understood": "Understood ✓ (tap to undo)",
+    "previous": "Previous exercise",
+    "next": "Next exercise",
+    "notFound": "This exercise wasn't found.",
+    "emptyTitle": "No exercises for this chapter yet",
+    "emptyBody": "This chapter's exercises are coming soon.",
+    "offlineTitle": "You're offline",
+    "offlineBody": "Textbook exercises come from the internet. Open them once online to see them offline later.",
+    "retry": "Try again"
   }
 }

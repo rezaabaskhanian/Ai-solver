@@ -11,7 +11,7 @@ type Obj = Record<string, unknown>;
 const isObj = (v: unknown): v is Obj => typeof v === 'object' && v !== null && !Array.isArray(v);
 const isStr = (v: unknown): v is string => typeof v === 'string';
 
-function validLines(v: unknown): v is KonkurLine[] {
+export function validLines(v: unknown): v is KonkurLine[] {
   return (
     Array.isArray(v) && v.every(l => isStr(l) || (isObj(l) && isStr(l.math)))
   );
@@ -69,7 +69,7 @@ function validSource(v: unknown): boolean {
 const optionalLines = (v: unknown) => v === undefined || v === null || validLines(v);
 
 // A malformed guide is dropped (see cleanGuide), not the whole question.
-function cleanGuide(v: unknown): KonkurGuide | undefined {
+export function cleanGuide(v: unknown): KonkurGuide | undefined {
   if (!isObj(v) || !optionalLines(v.given) || !optionalLines(v.asked) || !optionalLines(v.trap)) {
     return undefined;
   }

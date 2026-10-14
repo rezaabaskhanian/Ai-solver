@@ -49,3 +49,14 @@ jest.mock('react-native-image-picker', () => ({
   launchImageLibrary: jest.fn(() => Promise.resolve({ didCancel: true })),
   launchCamera: jest.fn(() => Promise.resolve({ didCancel: true })),
 }));
+
+// lottie-react-native is a native view; in tests an animation renders as
+// an empty View (components/common/Celebration.tsx).
+jest.mock('lottie-react-native', () => {
+  const { createElement, forwardRef } = require('react');
+  const { View } = require('react-native');
+  return {
+    __esModule: true,
+    default: forwardRef((props, ref) => createElement(View, { ref, testID: props.testID })),
+  };
+});
