@@ -4,7 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
+
+	"github.com/google/uuid"
 
 	"mathmotion/go-api/internal/pkg/richerror"
 	"mathmotion/go-api/internal/service/aiusage"
@@ -403,4 +406,52 @@ func (s Service) ApproveDraft(ctx context.Context, id string, overwrite bool) (D
 // RejectDraft is DELETE /admin/konkur/drafts/:id (marks it rejected).
 func (s Service) RejectDraft(ctx context.Context, id string) error {
 	return wrap("konkurservice.RejectDraft", s.repo.RejectDraft(ctx, id))
+}
+
+// NewDraft is one item of POST /admin/konkur/drafts.
+type NewDraft struct {
+	Kind       string          `json:"kind"`
+	SourceName string          `json:"source_name"`
+	Data       json.RawMessage `json:"data"`
+}
+
+const maxNewDrafts = 100
+
+// CreateDrafts is POST /admin/konkur/drafts: stores hand-written (or
+// MCP-written) tips, questions and exercises as pending drafts, the same
+// review queue as Extract — nothing reaches the app until approved. An
+// item may stay incomplete; its problems come back as warnings.
+func (s Service) CreateDrafts(ctx context.Context, items []NewDraft) ([]Draft, error) {
+	const op = "konkurservice.CreateDrafts"
+	if len(items) == 0 {
+		return nil, invalid(op, "هیچ موردی فرستاده نشده")
+	}
+	if len(items) > maxNewDrafts {
+		return nil, invalid(op, "حداکثر ۱۰۰ مورد در هر درخواست")
+	}
+	drafts := make([]Draft, 0, len(items))
+	for i, it := range items {
+		kind := strings.TrimSpace(it.Kind)
+		if kind != KindTip && kind != KindQuestion && kind != KindExercise {
+			return nil, invalid(op, fmt.Sprintf("مورد %d: kind باید tip، question یا exercise باشد", i+1))
+		}
+		data, warnings, err := parseDraftData(kind, it.Data)
+		if err != nil {
+			return nil, invalid(op, fmt.Sprintf("مورد %d: ساختار داده نامعتبر است: %s", i+1, err.Error()))
+		}
+		source := strings.TrimSpace(it.SourceName)
+		if source == "" {
+			source = "manual"
+		}
+		drafts = append(drafts, Draft{
+			ID:         uuid.NewString(),
+			Kind:       kind,
+			SourceName: source,
+			Status:     StatusPending,
+			Data:       data,
+			Warnings:   warnings,
+		})
+	}
+	saved, err := s.repo.InsertDrafts(ctx, drafts)
+	return saved, wrap(op, err)
 }

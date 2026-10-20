@@ -62,6 +62,7 @@ func (h Handler) SetAdminRoutes(admin *echo.Group) {
 	admin.POST("/konkur/guide", h.GenerateGuide)
 
 	admin.GET("/konkur/drafts", h.ListDrafts)
+	admin.POST("/konkur/drafts", h.CreateDrafts)
 	admin.PUT("/konkur/drafts/:id", h.UpdateDraft)
 	admin.POST("/konkur/drafts/:id/approve", h.ApproveDraft)
 	admin.DELETE("/konkur/drafts/:id", h.RejectDraft)
@@ -471,6 +472,23 @@ func (h Handler) ListDrafts(c echo.Context) error {
 		return errorhandling.ErrorHandling(err, c)
 	}
 	return c.JSON(http.StatusOK, map[string]any{"drafts": drafts})
+}
+
+// CreateDrafts handles POST /admin/konkur/drafts with a body
+// {"drafts": [{"kind", "source_name", "data"}]} — used by the MCP server
+// (backend/mcp-server), which may only add to the review queue.
+func (h Handler) CreateDrafts(c echo.Context) error {
+	var req struct {
+		Drafts []konkurservice.NewDraft `json:"drafts"`
+	}
+	if err := c.Bind(&req); err != nil {
+		return invalidBody(c)
+	}
+	drafts, err := h.svc.CreateDrafts(c.Request().Context(), req.Drafts)
+	if err != nil {
+		return errorhandling.ErrorHandling(err, c)
+	}
+	return c.JSON(http.StatusCreated, map[string]any{"drafts": drafts})
 }
 
 // UpdateDraft handles PUT /admin/konkur/drafts/:id. The body is either
