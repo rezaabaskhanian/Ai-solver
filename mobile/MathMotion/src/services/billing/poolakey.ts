@@ -19,11 +19,12 @@ function assertAndroid() {
   }
 }
 
-// We verify every purchase server-side (backend/go-api's Cafe Bazaar
-// Purchase Validator call — internal/service/billing), which is
-// Poolakey's own documented recommendation when a REST validator is in
-// place, so no RSA public key is needed here.
-const RSA_KEY = null;
+// Every purchase is verified server-side (backend/go-api's Cafe Bazaar
+// Purchase Validator call — internal/service/billing). The app's RSA
+// public key from the Bazaar developer panel adds Poolakey's on-device
+// signature check on top; it's a public key, safe to ship in the app.
+const RSA_KEY =
+  'MIHNMA0GCSqGSIb3DQEBAQUAA4G7ADCBtwKBrwDLe/qD3kT0e6enHR6I4tRTUcWnX1Bmm5RHkYy+UTjrO3ouem5RQwVCeVu2asni6wzdNpssElWL9hxE279QnfEzA0OhWP0kVEbScUpA3E/kTzrJr8BLgf+fAVQVThK91LKXSyw0l5LYmUQZnFXeUi6Ub2ZnUjfVu9zVUvG7QgbDKLDawgZFPGbOLrtmvn5iNvfA9m8lj0sLimjT+EGazqgc+lUr5lkFJodyUUNQ7TMCAwEAAQ==';
 
 export async function connect(): Promise<void> {
   assertAndroid();
