@@ -1,3 +1,11 @@
+jest.mock('react-native-worklets', () => {
+  const actual = jest.requireActual('react-native-worklets');
+  return {
+    ...actual,
+    getUIRuntimeHolder: () => ({}),
+  };
+});
+
 import 'react-native-gesture-handler/jestSetup';
 
 jest.mock('@react-native-async-storage/async-storage', () =>
@@ -13,6 +21,70 @@ jest.mock('react-native-reanimated', () => {
   const Reanimated = require('react-native-reanimated/mock');
   Reanimated.default.call = () => {};
   return Reanimated;
+});
+
+// @reactvision/react-viro needs native AR modules that don't exist in
+// Jest; AR screens aren't exercised in tests, so every Viro* component
+// renders its children inside a plain View and the manager objects are
+// inert stubs. isARSupportedOnDevice reports "unsupported" so the app
+// falls back to the plain Solution screen, as on a phone without ARCore.
+jest.mock('@reactvision/react-viro', () => {
+  const { createElement, forwardRef } = require('react');
+  const { View } = require('react-native');
+  const stubComponent = name =>
+    forwardRef(function StubViro(props, ref) {
+      return createElement(View, { ref, testID: name }, props?.children);
+    });
+  return {
+    __esModule: true,
+    ViroARSceneNavigator: stubComponent('ViroARSceneNavigator'),
+    ViroARScene: stubComponent('ViroARScene'),
+    ViroARImageMarker: stubComponent('ViroARImageMarker'),
+    ViroFlexView: stubComponent('ViroFlexView'),
+    ViroText: stubComponent('ViroText'),
+    ViroMaterials: { createMaterials: () => {} },
+    ViroAnimations: { registerAnimations: () => {} },
+    ViroARTrackingTargets: { createTargets: () => {} },
+    isARSupportedOnDevice: () =>
+      Promise.resolve({ isARSupported: false, reason: 'jest' }),
+  };
+});
+
+// react-native-share reaches for its TurboModule at import time; sharing
+// is never exercised in tests, so the default export is an inert stub
+// whose open/share resolve like a completed share sheet.
+jest.mock('react-native-share', () => ({
+  __esModule: true,
+  default: {
+    open: () => Promise.resolve({ app: 'jest' }),
+    share: () => Promise.resolve({ app: 'jest' }),
+    shareSingle: () => Promise.resolve({ success: true }),
+    isPackageInstalled: () => Promise.resolve({ isInstalled: false }),
+  },
+}));
+
+// react-native-view-shot is used to capture screenshot of solution
+jest.mock('react-native-view-shot', () => {
+  const { createElement, forwardRef } = require('react');
+  const { View } = require('react-native');
+  return {
+    __esModule: true,
+    default: forwardRef((props, ref) => createElement(View, { ref, testID: 'ViewShot', ...props })),
+    captureRef: () => Promise.resolve('mock-uri'),
+  };
+});
+
+// react-native-vision-camera reaches for native camera modules in Jest;
+// camera screens are mocked with inert stubs.
+jest.mock('react-native-vision-camera', () => {
+  const { createElement, forwardRef } = require('react');
+  const { View } = require('react-native');
+  return {
+    Camera: forwardRef((props, ref) => createElement(View, { ref, testID: 'Camera', ...props })),
+    useCameraDevice: () => ({ id: 'back', hasFlash: false }),
+    useCameraPermission: () => ({ hasPermission: true, requestPermission: () => Promise.resolve(true) }),
+    usePhotoOutput: () => ({}),
+  };
 });
 
 // @cafebazaar/react-native-poolakey constructs a NativeEventEmitter at

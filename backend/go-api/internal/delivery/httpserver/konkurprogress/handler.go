@@ -98,7 +98,17 @@ func (h Handler) SubmitResult(c echo.Context) error {
 }
 
 func (h Handler) Stats(c echo.Context) error {
-	st, err := h.svc.Stats(c.Request().Context(), middleware.UserIDFromContext(c), c.QueryParam("paper_key"))
+	// Without paper_key: the per-paper averages for the exam list screen.
+	// With it: one paper's full distribution (incl. the caller's taraz).
+	paperKey := c.QueryParam("paper_key")
+	if paperKey == "" {
+		rows, err := h.svc.AllStats(c.Request().Context())
+		if err != nil {
+			return errorhandling.ErrorHandling(err, c)
+		}
+		return c.JSON(http.StatusOK, rows)
+	}
+	st, err := h.svc.Stats(c.Request().Context(), middleware.UserIDFromContext(c), paperKey)
 	if err != nil {
 		return errorhandling.ErrorHandling(err, c)
 	}

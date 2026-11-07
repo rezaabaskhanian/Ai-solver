@@ -21,6 +21,7 @@ import type {
   TextbookExerciseFilters,
   LandingSettings,
   Plan,
+  SalesReport,
   ProxyStatus,
   SettingsResp,
 } from "./types";
@@ -130,7 +131,21 @@ export async function getPlans(): Promise<Plan[]> {
   return (await jsonOrThrow<{ plans: Plan[] }>(await authFetch("/admin/plans", { method: "GET" }))).plans;
 }
 
-export async function savePlan(plan: Omit<Plan, "id" | "purchase_count">): Promise<Plan> {
+export async function archivePlan(id: string, archived: boolean): Promise<void> {
+  await jsonOrThrow(
+    await authFetch(`/admin/plans/${encodeURIComponent(id)}/archive`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ archived }),
+    })
+  );
+}
+
+export async function getSales(): Promise<SalesReport> {
+  return jsonOrThrow<SalesReport>(await authFetch("/admin/sales", { method: "GET" }));
+}
+
+export async function savePlan(plan: Omit<Plan, "id" | "purchase_count" | "archived">): Promise<Plan> {
   return jsonOrThrow<Plan>(
     await authFetch("/admin/plans", {
       method: "PUT",

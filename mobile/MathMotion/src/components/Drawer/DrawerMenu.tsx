@@ -17,7 +17,7 @@ import { MathExpression } from '../MathExpression/MathExpression';
 import { PremiumBanner } from '../Home/PremiumBanner';
 import { Icon, type IconName } from '../common/Icon';
 
-type MenuScreen = 'Home' | 'Topics' | 'Konkur' | 'KonkurNotebook' | 'ExamSetup' | 'Geometry' | 'History' | 'Guide' | 'Settings';
+type MenuScreen = 'Home' | 'Topics' | 'Konkur' | 'KonkurNotebook' | 'Profile' | 'ExamSetup' | 'Geometry' | 'History' | 'Guide' | 'Settings';
 
 interface MenuItem {
   icon: IconName;
@@ -30,6 +30,12 @@ interface MenuItem {
 
 const LEARN_ITEMS: MenuItem[] = [
   { icon: 'home', labelKey: 'drawer.home', screen: 'Home', activeFor: ['Home'] },
+  {
+    icon: 'account-circle',
+    labelKey: 'drawer.profile',
+    screen: 'Profile',
+    activeFor: ['Profile'],
+  },
   {
     icon: 'menu-book',
     labelKey: 'drawer.topics',

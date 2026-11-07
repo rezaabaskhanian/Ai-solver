@@ -215,13 +215,21 @@ export function TextbookExerciseScreen({ route, navigation }: Props) {
           ))}
 
           {engineExpression && (
-            <AppButton
-              label={t('konkur.solveWithEngine')}
-              variant="secondary"
-              size="sm"
-              icon="functions"
-              onPress={() => navigation.navigate('ProblemInput', { initialProblem: engineExpression })}
-            />
+            <View style={styles.engineSolveBox}>
+              <View style={[styles.aiNoticeRow, isRTL && styles.rowRTL]}>
+                <Icon name="auto-awesome" size={14} color="#6366F1" />
+                <AppText size="xs" color="#6366F1" weight="medium">
+                  {t('textbook.aiTwoQuestionLimit', { defaultValue: 'دستیار حل هوشمند (حداکثر ۲ سوال)' })}
+                </AppText>
+              </View>
+              <AppButton
+                label={t('konkur.solveWithEngine')}
+                variant="secondary"
+                size="sm"
+                icon="functions"
+                onPress={() => navigation.navigate('ProblemInput', { initialProblem: engineExpression })}
+              />
+            </View>
           )}
         </Card>
 
@@ -405,6 +413,15 @@ const useStyles = makeStyles(colors => StyleSheet.create({
     padding: spacing.sm,
     borderRadius: radius.md,
     backgroundColor: '#FFFFFF',
+  },
+  engineSolveBox: {
+    gap: spacing.xs,
+    marginTop: spacing.xs,
+  },
+  aiNoticeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   figure: {
     width: '100%',

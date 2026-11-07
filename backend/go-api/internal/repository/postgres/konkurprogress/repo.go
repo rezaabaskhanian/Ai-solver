@@ -89,9 +89,11 @@ func (r DB) PaperStats(ctx context.Context, paperKey, userID string) (kp.PaperSt
 		SELECT count(*),
 		       COALESCE(percentile_cont(0.5)  WITHIN GROUP (ORDER BY percent), 0),
 		       COALESCE(percentile_cont(0.25) WITHIN GROUP (ORDER BY percent), 0),
-		       COALESCE(percentile_cont(0.75) WITHIN GROUP (ORDER BY percent), 0)
+		       COALESCE(percentile_cont(0.75) WITHIN GROUP (ORDER BY percent), 0),
+		       COALESCE(avg(percent), 0),
+		       COALESCE(stddev_samp(percent), 0)
 		FROM konkur_exam_results WHERE paper_key = $1`, paperKey).
-		Scan(&st.Count, &st.Median, &st.P25, &st.P75)
+		Scan(&st.Count, &st.Median, &st.P25, &st.P75, &st.Mean, &st.StdDev)
 	if err != nil {
 		return kp.PaperStats{}, fmt.Errorf("reading konkur exam stats: %w", err)
 	}
@@ -106,6 +108,7 @@ func (r DB) PaperStats(ctx context.Context, paperKey, userID string) (kp.PaperSt
 	if err != nil {
 		return kp.PaperStats{}, fmt.Errorf("reading own konkur exam result: %w", err)
 	}
+	st.Mine = &mine
 	var others, lower int
 	err = r.conn.QueryRow(ctx, `
 		SELECT count(*), count(*) FILTER (WHERE percent < $3)
@@ -120,6 +123,25 @@ func (r DB) PaperStats(ctx context.Context, paperKey, userID string) (kp.PaperSt
 	}
 	st.Percentile = &p
 	return st, nil
+}
+
+func (r DB) AllPaperStats(ctx context.Context) ([]kp.PublicPaperSummary, error) {
+	rows, err := r.conn.Query(ctx, `
+		SELECT paper_key, count(*), COALESCE(avg(percent), 0)
+		FROM konkur_exam_results GROUP BY paper_key ORDER BY paper_key DESC`)
+	if err != nil {
+		return nil, fmt.Errorf("listing konkur paper stats: %w", err)
+	}
+	defer rows.Close()
+	var out []kp.PublicPaperSummary
+	for rows.Next() {
+		var s kp.PublicPaperSummary
+		if err := rows.Scan(&s.PaperKey, &s.Count, &s.Mean); err != nil {
+			return nil, err
+		}
+		out = append(out, s)
+	}
+	return out, rows.Err()
 }
 
 func (r DB) AdminStats(ctx context.Context) ([]kp.PaperSummary, error) {

@@ -79,20 +79,20 @@ export const ACCENTS: Record<AccentId, Record<ColorScheme, AccentShades>> = {
   },
   lime: {
     light: {
-      primary: '#A3E635',
-      primaryPressed: '#84CC16',
-      primaryMuted: '#ECFCCB',
-      onPrimary: '#111827',
-      primaryText: '#3F6212',
-      // Mint surfaces of the "MathMotion AI Study System" design.
-      neutrals: { background: '#F4FBF4', surfaceMuted: '#EEF9EE', border: '#E1EDE0' },
+      primary: '#76E000',
+      primaryPressed: '#65C200',
+      primaryMuted: '#DCFCE7',
+      onPrimary: '#0F1F05',
+      primaryText: '#15803D',
+      // Clean surfaces matching Topics and Majhoul brand.
+      neutrals: { background: '#F8FAF9', surfaceMuted: '#F0FDF4', border: '#E5E7EB' },
     },
     dark: {
-      primary: '#A3E635',
-      primaryPressed: '#84CC16',
-      primaryMuted: '#26330F',
-      onPrimary: '#111827',
-      primaryText: '#B5F05A',
+      primary: '#76E000',
+      primaryPressed: '#65C200',
+      primaryMuted: '#173A2C',
+      onPrimary: '#0F1F05',
+      primaryText: '#76E000',
     },
   },
   blue: {

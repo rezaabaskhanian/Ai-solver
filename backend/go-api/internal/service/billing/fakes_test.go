@@ -10,6 +10,7 @@ type fakeRepo struct {
 	recordUserID  string
 	recordProduct string
 	recordDays    int
+	recordPrice   int
 	recordErr     error
 
 	setPremiumUser string
@@ -51,13 +52,28 @@ func (f *fakeRepo) UpsertPlan(ctx context.Context, p Plan) (Plan, error) {
 
 func (f *fakeRepo) DeletePlan(ctx context.Context, id string) error { return nil }
 
+func (f *fakeRepo) SetPlanArchived(ctx context.Context, id string, archived bool) error {
+	for k, p := range f.plans {
+		if p.ID == id {
+			p.Archived = archived
+			f.plans[k] = p
+			return nil
+		}
+	}
+	return ErrNotFound
+}
+
+func (f *fakeRepo) SalesReport(ctx context.Context) (SalesReport, error) {
+	return SalesReport{TotalCount: f.recordCalls}, nil
+}
+
 func (f *fakeRepo) PurchaseRecorded(ctx context.Context, token string) (bool, error) {
 	return f.recorded[token], nil
 }
 
-func (f *fakeRepo) RecordPurchase(ctx context.Context, userID, productID, token string, days int) (bool, error) {
+func (f *fakeRepo) RecordPurchase(ctx context.Context, userID, productID, token string, days, price int) (bool, error) {
 	f.recordCalls++
-	f.recordUserID, f.recordProduct, f.recordDays = userID, productID, days
+	f.recordUserID, f.recordProduct, f.recordDays, f.recordPrice = userID, productID, days, price
 	if f.recordErr != nil {
 		return false, f.recordErr
 	}

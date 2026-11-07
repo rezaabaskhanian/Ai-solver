@@ -30,7 +30,7 @@ func (s Service) VerifyPurchase(ctx context.Context, userID, productID, purchase
 		productID = s.lifetimeProductID
 	}
 
-	days := 0
+	days, price := 0, 0
 	if productID != s.lifetimeProductID {
 		plan, err := s.repo.PlanByProductID(ctx, productID)
 		if errors.Is(err, ErrNotFound) {
@@ -41,7 +41,7 @@ func (s Service) VerifyPurchase(ctx context.Context, userID, productID, purchase
 			return richerror.New(richerror.Op(op)).WithErr(err).
 				WithKind(richerror.KindUnexpected).WithMessage("Could not verify this purchase right now.")
 		}
-		days = plan.DurationDays
+		days, price = plan.DurationDays, plan.PriceToman
 	}
 
 	recorded, err := s.repo.PurchaseRecorded(ctx, purchaseToken)
@@ -62,7 +62,7 @@ func (s Service) VerifyPurchase(ctx context.Context, userID, productID, purchase
 			return richerror.New(richerror.Op(op)).WithErr(err).
 				WithKind(richerror.KindUnexpected).WithMessage("Could not verify this purchase right now.")
 		}
-		if _, err := s.repo.RecordPurchase(ctx, userID, productID, purchaseToken, days); err != nil {
+		if _, err := s.repo.RecordPurchase(ctx, userID, productID, purchaseToken, days, price); err != nil {
 			return richerror.New(richerror.Op(op)).WithErr(err).
 				WithKind(richerror.KindUnexpected).WithMessage("Could not record this purchase.")
 		}

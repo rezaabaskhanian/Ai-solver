@@ -5,8 +5,9 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
 import { AppText } from '../../components/common/AppText';
+import { AppBottomNav } from '../../components/common/AppBottomNav';
 import { Card } from '../../components/common/Card';
-import { Icon } from '../../components/common/Icon';
+import { Icon, type IconName } from '../../components/common/Icon';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 import { CURRICULUM_GRADES, findCurriculumGrade, type CurriculumGrade } from '../../content/curriculum';
 import {
@@ -18,70 +19,123 @@ import {
   type KonkurTip,
 } from '../../content/konkur';
 import { MIN_SEARCH_LENGTH, normalizeSearchText, searchKonkur } from '../../content/konkur/search';
+import { currentStreak, goalProgress } from '../../content/konkur/daily';
+import { dayIndexOf } from '../../content/konkur/dayIndex';
+import { dueReviews } from '../../content/konkur/review';
 import { mistakesOf, statsForChapter, statsForTip } from '../../content/konkur/progress';
-import { StudyEntryCards } from '../../components/Konkur/StudyEntryCards';
 import { useIsRTL } from '../../hooks/useIsRTL';
+import { useToday } from '../../hooks/useToday';
 import type { RootStackParamList } from '../../navigation/types';
 import { usePreferencesStore, useTrack } from '../../store/usePreferencesStore';
 import { refreshKonkurContent, useTrackKonkurContent } from '../../store/useKonkurContentStore';
 import { useKonkurProgress } from '../../store/useKonkurProgressStore';
+import { useKonkurStudyStore } from '../../store/useKonkurStudyStore';
 import { fontFamily, fontSize, makeStyles, radius, spacing, useColors } from '../../theme';
 
-// «نکات کنکوری و تست‌زنی»: general test-taking tips, then one grade's
-// tips grouped by textbook chapter (content/konkur). Shares the
-// remembered grade with Topics and Exam setup.
+function isSameDay(timestamp: number, today: number): boolean {
+  return dayIndexOf(timestamp) === today;
+}
+
 export function KonkurScreen() {
   const colors = useColors();
   const styles = useStyles();
   const { t } = useTranslation();
   const isRTL = useIsRTL();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  // Only what the student's study track sees (tips, questions, search).
+
   const content = useTrackKonkurContent();
   const track = useTrack();
+  const today = useToday();
+  const progress = useKonkurProgress();
+  const daily = useKonkurStudyStore(s => s.daily);
+  const review = useKonkurStudyStore(s => s.review);
+  const ensureTodayPick = useKonkurStudyStore(s => s.ensureTodayPick);
+
   useEffect(() => {
     refreshKonkurContent();
   }, []);
+
+  useEffect(() => {
+    ensureTodayPick(content, progress);
+  }, [content, today, ensureTodayPick]);
+
   const savedGrade = usePreferencesStore(s => s.grade);
   const setGrade = usePreferencesStore(s => s.setGrade);
   const grade: CurriculumGrade = savedGrade ?? 10;
   const curriculum = findCurriculumGrade(grade);
   const row = [styles.row, isRTL && styles.rowRTL];
-  const progress = useKonkurProgress();
+
   const [query, setQuery] = useState('');
   const [debounced, setDebounced] = useState('');
+  const [showAllGeneral, setShowAllGeneral] = useState(false);
+
   useEffect(() => {
     const timer = setTimeout(() => setDebounced(query), 250);
     return () => clearTimeout(timer);
   }, [query]);
+
   const searching = query.trim().length > 0;
   const tooShort = normalizeSearchText(debounced).length < MIN_SEARCH_LENGTH;
   const results = useMemo(() => searchKonkur(content, debounced), [content, debounced]);
-  // A question opens on its first tip (the main one), filtered to itself.
   const questionHits = useMemo(
     () => results.questions.filter(q => content.tips.some(tip => tip.id === q.tipIds[0])),
     [results, content],
   );
-  const mistakeCount = useMemo(() => mistakesOf(progress, content).length, [progress, content]);
 
-  const renderTip = (tip: KonkurTip) => {
+  const mistakeCount = useMemo(() => mistakesOf(progress, content).length, [progress, content]);
+  const streak = currentStreak(daily, today);
+  const goal = goalProgress(daily, today);
+  const dueCount = useMemo(() => dueReviews(review, progress, content, today).length, [review, progress, content, today]);
+
+  const generalTips = useMemo(() => generalKonkurTips(content), [content]);
+  const visibleGeneralTips = showAllGeneral ? generalTips : generalTips.slice(0, 3);
+
+  const getTipSubjectTag = (tipId: string) => {
+    if (tipId === 'gen_plug_choices') return { tag: 'ریاضیات', bg: '#EDE9FE', color: '#6D28D9' };
+    if (tipId === 'gen_approx_elim') return { tag: 'شیمی و فیزیک', bg: '#EDE9FE', color: '#6D28D9' };
+    if (tipId === 'gen_roots_sign') return { tag: 'حسابان', bg: '#EDE9FE', color: '#6D28D9' };
+    if (tipId === 'gen_pick_number') return { tag: 'جبر و هندسه', bg: '#E0F2FE', color: '#0369A1' };
+    return { tag: 'عمومی', bg: '#F1F5F9', color: '#475569' };
+  };
+
+  const getTipIconData = (
+    tipId: string,
+    index: number,
+  ): { name: IconName; bg: string; color: string; round: boolean } => {
+    if (tipId === 'gen_plug_choices') return { name: 'lightbulb', bg: '#DCFCE7', color: '#16A34A', round: true };
+    if (tipId === 'gen_approx_elim') return { name: 'calculate', bg: '#DCFCE7', color: '#16A34A', round: false };
+    if (tipId === 'gen_roots_sign') return { name: 'show-chart', bg: '#EDE9FE', color: '#6366F1', round: true };
+    const icons: IconName[] = ['lightbulb', 'calculate', 'functions', 'timeline', 'help-outline'];
+    return { name: icons[index % icons.length], bg: '#DCFCE7', color: '#16A34A', round: true };
+  };
+
+  const renderTip = (tip: KonkurTip, index: number) => {
     const count = questionsForTip(tip.id, content).length;
     const stats = statsForTip(progress, tip.id, content);
+    const tagInfo = getTipSubjectTag(tip.id);
+    const iconData = getTipIconData(tip.id, index);
+
     return (
       <Card
         key={tip.id}
         onPress={() => navigation.navigate('KonkurTip', { tipId: tip.id })}
         style={[...row, styles.tipCard]}
       >
-        <View style={styles.tipIcon}>
-          <Icon name="lightbulb" size={20} color={colors.primaryText} />
+        <View
+          style={[
+            styles.tipIconBox,
+            { backgroundColor: iconData.bg, borderRadius: iconData.round ? radius.pill : radius.md },
+          ]}
+        >
+          <Icon name={iconData.name} size={20} color={iconData.color} />
         </View>
+
         <View style={styles.flexOne}>
-          <AppText weight="bold" size="sm">
+          <AppText weight="bold" size="sm" color={colors.textPrimary}>
             {tip.title}
           </AppText>
           <AppText size="xs" color={colors.textSecondary}>
-            {count > 0 ? t('konkur.testsCount', { count }) : t('konkur.tipOnly')}
+            {count > 0 ? `${toPersianDigits(count)} تست تحلیلی` : t('konkur.tipOnly')}
           </AppText>
           {stats.percent !== null && (
             <AppText size="xs" color={stats.weak ? colors.danger : colors.textSecondary}>
@@ -94,13 +148,18 @@ export function KonkurScreen() {
             </AppText>
           )}
         </View>
-        {stats.weak && <Icon name="warning-amber" size={20} color={colors.danger} />}
-        <Icon name="chevron-right" color={colors.textSecondary} directional />
+
+        <View style={[styles.subjectTag, { backgroundColor: tagInfo.bg }]}>
+          <AppText size="xs" weight="medium" color={tagInfo.color}>
+            {tagInfo.tag}
+          </AppText>
+        </View>
+
+        <Icon name="chevron-left" size={20} color={colors.textSecondary} />
       </Card>
     );
   };
 
-  // « · ۴ از ۱۰ تست · ۶۰٪ درست» — empty until the student answers.
   const chapterStats = (chapterId: string) => {
     const stats = statsForChapter(progress, chapterId, content);
     if (stats.percent === null) {
@@ -120,15 +179,47 @@ export function KonkurScreen() {
   );
 
   return (
-    <ScreenContainer scroll>
-      <View style={[...row, styles.searchBox]}>
+    <View style={styles.screenWrapper}>
+      <ScreenContainer scroll contentStyle={{ paddingBottom: 85 }}>
+      {/* Top Header matching design */}
+      <View style={[styles.topHeader, isRTL && styles.rowRTL]}>
+        <View style={[styles.headerActions, isRTL && styles.rowRTL]}>
+          <View style={styles.avatarButton}>
+            <Icon name="person" size={20} color="#FFFFFF" />
+          </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="نکات"
+            style={styles.headerIconButton}
+            onPress={() => navigation.navigate('Guide')}
+          >
+            <Icon name="lightbulb" size={20} color={colors.textPrimary} />
+          </Pressable>
+        </View>
+
+        <AppText weight="bold" size="md" color={colors.textPrimary}>
+          Topic Detail
+        </AppText>
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="بازگشت"
+          onPress={() => navigation.goBack()}
+          style={styles.headerIconButton}
+        >
+          <Icon name="arrow-forward" size={22} color={colors.textPrimary} />
+        </Pressable>
+      </View>
+
+      {/* Search Input Bar */}
+      <View style={[styles.searchBox, isRTL && styles.rowRTL]}>
         <Icon name="search" size={20} color={colors.textSecondary} />
         <TextInput
           value={query}
           onChangeText={setQuery}
-          placeholder={t('konkur.search.placeholder')}
+          placeholder="جست‌وجو در نکته‌ها و تست‌ها..."
           placeholderTextColor={colors.textSecondary}
-          accessibilityLabel={t('konkur.search.placeholder')}
+          accessibilityLabel="جست‌وجو در نکته‌ها و تست‌ها"
           returnKeyType="search"
           autoCorrect={false}
           style={[styles.searchInput, isRTL && styles.searchInputRTL]}
@@ -155,7 +246,7 @@ export function KonkurScreen() {
             {results.tips.length > 0 && (
               <View style={styles.section}>
                 <AppText weight="bold">{t('konkur.search.tips', { count: results.tips.length })}</AppText>
-                {results.tips.map(renderTip)}
+                {results.tips.map((tip, idx) => renderTip(tip, idx))}
               </View>
             )}
             {questionHits.length > 0 && (
@@ -167,8 +258,8 @@ export function KonkurScreen() {
                     onPress={() => navigation.navigate('KonkurTip', { tipId: q.tipIds[0], questionId: q.id })}
                     style={[...row, styles.tipCard]}
                   >
-                    <View style={styles.tipIcon}>
-                      <Icon name="quiz" size={20} color={colors.primaryText} />
+                    <View style={styles.tipIconBox}>
+                      <Icon name="quiz" size={20} color="#16A34A" />
                     </View>
                     <View style={styles.flexOne}>
                       <AppText size="xs" color={colors.primaryText} weight="medium">
@@ -178,7 +269,7 @@ export function KonkurScreen() {
                         {q.text}
                       </AppText>
                     </View>
-                    <Icon name="chevron-right" color={colors.textSecondary} directional />
+                    <Icon name="chevron-left" color={colors.textSecondary} />
                   </Card>
                 ))}
               </View>
@@ -187,151 +278,445 @@ export function KonkurScreen() {
         )
       ) : (
         <>
-      <AppText color={colors.textSecondary}>{t('konkur.intro')}</AppText>
-
-      <StudyEntryCards content={content} />
-
-      <Card onPress={() => navigation.navigate('KonkurNotebook')} style={[...row, styles.tipCard]}>
-        <View style={styles.tipIcon}>
-          <Icon name="auto-stories" size={20} color={colors.primaryText} />
-        </View>
-        <View style={styles.flexOne}>
-          <AppText weight="bold" size="sm">
-            {t('konkur.progress.title')}
+          {/* Intro Description */}
+          <AppText size="xs" color={colors.textSecondary} style={styles.introText}>
+            نکته‌ها و میان‌برهای تستی هر فصل، با تست‌هایی که با همان نکته حل می‌شوند. روی هر نکته بزن تا توضیح، مثال و تست‌هایش را ببینی.
           </AppText>
-          <AppText size="xs" color={colors.textSecondary}>
-            {mistakeCount > 0
-              ? t('konkur.progress.entryMistakes', { n: toPersianDigits(mistakeCount) })
-              : t('konkur.progress.entryEmpty')}
-          </AppText>
-        </View>
-        <Icon name="chevron-right" color={colors.textSecondary} directional />
-      </Card>
 
-      <View style={styles.section}>
-        <AppText weight="bold" size="lg">
-          {t('konkur.general')}
-        </AppText>
-        {generalKonkurTips(content).map(renderTip)}
-      </View>
+          {/* 4 Main Entry Cards */}
+          <View style={styles.entryCardsContainer}>
+            {/* Card 1: تست روز */}
+            <Card onPress={() => navigation.navigate('KonkurDaily')} style={styles.entryCard}>
+              <View style={[styles.entryCardHeader, isRTL && styles.rowRTL]}>
+                <View style={[styles.entryCardIconBox, { backgroundColor: '#DCFCE7' }]}>
+                  <Icon name="today" size={22} color="#16A34A" />
+                </View>
 
-      {/* Not mirrored in RTL: a reversed horizontal ScrollView would open
-          scrolled to the wrong end (same as Topics). */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabs}>
-        {CURRICULUM_GRADES.map(g => {
-          const active = g === grade;
-          return (
-            <Pressable
-              key={g}
-              accessibilityRole="button"
-              accessibilityState={{ selected: active }}
-              onPress={() => setGrade(g)}
-              style={[styles.tab, active && styles.tabActive]}
-            >
-              <AppText size="sm" weight="medium" color={active ? colors.onPrimary : colors.textPrimary}>
-                {t('topics.gradeChip', { grade: g })}
+                <View style={styles.flexOne}>
+                  <AppText weight="bold" size="sm" color={colors.textPrimary}>
+                    تست روز
+                  </AppText>
+                  <AppText size="xs" color={colors.textSecondary}>
+                    یک تست واقعی کنکور، مخصوص امروز
+                  </AppText>
+                </View>
+
+                <View style={[styles.streakPill, isRTL && styles.rowRTL]}>
+                  <AppText weight="bold" size="xs" color={streak > 0 ? '#EA580C' : colors.textSecondary}>
+                    {toPersianDigits(streak)}
+                  </AppText>
+                  <Icon name="local-fire-department" size={16} color={streak > 0 ? '#EA580C' : colors.textSecondary} />
+                </View>
+                <Icon name="chevron-left" size={18} color={colors.textSecondary} />
+              </View>
+
+              <View style={styles.progressBarTrack}>
+                <View
+                  style={[
+                    styles.progressBarFill,
+                    { width: `${Math.max(5, Math.min(100, Math.round(goal.fraction * 100)))}%` },
+                  ]}
+                />
+              </View>
+
+              <View style={[styles.entryCardFooter, isRTL && styles.rowRTL]}>
+                <AppText size="xs" color={colors.textSecondary}>
+                  {toPersianDigits(goal.done)} از {toPersianDigits(goal.goal)} تست امروز
+                </AppText>
+                <AppText size="xs" weight="medium" color={colors.textSecondary}>
+                  آماده شروع
+                </AppText>
+              </View>
+            </Card>
+
+            {/* Card 2: مرور امروز */}
+            <Card onPress={() => navigation.navigate('KonkurNotebook', { tab: 'review' })} style={styles.entryCard}>
+              <View style={[styles.entryCardHeader, isRTL && styles.rowRTL]}>
+                <View style={[styles.entryCardIconBox, { backgroundColor: '#DCFCE7' }]}>
+                  <Icon name="event-repeat" size={22} color="#16A34A" />
+                </View>
+
+                <View style={styles.flexOne}>
+                  <AppText weight="bold" size="sm" color={colors.textPrimary}>
+                    مرور امروز
+                  </AppText>
+                  <AppText size="xs" color={colors.textSecondary}>
+                    {dueCount > 0
+                      ? `${toPersianDigits(dueCount)} تست برای مرور داری`
+                      : 'امروز مروری نداری؛ غلط‌هایت سر وقت برمی‌گردند'}
+                  </AppText>
+                </View>
+
+                <Icon name="chevron-left" size={18} color={colors.textSecondary} />
+              </View>
+            </Card>
+
+            {/* Card 3: برگه‌ی فرمول */}
+            <Card onPress={() => navigation.navigate('FormulaSheet')} style={styles.entryCard}>
+              <View style={[styles.entryCardHeader, isRTL && styles.rowRTL]}>
+                <View style={[styles.entryCardIconBox, { backgroundColor: '#DCFCE7' }]}>
+                  <Icon name="functions" size={22} color="#16A34A" />
+                </View>
+
+                <View style={styles.flexOne}>
+                  <AppText weight="bold" size="sm" color={colors.textPrimary}>
+                    برگه‌ی فرمول
+                  </AppText>
+                  <AppText size="xs" color={colors.textSecondary}>
+                    فرمول‌های مهم هر فصل برای مرور سریع
+                  </AppText>
+                </View>
+
+                <Icon name="chevron-left" size={18} color={colors.textSecondary} />
+              </View>
+            </Card>
+
+            {/* Card 4: دفتر غلط‌ها و آمار من */}
+            <Card onPress={() => navigation.navigate('KonkurNotebook')} style={styles.entryCard}>
+              <View style={[styles.entryCardHeader, isRTL && styles.rowRTL]}>
+                <View style={[styles.entryCardIconBox, { backgroundColor: '#EEF2FF' }]}>
+                  <Icon name="auto-stories" size={22} color="#4F46E5" />
+                </View>
+
+                <View style={styles.flexOne}>
+                  <AppText weight="bold" size="sm" color={colors.textPrimary}>
+                    دفتر غلط‌ها و آمار من
+                  </AppText>
+                  <AppText size="xs" color={colors.textSecondary}>
+                    {mistakeCount > 0
+                      ? `${toPersianDigits(mistakeCount)} تست غلط یا نشان‌شده`
+                      : 'غلط‌ها، نشان‌شده‌ها و آمار پیشرفت'}
+                  </AppText>
+                </View>
+
+                <Icon name="chevron-left" size={18} color={colors.textSecondary} />
+              </View>
+            </Card>
+          </View>
+
+          {/* Section: نکات عمومی تست‌زنی */}
+          <View style={styles.generalSection}>
+            <View style={[styles.sectionHeaderRow, isRTL && styles.rowRTL]}>
+              <AppText weight="bold" size="md" color={colors.textPrimary}>
+                نکات عمومی تست‌زنی
               </AppText>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => setShowAllGeneral(prev => !prev)}
+                hitSlop={8}
+              >
+                <AppText size="xs" weight="medium" color="#4F46E5">
+                  {showAllGeneral ? 'کمتر' : `مشاهده همه (${toPersianDigits(generalTips.length)})`}
+                </AppText>
+              </Pressable>
+            </View>
 
-      {chapters.length === 0 ? (
-        <AppText color={colors.textSecondary}>
-          {t(track === 'tajrobi' ? 'track.comingSoon' : 'konkur.noTips')}
-        </AppText>
-      ) : (
-        chapters.map(({ book, chapter, tips }) => (
-          <View key={chapter.id} style={styles.section}>
-            <View>
-              <AppText weight="bold">{chapter.title}</AppText>
+            <View style={styles.generalTipsList}>
+              {visibleGeneralTips.map((tip, idx) => renderTip(tip, idx))}
+            </View>
+          </View>
+
+          {/* Speed Challenge Banner */}
+          <View style={[styles.speedChallengeCard, isRTL && styles.rowRTL]}>
+            <View style={styles.lightningIconBox}>
+              <Icon name="flash-on" size={22} color="#0F1F05" />
+            </View>
+
+            <View style={styles.flexOne}>
+              <AppText weight="bold" size="sm" color={colors.textPrimary}>
+                چالش آزمون سرعتی
+              </AppText>
               <AppText size="xs" color={colors.textSecondary}>
-                {book}
-                {chapterStats(chapter.id)}
+                آمادگی برای ۲ دقیقه حل سرعتی؟
               </AppText>
             </View>
-            {tips.map(renderTip)}
-          </View>
-        ))
-      )}
 
-      <View style={[...row, styles.note]}>
-        <Icon name="info-outline" size={16} color={colors.textSecondary} />
-        <AppText size="xs" color={colors.textSecondary} style={styles.flexOne}>
-          {t('konkur.sourceNote')}
-        </AppText>
-      </View>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="شروع آزمون"
+              onPress={() => navigation.navigate('ExamSetup')}
+              style={styles.speedChallengeButton}
+            >
+              <AppText size="xs" weight="bold" color="#0F1F05">
+                شروع آزمون
+              </AppText>
+            </Pressable>
+          </View>
+
+          {/* Grade Selector Tabs for textbook chapters */}
+          <View style={styles.chapterSectionHeader}>
+            <AppText weight="bold" size="md" color={colors.textPrimary}>
+              نکات کتاب درسی و فصول
+            </AppText>
+          </View>
+
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabs}>
+            {CURRICULUM_GRADES.map(g => {
+              const active = g === grade;
+              return (
+                <Pressable
+                  key={g}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                  onPress={() => setGrade(g)}
+                  style={[styles.tab, active && styles.tabActive]}
+                >
+                  <AppText size="xs" weight="medium" color={active ? '#0F1F05' : colors.textPrimary}>
+                    {t('topics.gradeChip', { grade: g })}
+                  </AppText>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+
+          {chapters.length === 0 ? (
+            <AppText color={colors.textSecondary} style={styles.emptyText}>
+              {t(track === 'tajrobi' ? 'track.comingSoon' : 'konkur.noTips')}
+            </AppText>
+          ) : (
+            chapters.map(({ book, chapter, tips }) => (
+              <View key={chapter.id} style={styles.section}>
+                <View>
+                  <AppText weight="bold" size="sm">{chapter.title}</AppText>
+                  <AppText size="xs" color={colors.textSecondary}>
+                    {book}
+                    {chapterStats(chapter.id)}
+                  </AppText>
+                </View>
+                {tips.map((tip, idx) => renderTip(tip, idx))}
+              </View>
+            ))
+          )}
+
+          <View style={[...row, styles.note]}>
+            <Icon name="info-outline" size={16} color={colors.textSecondary} />
+            <AppText size="xs" color={colors.textSecondary} style={styles.flexOne}>
+              {t('konkur.sourceNote')}
+            </AppText>
+          </View>
         </>
       )}
-    </ScreenContainer>
+      </ScreenContainer>
+      <AppBottomNav activeTab="Konkur" />
+    </View>
   );
 }
 
-const useStyles = makeStyles(colors => StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  // Soft RTL (see src/i18n/index.ts): rows are mirrored per component.
-  rowRTL: {
-    flexDirection: 'row-reverse',
-  },
-  flexOne: {
-    flex: 1,
-  },
-  section: {
-    gap: spacing.sm,
-  },
-  searchBox: {
-    gap: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-  },
-  searchInput: {
-    flex: 1,
-    minHeight: 48,
-    padding: 0,
-    fontFamily: fontFamily.fa.regular,
-    fontSize: fontSize.md,
-    color: colors.textPrimary,
-    textAlign: 'left',
-  },
-  searchInputRTL: {
-    textAlign: 'right',
-    writingDirection: 'rtl',
-  },
-  tipCard: {
-    padding: spacing.md,
-  },
-  tipIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: radius.pill,
-    backgroundColor: colors.primaryMuted,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tabs: {
-    gap: spacing.sm,
-  },
-  tab: {
-    minHeight: 40,
-    justifyContent: 'center',
-    paddingHorizontal: spacing.md,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-  },
-  tabActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  note: {
-    gap: spacing.xs,
-  },
-}));
+const useStyles = makeStyles(colors =>
+  StyleSheet.create({
+    screenWrapper: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+    },
+    rowRTL: {
+      flexDirection: 'row-reverse',
+    },
+    flexOne: {
+      flex: 1,
+    },
+    topHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: spacing.sm,
+      marginBottom: spacing.xs,
+    },
+    headerActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+    avatarButton: {
+      width: 36,
+      height: 36,
+      borderRadius: radius.pill,
+      backgroundColor: '#22C55E',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    headerIconButton: {
+      width: 36,
+      height: 36,
+      borderRadius: radius.pill,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    searchBox: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      paddingHorizontal: spacing.md,
+      borderRadius: radius.lg,
+      borderWidth: 1,
+      borderColor: '#E2E8F0',
+      backgroundColor: '#FFFFFF',
+      height: 48,
+      marginVertical: spacing.sm,
+    },
+    searchInput: {
+      flex: 1,
+      height: 48,
+      padding: 0,
+      fontFamily: fontFamily.fa.regular,
+      fontSize: fontSize.sm,
+      color: colors.textPrimary,
+    },
+    searchInputRTL: {
+      textAlign: 'right',
+    },
+    introText: {
+      lineHeight: 20,
+      marginVertical: spacing.xs,
+    },
+    entryCardsContainer: {
+      gap: spacing.sm,
+      marginVertical: spacing.sm,
+    },
+    entryCard: {
+      padding: spacing.md,
+      borderRadius: radius.lg,
+      borderWidth: 1,
+      borderColor: '#EEF0F4',
+      backgroundColor: '#FFFFFF',
+      gap: spacing.xs,
+    },
+    entryCardHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+    entryCardIconBox: {
+      width: 42,
+      height: 42,
+      borderRadius: radius.md,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    streakPill: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 2,
+      backgroundColor: '#FEF3C7',
+      paddingHorizontal: spacing.xs,
+      paddingVertical: 2,
+      borderRadius: radius.pill,
+    },
+    progressBarTrack: {
+      height: 6,
+      borderRadius: radius.pill,
+      backgroundColor: '#F1F5F9',
+      overflow: 'hidden',
+      marginTop: spacing.xs,
+    },
+    progressBarFill: {
+      height: 6,
+      borderRadius: radius.pill,
+      backgroundColor: '#76E000',
+    },
+    entryCardFooter: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginTop: 2,
+    },
+    generalSection: {
+      marginVertical: spacing.sm,
+      gap: spacing.sm,
+    },
+    sectionHeaderRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginVertical: spacing.xs,
+    },
+    generalTipsList: {
+      gap: spacing.sm,
+    },
+    tipCard: {
+      padding: spacing.md,
+      borderRadius: radius.lg,
+      borderWidth: 1,
+      borderColor: '#EEF0F4',
+      backgroundColor: '#FFFFFF',
+    },
+    tipIconBox: {
+      width: 40,
+      height: 40,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    subjectTag: {
+      paddingHorizontal: spacing.sm,
+      paddingVertical: 3,
+      borderRadius: radius.pill,
+    },
+    speedChallengeCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      backgroundColor: '#F7FEE7',
+      borderWidth: 1,
+      borderColor: '#D9F99D',
+      borderRadius: radius.xl,
+      padding: spacing.md,
+      marginVertical: spacing.md,
+    },
+    lightningIconBox: {
+      width: 40,
+      height: 40,
+      borderRadius: radius.pill,
+      backgroundColor: '#76E000',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    speedChallengeButton: {
+      backgroundColor: '#76E000',
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.xs,
+      borderRadius: radius.md,
+    },
+    chapterSectionHeader: {
+      marginTop: spacing.sm,
+      marginBottom: spacing.xs,
+    },
+    tabs: {
+      flexDirection: 'row',
+      gap: spacing.xs,
+      paddingVertical: spacing.xs,
+    },
+    tab: {
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.xs,
+      borderRadius: radius.pill,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    tabActive: {
+      backgroundColor: '#76E000',
+      borderColor: '#76E000',
+    },
+    section: {
+      gap: spacing.sm,
+      marginTop: spacing.sm,
+    },
+    note: {
+      padding: spacing.sm,
+      borderRadius: radius.md,
+      backgroundColor: colors.surfaceMuted,
+      marginTop: spacing.md,
+    },
+    emptyText: {
+      paddingVertical: spacing.md,
+      textAlign: 'center',
+    },
+  }),
+);

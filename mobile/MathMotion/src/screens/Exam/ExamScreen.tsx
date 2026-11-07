@@ -1,15 +1,15 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AppState, Image, StyleSheet, View } from 'react-native';
+import { AppState, Image, Pressable, StyleSheet, View } from 'react-native';
 
 import { AppButton } from '../../components/common/AppButton';
 import { AppDialog } from '../../components/common/AppDialog';
 import { AppText } from '../../components/common/AppText';
 import { Card } from '../../components/common/Card';
+import { Icon } from '../../components/common/Icon';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 import { MathExpression } from '../../components/MathExpression/MathExpression';
-import { QuizChoice } from '../../components/Quiz/QuizChoice';
 import { useIsRTL } from '../../hooks/useIsRTL';
 import type { RootStackParamList } from '../../navigation/types';
 import { useKonkurContent, useTrackKonkurContent } from '../../store/useKonkurContentStore';
@@ -18,6 +18,7 @@ import { buildExam } from '../../services/exam/buildExam';
 import { chapterBankQuestions } from '../../services/exam/chapterBank';
 import { buildKonkurExam } from '../../services/exam/konkurExam';
 import { trackEvent } from '../../services/telemetry';
+import { toPersianDigits } from '../../content/konkur';
 import {
   defaultDurationSec,
   elapsedSeconds,
@@ -26,14 +27,10 @@ import {
   localizeDigits,
   remainingSeconds,
 } from '../../services/exam/scoring';
-import { Icon } from '../../components/common/Icon';
 import { makeStyles, radius, spacing, useColors } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Exam'>;
 
-// Exam mode, unlike Quiz: no right/wrong feedback while answering — the
-// student can move back and forth and change answers, and only sees the
-// score (and each correct answer) on ExamResult.
 export function ExamScreen({ route, navigation }: Props) {
   const colors = useColors();
   const styles = useStyles();
@@ -42,10 +39,8 @@ export function ExamScreen({ route, navigation }: Props) {
   const { config } = route.params;
 
   const content = useKonkurContent();
-  // A chapter exam also draws on the chapters' question bank (admin panel).
   const trackContent = useTrackKonkurContent();
 
-  // Generated once per exam — a re-render must not swap the questions.
   const [questions] = useState(() =>
     config.konkur
       ? buildKonkurExam(content, config.konkur)
@@ -53,9 +48,9 @@ export function ExamScreen({ route, navigation }: Props) {
   );
   const [answers, setAnswers] = useState<(number | null)[]>(() => questions.map(() => null));
   const [index, setIndex] = useState(0);
+  const [bookmarked, setBookmarked] = useState(false);
+  const [showHint, setShowHint] = useState(false);
 
-  // The clock comes from timestamps (a fixed deadline), never from counting
-  // ticks, so it stays right after the app was in the background.
   const durationSec = config.durationSec ?? defaultDurationSec(config.count);
   const [startedAt] = useState(() => Date.now());
   const deadline = startedAt + durationSec * 1000;
@@ -63,7 +58,6 @@ export function ExamScreen({ route, navigation }: Props) {
 
   useEffect(() => {
     trackEvent('exam_started', { count: questions.length, konkur: !!config.konkur });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const answersRef = useRef(answers);
@@ -82,7 +76,6 @@ export function ExamScreen({ route, navigation }: Props) {
         total: final.length,
         answered: final.filter(c => c !== null).length,
       });
-      // Real konkur questions feed «پیشرفت من» too.
       final.forEach((choice, i) => {
         const q = questions[i];
         if (choice !== null && q.konkurId) {
@@ -107,7 +100,6 @@ export function ExamScreen({ route, navigation }: Props) {
     }
     const tick = () => setRemaining(remainingSeconds(deadline, Date.now()));
     const interval = setInterval(tick, 500);
-    // Coming back from the background: re-read the clock right away.
     const sub = AppState.addEventListener('change', state => {
       if (state === 'active') {
         tick();
@@ -119,21 +111,15 @@ export function ExamScreen({ route, navigation }: Props) {
     };
   }, [deadline, questions.length]);
 
-  // Which AppDialog is open: confirming an early finish, confirming leaving
-  // (back button / swipe), or the blocking "time's up" one.
   const [dialog, setDialog] = useState<'finish' | 'leave' | 'timeUp' | null>(null);
   const pendingLeaveRef = useRef<Parameters<typeof navigation.dispatch>[0] | null>(null);
 
-  // Time's up: the dialog covers the questions so nothing can change, and
-  // its only button (or the back button) shows the result.
   useEffect(() => {
     if (questions.length > 0 && remaining <= 0 && !finishedRef.current) {
       setDialog('timeUp');
     }
   }, [remaining, questions.length]);
 
-  // Leaving mid-exam throws the answers away, so ask first. finish() sets
-  // finishedRef before its replace(), which skips this.
   useEffect(() => {
     if (questions.length === 0) {
       return undefined;
@@ -171,63 +157,116 @@ export function ExamScreen({ route, navigation }: Props) {
   const question = questions[index];
   const isLast = index === questions.length - 1;
   const answeredCount = answers.filter(a => a !== null).length;
-  const progress = `${((index + 1) / questions.length) * 100}%` as const;
+  const progressPercent = Math.round(((index + 1) / questions.length) * 100);
   const warning = isWarning(remaining);
 
   const select = (choice: number) => {
     setAnswers(prev => prev.map((a, i) => (i === index ? choice : a)));
   };
 
-  const clearAnswer = () => {
-    setAnswers(prev => prev.map((a, i) => (i === index ? null : a)));
-  };
-
   const unansweredCount = questions.length - answeredCount;
 
-  const handleFinish = () => {
-    if (unansweredCount === 0) {
-      finish(false);
-      return;
+  const handleNextOrFinish = () => {
+    if (isLast) {
+      if (unansweredCount === 0) {
+        finish(false);
+      } else {
+        setDialog('finish');
+      }
+    } else {
+      setIndex(i => i + 1);
+      setShowHint(false);
     }
-    setDialog('finish');
   };
+
+  const choiceNumbers = ['۱', '۲', '۳', '۴'];
 
   return (
     <ScreenContainer scroll>
-      <View style={[styles.header, isRTL && styles.rowRTL]}>
-        <AppText weight="bold">
-          {t('exam.questionOf', {
-            n: localizeDigits(index + 1, isRTL),
-            total: localizeDigits(questions.length, isRTL),
-          })}
-        </AppText>
-        <View
-          style={[styles.timer, isRTL && styles.rowRTL, warning && styles.timerWarning]}
-          accessibilityRole="timer"
-          accessibilityLabel={`${t('exam.timeLeft')} ${formatClock(remaining)}`}
-        >
-          <Icon name="timer" size={18} color={warning ? colors.danger : colors.textSecondary} />
-          <AppText weight="bold" color={warning ? colors.danger : colors.textPrimary} style={styles.clock}>
-            {localizeDigits(formatClock(remaining), isRTL)}
-          </AppText>
+      {/* Top Header */}
+      <View style={[styles.topHeader, isRTL && styles.rowRTL]}>
+        <View style={[styles.headerActions, isRTL && styles.rowRTL]}>
+          <View style={styles.avatarButton}>
+            <Icon name="person" size={20} color="#FFFFFF" />
+          </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="راهنما"
+            style={styles.headerIconButton}
+            onPress={() => navigation.navigate('Guide')}
+          >
+            <Icon name="lightbulb" size={20} color={colors.textPrimary} />
+          </Pressable>
         </View>
-      </View>
-      <AppText size="sm" color={colors.textSecondary}>
-        {t('exam.answered', {
-          count: localizeDigits(answeredCount, isRTL),
-          total: localizeDigits(questions.length, isRTL),
-        })}
-        {' · '}
-        {t('exam.scoring')}
-      </AppText>
-      <View style={styles.track}>
-        <View style={[styles.fill, isRTL && styles.fillRTL, { width: progress }]} />
+
+        <AppText weight="bold" size="md" color={colors.textPrimary}>
+          Problem Solver Session
+        </AppText>
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="بازگشت"
+          onPress={() => navigation.goBack()}
+          style={styles.headerIconButton}
+        >
+          <Icon name="arrow-forward" size={22} color={colors.textPrimary} />
+        </Pressable>
       </View>
 
-      <Card style={styles.card}>
-        <AppText weight="medium" size="lg">
+      {/* Progress & Countdown Section */}
+      <View style={styles.progressSection}>
+        <View style={[styles.progressInfoRow, isRTL && styles.rowRTL]}>
+          <AppText size="xs" weight="bold" color={colors.textPrimary}>
+            پیشرفت مبحث: تست {toPersianDigits(index + 1)} از {toPersianDigits(questions.length)}
+          </AppText>
+
+          <View style={[styles.timerBadge, warning && styles.timerWarning, isRTL && styles.rowRTL]}>
+            <Icon name="timer" size={16} color={warning ? colors.danger : colors.textPrimary} />
+            <AppText weight="bold" size="xs" color={warning ? colors.danger : colors.textPrimary}>
+              {localizeDigits(formatClock(remaining), isRTL)}
+            </AppText>
+          </View>
+        </View>
+
+        <View style={styles.progressTrack}>
+          <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />
+        </View>
+      </View>
+
+      {/* Main Question Card */}
+      <Card style={styles.questionCard}>
+        {/* Card Header */}
+        <View style={[styles.cardHeaderRow, isRTL && styles.rowRTL]}>
+          <View style={[styles.tagsRow, isRTL && styles.rowRTL]}>
+            <View style={styles.authorBadge}>
+              <AppText size="xs" weight="medium" color="#15803D">
+                {question.konkurId ? 'کنکور سراسری' : 'تست تالیفی'}
+              </AppText>
+            </View>
+            <AppText size="xs" weight="bold" color={colors.textPrimary}>
+              تست {toPersianDigits(index + 1)}
+            </AppText>
+          </View>
+
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="نشان کردن"
+            hitSlop={8}
+            onPress={() => setBookmarked(v => !v)}
+          >
+            <Icon
+              name={bookmarked ? 'star' : 'star-border'}
+              size={22}
+              color={bookmarked ? '#F59E0B' : colors.textSecondary}
+            />
+          </Pressable>
+        </View>
+
+        {/* Question Text */}
+        <AppText weight="bold" size="md" color={colors.textPrimary} style={styles.questionText}>
           {question.text ?? t(`exam.q.${question.textKey}`, question.params)}
         </AppText>
+
         {question.figure !== undefined && (
           <Image
             source={question.figure}
@@ -236,53 +275,140 @@ export function ExamScreen({ route, navigation }: Props) {
             accessibilityIgnoresInvertColors
           />
         )}
+
+        {/* Centered Formula Display Box */}
         {question.expression && (
-          <View style={styles.expression}>
+          <View style={styles.formulaBox}>
             <MathExpression expression={question.expression} size="lg" />
           </View>
         )}
-        <View style={styles.choices}>
-          {question.choices.map((choice, i) => (
-            <QuizChoice
-              key={`${question.id}-${i}`}
-              label={choice}
-              math={question.choicesMath !== false}
-              disabled={false}
-              state={answers[index] === i ? 'selected' : 'default'}
-              onPress={() => select(i)}
-            />
-          ))}
+
+        {/* Engine Solver Pill */}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="حل گام‌به‌گام با موتور مجهول"
+          onPress={() => {
+            if (question.expression) {
+              navigation.navigate('ProblemInput', { initialProblem: question.expression });
+            }
+          }}
+          style={styles.enginePill}
+        >
+          <AppText size="xs" weight="bold" color="#4F46E5">
+            Σ حل گام‌به‌گام با موتور مجهول ✦
+          </AppText>
+        </Pressable>
+
+        {/* Hint Pill */}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="راهنمایی"
+          onPress={() => setShowHint(v => !v)}
+          style={styles.hintPill}
+        >
+          <Icon name="lightbulb" size={16} color="#15803D" />
+          <AppText size="xs" weight="medium" color="#15803D">
+            {showHint ? 'نکته: روابط دلتا و فرمول ویت را بررسی کن' : 'گیر کردی؟ راهنمایی بگیر (۱ راهنمایی باقی‌مانده)'}
+          </AppText>
+        </Pressable>
+
+        {/* 4 Choices */}
+        <View style={styles.choicesList}>
+          {question.choices.map((choice, i) => {
+            const isSelected = answers[index] === i;
+            return (
+              <Pressable
+                key={`${question.id}-${i}`}
+                accessibilityRole="button"
+                accessibilityState={{ selected: isSelected }}
+                onPress={() => select(i)}
+                style={[
+                  styles.choiceItem,
+                  isSelected && styles.choiceItemSelected,
+                  isRTL && styles.rowRTL,
+                ]}
+              >
+                <View style={styles.flexOne}>
+                  {question.choicesMath !== false ? (
+                    <MathExpression expression={choice} size="md" />
+                  ) : (
+                    <AppText size="sm" weight={isSelected ? 'bold' : 'regular'} color={colors.textPrimary}>
+                      {choice}
+                    </AppText>
+                  )}
+                </View>
+
+                <View style={[styles.choiceNumberCircle, isSelected && styles.choiceNumberCircleSelected]}>
+                  <AppText
+                    size="xs"
+                    weight="bold"
+                    color={isSelected ? '#0F1F05' : colors.textSecondary}
+                  >
+                    {choiceNumbers[i] ?? toPersianDigits(i + 1)}
+                  </AppText>
+                </View>
+              </Pressable>
+            );
+          })}
         </View>
-        {answers[index] !== null && (
-          <AppButton label={t('exam.clearAnswer')} variant="ghost" size="sm" onPress={clearAnswer} />
-        )}
+
+        {/* Step by step helper link */}
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => {
+            if (question.expression) {
+              navigation.navigate('ProblemInput', { initialProblem: question.expression });
+            }
+          }}
+          style={[styles.stepLink, isRTL && styles.rowRTL]}
+        >
+          <Icon name="help-outline" size={16} color={colors.textSecondary} />
+          <AppText size="xs" color={colors.textSecondary}>
+            بلد نیستم؛ راه‌حل رو قدم‌به‌قدم نشونم بده
+          </AppText>
+        </Pressable>
+
+        {/* Main CTA Button */}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={isLast ? 'ثبت پاسخ و مشاهده نتایج' : 'ثبت پاسخ و تست بعدی'}
+          onPress={handleNextOrFinish}
+          style={styles.primaryCtaButton}
+        >
+          <AppText size="sm" weight="bold" color="#0F1F05">
+            {isLast ? 'ثبت پاسخ و مشاهده نتایج ←' : 'ثبت پاسخ و تست بعدی ←'}
+          </AppText>
+        </Pressable>
+
+        {/* Footer info links */}
+        <View style={[styles.footerLinksRow, isRTL && styles.rowRTL]}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => navigation.navigate('Scan')}
+            style={[styles.footerLink, isRTL && styles.rowRTL]}
+          >
+            <Icon name="calculate" size={16} color={colors.textSecondary} />
+            <AppText size="xs" color={colors.textSecondary}>
+              ماشین‌حساب کنکور
+            </AppText>
+          </Pressable>
+
+          <AppText size="xs" color={colors.textSecondary}>•</AppText>
+
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => navigation.navigate('Guide')}
+            style={[styles.footerLink, isRTL && styles.rowRTL]}
+          >
+            <Icon name="flag" size={16} color={colors.textSecondary} />
+            <AppText size="xs" color={colors.textSecondary}>
+              گزارش اشکال سؤال
+            </AppText>
+          </Pressable>
+        </View>
       </Card>
 
-      <View style={[styles.nav, isRTL && styles.rowRTL]}>
-        <AppButton
-          size="sm"
-          label={t('exam.previous')}
-          variant="secondary"
-          disabled={index === 0}
-          onPress={() => setIndex(i => i - 1)}
-          style={styles.flexOne}
-        />
-        {isLast ? (
-          <AppButton label={t('exam.finish')} size="sm" icon="flag" onPress={handleFinish} style={styles.flexOne} />
-        ) : (
-          <AppButton
-            size="sm"
-            label={t('exam.next')}
-            variant={answers[index] === null ? 'secondary' : 'primary'}
-            onPress={() => setIndex(i => i + 1)}
-            style={styles.flexOne}
-          />
-        )}
-      </View>
-      {!isLast && (
-        <AppButton label={t('exam.finishEarly')} variant="ghost" size="sm" onPress={handleFinish} />
-      )}
-
+      {/* Dialogs */}
       <AppDialog
         visible={dialog === 'finish'}
         icon="flag"
@@ -340,74 +466,211 @@ export function ExamScreen({ route, navigation }: Props) {
   );
 }
 
-const useStyles = makeStyles(colors => StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  timer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: radius.pill,
-    backgroundColor: colors.surfaceMuted,
-  },
-  timerWarning: {
-    backgroundColor: colors.dangerMuted,
-  },
-  clock: {
-    fontVariant: ['tabular-nums'],
-  },
-  figure: {
-    width: '100%',
-    height: 160,
-  },
-  // Soft RTL (see src/i18n/index.ts): rows are mirrored per component.
-  rowRTL: {
-    flexDirection: 'row-reverse',
-  },
-  track: {
-    height: 6,
-    borderRadius: radius.pill,
-    backgroundColor: colors.surfaceMuted,
-    overflow: 'hidden',
-  },
-  fill: {
-    height: '100%',
-    backgroundColor: colors.primary,
-  },
-  fillRTL: {
-    alignSelf: 'flex-end',
-  },
-  card: {
-    gap: spacing.md,
-  },
-  expression: {
-    backgroundColor: colors.surfaceMuted,
-    borderRadius: radius.md,
-    padding: spacing.md,
-  },
-  choices: {
-    gap: spacing.sm,
-  },
-  nav: {
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-  flexOne: {
-    flex: 1,
-  },
-  dialogStats: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginTop: spacing.sm,
-  },
-  dialogStat: {
-    flex: 1,
-    borderRadius: radius.md,
-    paddingVertical: spacing.sm,
-  },
-}));
+const useStyles = makeStyles(colors =>
+  StyleSheet.create({
+    rowRTL: {
+      flexDirection: 'row-reverse',
+    },
+    flexOne: {
+      flex: 1,
+    },
+    topHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: spacing.sm,
+      marginBottom: spacing.xs,
+    },
+    headerActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+    avatarButton: {
+      width: 36,
+      height: 36,
+      borderRadius: radius.pill,
+      backgroundColor: '#22C55E',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    headerIconButton: {
+      width: 36,
+      height: 36,
+      borderRadius: radius.pill,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    progressSection: {
+      marginVertical: spacing.sm,
+      gap: spacing.xs,
+    },
+    progressInfoRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    timerBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      backgroundColor: '#F1F5F9',
+      paddingHorizontal: spacing.sm,
+      paddingVertical: 3,
+      borderRadius: radius.pill,
+    },
+    timerWarning: {
+      backgroundColor: '#FEE2E2',
+    },
+    progressTrack: {
+      height: 6,
+      borderRadius: radius.pill,
+      backgroundColor: '#F1F5F9',
+      overflow: 'hidden',
+      marginTop: 4,
+    },
+    progressFill: {
+      height: 6,
+      borderRadius: radius.pill,
+      backgroundColor: '#76E000',
+    },
+    questionCard: {
+      padding: spacing.md,
+      borderRadius: radius.xl,
+      borderWidth: 1,
+      borderColor: '#EEF0F4',
+      backgroundColor: '#FFFFFF',
+      gap: spacing.md,
+      marginVertical: spacing.xs,
+    },
+    cardHeaderRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    tagsRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+    authorBadge: {
+      backgroundColor: '#DCFCE7',
+      paddingHorizontal: spacing.sm,
+      paddingVertical: 3,
+      borderRadius: radius.pill,
+    },
+    questionText: {
+      lineHeight: 24,
+    },
+    figure: {
+      width: '100%',
+      height: 160,
+    },
+    formulaBox: {
+      backgroundColor: '#F0F4FF',
+      borderRadius: radius.lg,
+      paddingVertical: spacing.lg,
+      paddingHorizontal: spacing.md,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: '#E0E7FF',
+    },
+    enginePill: {
+      backgroundColor: '#EEF2FF',
+      borderRadius: radius.pill,
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.md,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: '#C7D2FE',
+    },
+    hintPill: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.xs,
+      backgroundColor: '#F0FDF4',
+      borderRadius: radius.pill,
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.md,
+      borderWidth: 1,
+      borderColor: '#BBF7D0',
+    },
+    choicesList: {
+      gap: spacing.sm,
+      marginTop: spacing.xs,
+    },
+    choiceItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: '#F8FAFC',
+      borderRadius: radius.lg,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.md,
+      borderWidth: 1,
+      borderColor: '#E2E8F0',
+    },
+    choiceItemSelected: {
+      backgroundColor: '#F7FEE7',
+      borderColor: '#76E000',
+      borderWidth: 2,
+    },
+    choiceNumberCircle: {
+      width: 28,
+      height: 28,
+      borderRadius: radius.pill,
+      backgroundColor: '#E2E8F0',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    choiceNumberCircleSelected: {
+      backgroundColor: '#76E000',
+    },
+    stepLink: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.xs,
+      paddingVertical: spacing.xs,
+    },
+    primaryCtaButton: {
+      backgroundColor: '#76E000',
+      borderRadius: radius.pill,
+      height: 52,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: spacing.xs,
+    },
+    footerLinksRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.sm,
+      paddingTop: spacing.xs,
+    },
+    footerLink: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+    },
+    dialogStats: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+      marginTop: spacing.sm,
+    },
+    dialogStat: {
+      flex: 1,
+      borderRadius: radius.md,
+      paddingVertical: spacing.sm,
+    },
+    card: {
+      gap: spacing.md,
+    },
+  }),
+);

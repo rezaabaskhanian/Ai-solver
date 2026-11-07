@@ -14,21 +14,21 @@ interface Tool {
   icon: IconName;
   labelKey: string;
   screen: 'Scan' | 'ExamSetup' | 'Topics' | 'Konkur';
+  bg: string;
+  color: string;
   highlight?: boolean;
+  badge?: string;
 }
 
-// Square shortcuts under the quota card; the exam one is highlighted
-// like the design's active card.
+// 4 main feature hubs matching the design system
 const TOOLS: Tool[] = [
-  { icon: 'photo-camera', labelKey: 'home.toolScan', screen: 'Scan' },
-  { icon: 'assignment', labelKey: 'home.toolExam', screen: 'ExamSetup', highlight: true },
-  { icon: 'menu-book', labelKey: 'home.toolTopics', screen: 'Topics' },
-  // Geometry stays reachable from the drawer.
-  { icon: 'lightbulb', labelKey: 'home.toolKonkur', screen: 'Konkur' },
+  { icon: 'photo-camera', labelKey: 'home.toolScan', screen: 'Scan', bg: '#DCFCE7', color: '#15803D' },
+  { icon: 'assignment', labelKey: 'home.toolExam', screen: 'ExamSetup', bg: '#DCFCE7', color: '#15803D', highlight: true, badge: 'هوشمند' },
+  { icon: 'menu-book', labelKey: 'home.toolTopics', screen: 'Topics', bg: '#E0F2FE', color: '#0284C7' },
+  { icon: 'lightbulb', labelKey: 'home.toolKonkur', screen: 'Konkur', bg: '#FEF3C7', color: '#D97706' },
 ];
 
 export function HomeToolCards() {
-  const colors = useColors();
   const styles = useStyles();
   const { t } = useTranslation();
   const isRTL = useIsRTL();
@@ -47,14 +47,21 @@ export function HomeToolCards() {
             pressed && styles.pressed,
           ]}
         >
-          <View style={[styles.icon, tool.highlight && styles.iconHighlight]}>
-            <Icon name={tool.icon} size={24} color={tool.highlight ? colors.primaryText : colors.textPrimary} />
+          {tool.badge && (
+            <View style={styles.badgePill}>
+              <AppText size="xs" weight="bold" color="#0F1F05" style={{ fontSize: 9 }}>
+                {tool.badge}
+              </AppText>
+            </View>
+          )}
+          <View style={[styles.icon, { backgroundColor: tool.bg }]}>
+            <Icon name={tool.icon} size={22} color={tool.color} />
           </View>
           <AppText
-            size="sm"
+            size="xs"
             weight="bold"
             align="center"
-            color={tool.highlight ? colors.primaryText : colors.textPrimary}
+            color="#111827"
           >
             {t(tool.labelKey)}
           </AppText>
@@ -76,33 +83,40 @@ const useStyles = makeStyles(colors => StyleSheet.create({
   card: {
     flex: 1,
     alignItems: 'center',
-    gap: spacing.sm,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xs,
-    borderRadius: radius.lg,
-    backgroundColor: colors.surface,
+    gap: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 4,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: colors.border,
-    shadowColor: '#0F2A12',
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 1,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000000',
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 2,
+    position: 'relative',
   },
   cardHighlight: {
-    backgroundColor: colors.primaryMuted,
-    borderColor: colors.primaryMuted,
+    backgroundColor: '#F0FDF4',
+    borderColor: '#BBF7D0',
+  },
+  badgePill: {
+    position: 'absolute',
+    top: -6,
+    right: 8,
+    backgroundColor: '#76E000',
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: radius.pill,
+    zIndex: 1,
   },
   icon: {
-    width: 48,
-    height: 48,
+    width: 44,
+    height: 44,
     borderRadius: radius.pill,
-    backgroundColor: colors.surfaceMuted,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  iconHighlight: {
-    backgroundColor: colors.surface,
   },
   pressed: {
     transform: [{ scale: 0.97 }],

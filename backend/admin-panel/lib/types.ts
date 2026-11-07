@@ -70,7 +70,20 @@ export interface Plan {
   duration_days: number;
   price_toman: number;
   product_id: string;
+  // Hidden from the app's plan picker; purchases of it still verify.
+  archived: boolean;
   purchase_count: number;
+}
+
+// GET /admin/sales — revenue is each purchase's price when it was bought.
+export interface SalesReport {
+  total_count: number;
+  total_toman: number;
+  last30_count: number;
+  last30_toman: number;
+  active_premium: number;
+  by_plan: { product_id: string; name: string; count: number; toman: number }[];
+  by_month: { month: string; count: number; toman: number }[];
 }
 
 export interface AppUser {

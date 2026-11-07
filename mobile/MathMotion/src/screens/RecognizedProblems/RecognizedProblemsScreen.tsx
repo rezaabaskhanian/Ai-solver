@@ -44,7 +44,7 @@ export function RecognizedProblemsScreen({ route, navigation }: Props) {
       if (await isArSupported()) {
         navigation.navigate('ArSolution', { photoUri, problem, result });
       } else {
-        navigation.navigate('Solution', { problem, result });
+        navigation.navigate('Solution', { problem, result, photoUri });
       }
     } catch (err) {
       const apiError = toApiError(err);

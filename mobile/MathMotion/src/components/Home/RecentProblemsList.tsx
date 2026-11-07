@@ -24,12 +24,15 @@ export function RecentProblemsList() {
   return (
     <View style={styles.container}>
       <View style={[styles.header, isRTL && styles.headerRTL]}>
-        <AppText weight="bold">
-          {t('home.recentTitle')}
-        </AppText>
+        <View style={[styles.titleRow, isRTL && styles.titleRowRTL]}>
+          <View style={styles.greenDot} />
+          <AppText weight="bold" size="sm" color="#111827">
+            {t('home.recentTitle')}
+          </AppText>
+        </View>
         {items.length > 0 && (
           <Pressable hitSlop={spacing.sm} onPress={() => navigation.navigate('History')}>
-            <AppText size="sm" weight="bold" color={colors.primaryText}>
+            <AppText size="sm" weight="bold" color="#15803D">
               {t('home.seeAll')}
             </AppText>
           </Pressable>
@@ -56,6 +59,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  titleRowRTL: {
+    flexDirection: 'row-reverse',
+  },
+  greenDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#76E000',
   },
   // Soft RTL (see src/i18n/index.ts): rows are mirrored per component.
   headerRTL: {

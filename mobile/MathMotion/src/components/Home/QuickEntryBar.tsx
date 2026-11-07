@@ -29,8 +29,8 @@ export function QuickEntryBar() {
         onPress={() => navigation.navigate('ProblemInput')}
         style={({ pressed }) => [styles.pill, isRTL && styles.rowRTL, pressed && styles.pressed]}
       >
-        <Icon name="search" color={colors.textSecondary} />
-        <AppText size="sm" color={colors.textSecondary} style={styles.flexOne} numberOfLines={1}>
+        <Icon name="search" size={20} color="#15803D" />
+        <AppText size="sm" color="#6B7280" style={styles.flexOne} numberOfLines={1}>
           {t('home.entryPlaceholder')}
         </AppText>
       </Pressable>
@@ -40,15 +40,15 @@ export function QuickEntryBar() {
         onPress={() => navigation.navigate('ProblemInput')}
         style={({ pressed }) => [styles.circle, pressed && styles.pressed]}
       >
-        <Icon name="keyboard" />
+        <Icon name="keyboard" size={22} color="#374151" />
       </Pressable>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={t('home.scanTitle')}
         onPress={() => navigation.navigate('Scan')}
-        style={({ pressed }) => [styles.circle, pressed && styles.pressed]}
+        style={({ pressed }) => [styles.circle, styles.cameraButton, pressed && styles.pressed]}
       >
-        <Icon name="photo-camera" />
+        <Icon name="photo-camera" size={22} color="#0F1F05" />
       </Pressable>
     </View>
   );
@@ -72,9 +72,14 @@ const useStyles = makeStyles(colors => StyleSheet.create({
     gap: spacing.sm,
     paddingHorizontal: spacing.md,
     borderRadius: radius.pill,
-    backgroundColor: colors.surface,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000000',
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
   flexOne: {
     flex: 1,
@@ -83,11 +88,25 @@ const useStyles = makeStyles(colors => StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: radius.pill,
-    backgroundColor: colors.surface,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: '#E5E7EB',
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#000000',
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  cameraButton: {
+    backgroundColor: '#76E000',
+    borderColor: '#76E000',
+    shadowColor: '#76E000',
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 4,
   },
   pressed: {
     opacity: 0.75,

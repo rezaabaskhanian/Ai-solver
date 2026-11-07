@@ -19,6 +19,7 @@ from .geometry import GeometryError, looks_like_geometry, parse_geometry_problem
 from .graphs import GraphError, looks_like_graph, parse_graph_problem
 from .normalize import normalize_input
 from .plot import PlotProblem
+from .rational import is_rational_equation
 from .sets import SetsError, looks_like_sets, parse_set_problem
 from . import trig
 from .vectors import VectorError, looks_like_vectors, parse_vector_problem
@@ -341,7 +342,8 @@ class ParsedProblem:
     structure: Optional[Any] = None
 
 
-_SUPPORTED_EQUATION_TYPES = {"linear_equation", "quadratic_equation", "cubic_equation", "biquadratic_equation"}
+_SUPPORTED_EQUATION_TYPES = {"linear_equation", "quadratic_equation", "cubic_equation", "biquadratic_equation",
+                             "rational_equation"}
 
 
 def _parse_side(text: str) -> sympy.Expr:
@@ -505,6 +507,10 @@ def _parse_core(normalized: str) -> _CoreParse:
         lhs, rhs = to_real_logs(lhs), to_real_logs(rhs)
         if _has_symbolic_exponent(lhs, symbol) or _has_symbolic_exponent(rhs, symbol):
             return display, "exponential_equation", symbol, lhs, rhs, None, {}
+
+        # x in a denominator: (x^2 + 3x)/(3x - 3) + ... = ... (rational.py).
+        if is_rational_equation(lhs, rhs, symbol):
+            return display, "rational_equation", symbol, lhs, rhs, None, {}
 
         diff = sympy.expand(lhs - rhs)
         try:

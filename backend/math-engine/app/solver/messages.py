@@ -459,6 +459,27 @@ MESSAGES: dict[str, dict[str, str]] = {
         "en": "Check the domain: this answer keeps every logarithm's argument positive.",
         "fa": "دامنه را بررسی می‌کنیم: این جواب عبارت داخل همه‌ی لگاریتم‌ها را مثبت نگه می‌دارد.",
     },
+    # rational.py
+    "rat_domain": {
+        "en": "Domain: no denominator may be zero, so these values are not allowed.",
+        "fa": "دامنه: هیچ مخرجی نباید صفر شود؛ پس این مقدارها مجاز نیستند.",
+    },
+    "rat_common_denominator": {
+        "en": "Move everything to one side and write it as one fraction over the common denominator {value}. A fraction is zero only when its numerator is zero, so we set the numerator equal to 0.",
+        "fa": "همه را به یک طرف می‌بریم و با مخرج مشترک {value} یک کسر می‌کنیم. کسر فقط وقتی صفر است که صورتش صفر باشد؛ پس صورت را برابر صفر قرار می‌دهیم.",
+    },
+    "rat_no_root": {
+        "en": "The numerator is a nonzero number, so the fraction is never zero: the equation has no solution.",
+        "fa": "صورت یک عدد غیرصفر است، پس کسر هیچ‌وقت صفر نمی‌شود: معادله جواب ندارد.",
+    },
+    "rat_reject_root": {
+        "en": "{root} is rejected: it makes a denominator zero.",
+        "fa": "{root} قابل قبول نیست، چون یکی از مخرج‌ها را صفر می‌کند.",
+    },
+    "rat_check_domain": {
+        "en": "Check the domain: this answer doesn't make any denominator zero.",
+        "fa": "دامنه را بررسی می‌کنیم: این جواب هیچ مخرجی را صفر نمی‌کند.",
+    },
     "exp_same_base": {
         "en": "Write both sides as powers of the same base, {base}.",
         "fa": "دو طرف را به صورت توانی از پایه‌ی یکسان {base} می‌نویسیم.",

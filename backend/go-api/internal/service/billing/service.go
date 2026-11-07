@@ -17,8 +17,37 @@ type Plan struct {
 	DurationDays int    `json:"duration_days"`
 	PriceToman   int    `json:"price_toman"`
 	ProductID    string `json:"product_id"`
+	// Archived plans are hidden from the app but still verified.
+	Archived bool `json:"archived"`
 	// Admin panel only: verified purchases of this plan so far.
 	PurchaseCount int `json:"purchase_count"`
+}
+
+// SalesReport is the admin panel's sales card: totals, the last 30 days,
+// per plan and per month (newest first).
+type SalesReport struct {
+	TotalCount    int          `json:"total_count"`
+	TotalToman    int64        `json:"total_toman"`
+	Last30Count   int          `json:"last30_count"`
+	Last30Toman   int64        `json:"last30_toman"`
+	ActivePremium int          `json:"active_premium"`
+	ByPlan        []SalesRow   `json:"by_plan"`
+	ByMonth       []SalesMonth `json:"by_month"`
+}
+
+// SalesRow is one product's purchases.
+type SalesRow struct {
+	ProductID string `json:"product_id"`
+	Name      string `json:"name"`
+	Count     int    `json:"count"`
+	Toman     int64  `json:"toman"`
+}
+
+// SalesMonth is one calendar month (YYYY-MM, server time zone).
+type SalesMonth struct {
+	Month string `json:"month"`
+	Count int    `json:"count"`
+	Toman int64  `json:"toman"`
 }
 
 // UserSummary is a user as the admin panel's «کاربران» tab lists them.
@@ -47,6 +76,8 @@ type Repository interface {
 	// UpsertPlan creates a plan, or updates the one with the same product_id.
 	UpsertPlan(ctx context.Context, p Plan) (Plan, error)
 	DeletePlan(ctx context.Context, id string) error
+	SetPlanArchived(ctx context.Context, id string, archived bool) error
+	SalesReport(ctx context.Context) (SalesReport, error)
 
 	// PurchaseRecorded reports whether purchaseToken was already verified.
 	PurchaseRecorded(ctx context.Context, purchaseToken string) (bool, error)
@@ -54,8 +85,8 @@ type Repository interface {
 	// extends the user's premium_until by that many days (from now, or
 	// from the current expiry if it's still in the future) — both in one
 	// transaction. isNew is false (and nothing is extended) when the token
-	// was already recorded.
-	RecordPurchase(ctx context.Context, userID, productID, purchaseToken string, days int) (isNew bool, err error)
+	// was already recorded. priceToman is kept for the sales report.
+	RecordPurchase(ctx context.Context, userID, productID, purchaseToken string, days, priceToman int) (isNew bool, err error)
 	// SetPremium grants the old one-time lifetime unlock.
 	SetPremium(ctx context.Context, userID string) error
 
@@ -84,7 +115,23 @@ func New(repo Repository, bazaar Validator, packageName, lifetimeProductID strin
 	return Service{repo: repo, bazaar: bazaar, packageName: packageName, lifetimeProductID: lifetimeProductID}
 }
 
-// ListPlans is what the app's plan picker shows (GET /api/v1/billing/plans).
+// ListPlans is what the app's plan picker shows (GET /api/v1/billing/plans):
+// archived plans are left out.
 func (s Service) ListPlans(ctx context.Context) ([]Plan, error) {
+	plans, err := s.repo.ListPlans(ctx)
+	if err != nil {
+		return nil, err
+	}
+	active := []Plan{}
+	for _, p := range plans {
+		if !p.Archived {
+			active = append(active, p)
+		}
+	}
+	return active, nil
+}
+
+// ListAllPlans is the admin panel's list, archived plans included.
+func (s Service) ListAllPlans(ctx context.Context) ([]Plan, error) {
 	return s.repo.ListPlans(ctx)
 }

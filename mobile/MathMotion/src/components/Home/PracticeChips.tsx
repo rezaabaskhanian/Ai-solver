@@ -24,8 +24,13 @@ export function PracticeChips() {
   return (
     <View style={styles.section}>
       <View style={[styles.header, isRTL && styles.rowRTL]}>
-        <AppText weight="bold">{t('home.practiceTitle')}</AppText>
-        <AppText size="xs" color={colors.textSecondary}>
+        <View style={[styles.titleRow, isRTL && styles.rowRTL]}>
+          <View style={styles.greenDot} />
+          <AppText weight="bold" size="sm" color="#111827">
+            {t('home.practiceTitle')}
+          </AppText>
+        </View>
+        <AppText size="xs" color="#6B7280">
           {t('home.practiceHint')}
         </AppText>
       </View>
@@ -60,6 +65,17 @@ const useStyles = makeStyles(colors => StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  greenDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#76E000',
+  },
   // Soft RTL (see src/i18n/index.ts): rows are mirrored per component.
   rowRTL: {
     flexDirection: 'row-reverse',
@@ -74,11 +90,17 @@ const useStyles = makeStyles(colors => StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: spacing.md,
     borderRadius: radius.pill,
-    backgroundColor: colors.surface,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000000',
+    shadowOpacity: 0.03,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
   },
   pressed: {
-    borderColor: colors.primary,
+    borderColor: '#76E000',
+    backgroundColor: '#F0FDF4',
   },
 }));

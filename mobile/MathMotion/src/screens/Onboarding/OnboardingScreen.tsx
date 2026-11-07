@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -10,19 +10,19 @@ import { TrackPicker } from '../../components/common/TrackPicker';
 import { MathExpression } from '../../components/MathExpression/MathExpression';
 import { useIsRTL } from '../../hooks/useIsRTL';
 import { useOnboardingStore } from '../../store/useOnboardingStore';
-import { usePreferencesStore, useTrack } from '../../store/usePreferencesStore';
+import { usePreferencesStore } from '../../store/usePreferencesStore';
 import { makeStyles, radius, spacing, useColors } from '../../theme';
 import { Icon } from '../../components/common/Icon';
+import type { StudyTrack } from '../../content/track';
 
-const FEATURES = ['scan', 'steps', 'exam'] as const;
 const PRIVACY_URL = 'https://mathmotion.ir/privacy';
 // The hero's faint "graph paper" texture: GRID_LINES lines each way.
 const GRID_STEP = 22;
 const GRID_LINES = 24;
 
 // First-launch intro, after the Stitch "onboarding" design: brand line,
-// an illustration, the headline with the accented second line, feature
-// chips and a start button. Rendered by App.tsx instead of the navigator
+// an illustration, the headline with the accented second line, the study
+// track question and a start button. Rendered by App.tsx instead of the navigator
 // until dismissed, so it uses no navigation hooks. The design's photos
 // are replaced by math cards drawn in the app's own style. «شروع» opens
 // sign-up and «ورود به حساب» opens login (App.tsx → AuthScreen).
@@ -32,8 +32,14 @@ export function OnboardingScreen() {
   const { t } = useTranslation();
   const isRTL = useIsRTL();
   const complete = useOnboardingStore(s => s.complete);
-  const track = useTrack();
   const setTrack = usePreferencesStore(s => s.setTrack);
+  // Neither card looks selected until the user taps one; until then the
+  // stored default (riazi) stays in effect.
+  const [picked, setPicked] = useState<StudyTrack | null>(null);
+  const pickTrack = (track: StudyTrack) => {
+    setPicked(track);
+    setTrack(track);
+  };
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
@@ -86,7 +92,6 @@ export function OnboardingScreen() {
         </View>
 
         <View style={styles.sheet}>
-          <View style={styles.handle} />
           <AppText size="xxl" weight="bold" align="center">
             {t('onboarding.title')}
           </AppText>
@@ -100,23 +105,12 @@ export function OnboardingScreen() {
             {t('onboarding.body')}
           </AppText>
 
-          <View style={[styles.chips, isRTL && styles.rowRTL]}>
-            {FEATURES.map(feature => (
-              <View key={feature} style={[styles.chip, isRTL && styles.rowRTL]}>
-                <View style={styles.chipDot} />
-                <AppText size="xs" weight="medium">
-                  {t(`onboarding.features.${feature}`)}
-                </AppText>
-              </View>
-            ))}
-          </View>
-
-          {/* The study track is saved the moment it is tapped (riazi is
-              preselected), so «شروع» / «ورود» need no extra step. */}
-          <AppText weight="bold" align="center" style={styles.trackTitle}>
+          {/* The study track is saved the moment it is tapped, so «شروع» /
+              «ورود» need no extra step. */}
+          <AppText size="lg" weight="bold" align="center" style={styles.trackTitle}>
             {t('track.onboardingTitle')}
           </AppText>
-          <TrackPicker value={track} onChange={setTrack} />
+          <TrackPicker value={picked} onChange={pickTrack} />
 
           <AppButton
             label={t('onboarding.start')}
@@ -263,20 +257,13 @@ const useStyles = makeStyles(colors => StyleSheet.create({
     flex: 1,
     gap: spacing.sm,
     marginTop: -spacing.md,
-    paddingTop: spacing.sm,
+    // The sparkle badge hangs 26px below the hero card; keep the title clear of it.
+    paddingTop: spacing.xl,
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.lg,
     borderTopLeftRadius: radius.xl,
     borderTopRightRadius: radius.xl,
     backgroundColor: colors.surface,
-  },
-  handle: {
-    alignSelf: 'center',
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    marginBottom: spacing.md,
-    backgroundColor: colors.border,
   },
   accentLine: {
     alignSelf: 'center',
@@ -291,32 +278,8 @@ const useStyles = makeStyles(colors => StyleSheet.create({
     marginTop: spacing.sm,
     lineHeight: 26,
   },
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    marginVertical: spacing.sm,
-  },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    paddingHorizontal: spacing.md,
-    minHeight: 36,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.background,
-  },
-  chipDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: colors.success,
-  },
   trackTitle: {
-    marginTop: spacing.xs,
+    marginTop: spacing.md,
   },
   start: {
     minHeight: 56,

@@ -83,6 +83,30 @@ func (s Service) SavePlan(ctx context.Context, p Plan) (Plan, error) {
 	return saved, nil
 }
 
+// ArchivePlan hides a plan from the app (or brings it back) without
+// losing it: purchases of it still verify and still count in sales.
+func (s Service) ArchivePlan(ctx context.Context, id string, archived bool) error {
+	err := s.repo.SetPlanArchived(ctx, id, archived)
+	if errors.Is(err, ErrNotFound) {
+		return richerror.New("billing.ArchivePlan").WithKind(richerror.KindNotFound).WithMessage("Plan not found.")
+	}
+	if err != nil {
+		return richerror.New("billing.ArchivePlan").WithErr(err).
+			WithKind(richerror.KindUnexpected).WithMessage("Could not update the plan.")
+	}
+	return nil
+}
+
+// Sales is the admin panel's revenue card.
+func (s Service) Sales(ctx context.Context) (SalesReport, error) {
+	report, err := s.repo.SalesReport(ctx)
+	if err != nil {
+		return SalesReport{}, richerror.New("billing.Sales").WithErr(err).
+			WithKind(richerror.KindUnexpected).WithMessage("Could not load the sales report.")
+	}
+	return report, nil
+}
+
 func (s Service) DeletePlan(ctx context.Context, id string) error {
 	if err := s.repo.DeletePlan(ctx, id); err != nil {
 		return richerror.New("billing.DeletePlan").WithErr(err).

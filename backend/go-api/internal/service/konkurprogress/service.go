@@ -17,6 +17,16 @@ import (
 // MaxProgressBytes caps the synced document.
 const MaxProgressBytes = 512 * 1024
 
+// Sanjesh-style taraz: the caller's percent standardized against the
+// paper's participants, تراز = TarazMean + TarazScale × z.
+const (
+	TarazMean  = 5000.0
+	TarazScale = 1000.0
+	// MinStatsSample hides aggregate numbers below this many participants:
+	// a lone user's score must not leak through the average/taraz.
+	MinStatsSample = 5
+)
+
 var (
 	// ErrConflict is returned by the repository when the stored revision is
 	// not the one the client based its change on.
@@ -51,13 +61,20 @@ type ExamResult struct {
 }
 
 // PaperStats is the distribution of best percents for one paper.
-// Percentile is nil when the caller has no stored result for it.
+// Percentile is nil when the caller has no stored result for it; Taraz is
+// nil when there are fewer than MinStatsSample participants, when the
+// percents have no spread (stddev 0) or when the caller has no result.
 type PaperStats struct {
 	Count      int      `json:"count"`
 	Percentile *float64 `json:"percentile"`
 	Median     float64  `json:"median"`
 	P25        float64  `json:"p25"`
 	P75        float64  `json:"p75"`
+	Mean       float64  `json:"mean"`
+	Taraz      *float64 `json:"taraz"`
+	// StdDev and Mine are inputs for the taraz computation, not API surface.
+	StdDev float64  `json:"-"`
+	Mine   *float64 `json:"-"`
 }
 
 // PaperSummary is one row of the admin report.
@@ -66,6 +83,15 @@ type PaperSummary struct {
 	Count          int     `json:"count"`
 	AveragePercent float64 `json:"average_percent"`
 	BestPercent    float64 `json:"best_percent"`
+}
+
+// PublicPaperSummary is one row of the public all-papers stats list
+// (the konkur exam list screen); papers with fewer than MinStatsSample
+// participants are omitted.
+type PublicPaperSummary struct {
+	PaperKey string  `json:"paper_key"`
+	Count    int     `json:"count"`
+	Mean     float64 `json:"mean"`
 }
 
 // Repository is the storage the service needs (postgreskonkurprogress).
@@ -81,6 +107,8 @@ type Repository interface {
 	UpsertExamResult(ctx context.Context, userID string, r ExamResult) error
 	// PaperStats: userID is used to compute that user's percentile.
 	PaperStats(ctx context.Context, paperKey, userID string) (PaperStats, error)
+	// AllPaperStats returns every paper's participant count and average.
+	AllPaperStats(ctx context.Context) ([]PublicPaperSummary, error)
 	AdminStats(ctx context.Context) ([]PaperSummary, error)
 }
 
@@ -176,7 +204,8 @@ func (s Service) SubmitResult(ctx context.Context, userID string, r ExamResult) 
 	return nil
 }
 
-// Stats is GET /api/v1/konkur/exam-results/stats.
+// Stats is GET /api/v1/konkur/exam-results/stats?paper_key=…: the
+// distribution for one paper plus, when possible, the caller's taraz.
 func (s Service) Stats(ctx context.Context, userID, paperKey string) (PaperStats, error) {
 	const op = "konkurprogress.Stats"
 	if !paperKeyRe.MatchString(paperKey) {
@@ -186,7 +215,30 @@ func (s Service) Stats(ctx context.Context, userID, paperKey string) (PaperStats
 	if err != nil {
 		return PaperStats{}, internal(op, err)
 	}
+	if st.Mine != nil && st.Count >= MinStatsSample && st.StdDev > 0 {
+		t := TarazMean + TarazScale*(*st.Mine-st.Mean)/st.StdDev
+		st.Taraz = &t
+	}
 	return st, nil
+}
+
+// AllStats is GET /api/v1/konkur/exam-results/stats without a paper_key:
+// per-paper averages for the exam list. Papers with fewer than
+// MinStatsSample participants are omitted (privacy: no average of a
+// near-single user).
+func (s Service) AllStats(ctx context.Context) ([]PublicPaperSummary, error) {
+	const op = "konkurprogress.AllStats"
+	rows, err := s.repo.AllPaperStats(ctx)
+	if err != nil {
+		return nil, internal(op, err)
+	}
+	out := make([]PublicPaperSummary, 0, len(rows))
+	for _, r := range rows {
+		if r.Count >= MinStatsSample {
+			out = append(out, r)
+		}
+	}
+	return out, nil
 }
 
 // AdminStats is GET /admin/konkur/exam-stats.

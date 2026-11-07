@@ -2,15 +2,17 @@
 
 import { useEffect, useState } from "react";
 import {
+  archivePlan,
   deletePlan,
   getPlans,
+  getSales,
   getSettings,
   grantPremium,
   savePlan,
   searchUsers,
   updateSetting,
 } from "@/lib/api";
-import type { AppUser, GrantAction, Plan, SecretItem, SettingsResp } from "@/lib/types";
+import type { AppUser, GrantAction, Plan, SalesReport, SecretItem, SettingsResp } from "@/lib/types";
 
 type Notify = (msg: string, type?: "ok" | "err") => void;
 
@@ -24,10 +26,87 @@ const faNum = (n: number) => n.toLocaleString("fa-IR");
 export default function SubscriptionPanel({ notify }: { notify: Notify }) {
   return (
     <div>
+      <SalesCard notify={notify} />
       <UsersCard notify={notify} />
       <PlansCard notify={notify} />
       <BazaarTokenCard notify={notify} />
       <SmsCard notify={notify} />
+    </div>
+  );
+}
+
+// ---------- آمار فروش ----------
+
+function SalesCard({ notify }: { notify: Notify }) {
+  const [sales, setSales] = useState<SalesReport | null>(null);
+
+  useEffect(() => {
+    getSales()
+      .then(setSales)
+      .catch((err: any) => notify(err.message, "err"));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const toman = (n: number) => `${faNum(n)} تومان`;
+
+  return (
+    <div className="card">
+      <h2>آمار فروش</h2>
+      <p className="card-desc">
+        درآمد از قیمت هر پلن در لحظه‌ی خرید حساب می‌شود (عوض کردن قیمت، فروش‌های قبلی را تغییر نمی‌دهد). خرید
+        دائمی قدیمی با قیمت صفر شمرده می‌شود. مبلغ‌ها قبل از کسر سهم کافه‌بازار است.
+      </p>
+      {sales === null ? (
+        <p className="hint">در حال بارگذاری...</p>
+      ) : (
+        <>
+          <div className="row" style={{ gap: 24, flexWrap: "wrap" }}>
+            <span>
+              کل: <strong>{faNum(sales.total_count)}</strong> خرید · <strong>{toman(sales.total_toman)}</strong>
+            </span>
+            <span>
+              ۳۰ روز اخیر: <strong>{faNum(sales.last30_count)}</strong> خرید ·{" "}
+              <strong>{toman(sales.last30_toman)}</strong>
+            </span>
+            <span>
+              پرمیوم فعال: <strong>{faNum(sales.active_premium)}</strong> کاربر
+            </span>
+          </div>
+          {sales.by_plan.length > 0 && (
+            <div className="field" style={{ marginTop: 12 }}>
+              <label>به تفکیک پلن</label>
+              {sales.by_plan.map((r) => (
+                <div className="row" key={r.product_id} style={{ justifyContent: "space-between", padding: "4px 0" }}>
+                  <span>
+                    {r.name || "—"}{" "}
+                    <span className="mono" dir="ltr">
+                      {r.product_id}
+                    </span>
+                  </span>
+                  <span>
+                    {faNum(r.count)} خرید · {toman(r.toman)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+          {sales.by_month.length > 0 && (
+            <div className="field">
+              <label>ماه به ماه (۱۲ ماه اخیر، میلادی)</label>
+              {sales.by_month.map((m) => (
+                <div className="row" key={m.month} style={{ justifyContent: "space-between", padding: "4px 0" }}>
+                  <span className="mono" dir="ltr">
+                    {m.month}
+                  </span>
+                  <span>
+                    {faNum(m.count)} خرید · {toman(m.toman)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
@@ -223,6 +302,16 @@ function PlansCard({ notify }: { notify: Notify }) {
     }
   }
 
+  async function toggleArchive(p: Plan) {
+    try {
+      await archivePlan(p.id, !p.archived);
+      notify(p.archived ? `پلن «${p.name}» دوباره فعال شد` : `پلن «${p.name}» بایگانی شد`, "ok");
+      await load();
+    } catch (err: any) {
+      notify(err.message, "err");
+    }
+  }
+
   async function remove(p: Plan) {
     if (!confirm(`پلن «${p.name}» حذف شود؟ خریدهای قبلی آن باقی می‌مانند.`)) return;
     try {
@@ -256,11 +345,17 @@ function PlansCard({ notify }: { notify: Notify }) {
               <span className="mono" dir="ltr">
                 {p.product_id}
               </span>{" "}
-              <span className="pill ok">{faNum(p.purchase_count)} فروش</span>
+              <span className="pill ok">{faNum(p.purchase_count)} فروش</span>{" "}
+              {p.archived && <span className="pill warn">بایگانی — در اپ نمایش داده نمی‌شود</span>}
             </span>
-            <button className="btn btn-sm btn-danger" onClick={() => remove(p)}>
-              حذف
-            </button>
+            <span className="row" style={{ gap: 8 }}>
+              <button className="btn btn-sm btn-ghost" onClick={() => toggleArchive(p)}>
+                {p.archived ? "فعال‌سازی" : "بایگانی"}
+              </button>
+              <button className="btn btn-sm btn-danger" onClick={() => remove(p)}>
+                حذف
+              </button>
+            </span>
           </div>
         ))
       )}

@@ -15,12 +15,20 @@ import (
 
 // userColumns / scanUser: every query returning a whole user uses these.
 const userColumns = `id, device_id, code, name, email, phone, COALESCE(password_hash, ''),
-	is_premium, premium_until, is_unlimited, created_at, updated_at`
+	is_premium, premium_until, is_unlimited,
+	COALESCE(target_goal, 'پزشکی دانشگاه تهران'), COALESCE(grade, 10), COALESCE(track, 'tajrobi'),
+	COALESCE(level, 15), COALESCE(xp, 2450), COALESCE(gems, 320),
+	COALESCE(streak_days, 12), COALESCE(streak_record, 18),
+	created_at, updated_at`
 
 func scanUser(row pgx.Row) (domain.User, error) {
 	var u domain.User
 	err := row.Scan(&u.ID, &u.DeviceID, &u.Code, &u.Name, &u.Email, &u.Phone, &u.PasswordHash,
-		&u.IsPremium, &u.PremiumUntil, &u.IsUnlimited, &u.CreatedAt, &u.UpdatedAt)
+		&u.IsPremium, &u.PremiumUntil, &u.IsUnlimited,
+		&u.TargetGoal, &u.Grade, &u.Track,
+		&u.Level, &u.XP, &u.Gems,
+		&u.StreakDays, &u.StreakRecord,
+		&u.CreatedAt, &u.UpdatedAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return domain.User{}, domain.ErrNotFound
 	}
@@ -79,6 +87,20 @@ func (r DB) SetPassword(ctx context.Context, userID, passwordHash string) error 
 		return domain.ErrNotFound
 	}
 	return nil
+}
+
+// UpdateAcademicProfile updates student goal, grade, track, and nickname.
+func (r DB) UpdateAcademicProfile(ctx context.Context, userID string, targetGoal *string, grade int, track string, nickname *string) (domain.User, error) {
+	u, err := scanUser(r.conn.QueryRow(ctx, `
+		UPDATE users
+		SET target_goal = COALESCE($2, target_goal),
+		    grade = CASE WHEN $3 > 0 THEN $3 ELSE grade END,
+		    track = CASE WHEN $4 != '' THEN $4 ELSE track END,
+		    name = COALESCE($5, name),
+		    updated_at = now()
+		WHERE id = $1
+		RETURNING `+userColumns, userID, targetGoal, grade, track, nickname))
+	return u, err
 }
 
 // phoneTaken maps the idx_users_phone unique violation to ErrPhoneTaken.

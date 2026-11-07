@@ -1,5 +1,5 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -13,8 +13,10 @@ import { EXAM_SYLLABUS, findGrade, type GradeId } from '../../content/examSyllab
 import { visibleForTrack } from '../../content/track';
 import { useIsRTL } from '../../hooks/useIsRTL';
 import { chapterBankCounts } from '../../services/exam/chapterBank';
-import { konkurExamConfig, konkurPapers } from '../../services/exam/konkurExam';
+import { konkurExamConfig, konkurPapers, paperKeyOf } from '../../services/exam/konkurExam';
+import { loadPaperStats, paperStatsMap } from '../../services/exam/paperStats';
 import { localizeDigits } from '../../services/exam/scoring';
+import type { PaperSummary } from '../../services/api/konkurProgress';
 import { useKonkurContent, useTrackKonkurContent } from '../../store/useKonkurContentStore';
 import { usePreferencesStore, useTrack } from '../../store/usePreferencesStore';
 import type { RootStackParamList } from '../../navigation/types';
@@ -49,6 +51,19 @@ export function ExamSetupScreen({ navigation, route }: Props) {
   const konkurContent = useKonkurContent();
   const track = useTrack();
   const papers = useMemo(() => konkurPapers(konkurContent, track), [konkurContent, track]);
+  // «میانگین کاربران» under each konkur paper: cached, offline-safe.
+  const [paperStats, setPaperStats] = useState<Map<string, PaperSummary>>(new Map());
+  useEffect(() => {
+    let cancelled = false;
+    loadPaperStats().then(rows => {
+      if (!cancelled) {
+        setPaperStats(paperStatsMap(rows));
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   // Chapters filled from the admin panel's question bank are open too.
   const trackContent = useTrackKonkurContent();
   const bankCounts = useMemo(() => chapterBankCounts(trackContent), [trackContent]);
@@ -218,14 +233,24 @@ export function ExamSetupScreen({ navigation, route }: Props) {
             const config = konkurExamConfig(paper);
             const label = sourceLabel({ kind: 'konkur', track, ...paper.selector });
             const minutes = Math.ceil((config.durationSec ?? 0) / 60);
+            const stats = paperStats.get(paperKeyOf(paper.selector));
             return (
-              <AppButton
+              <View
                 key={`${paper.selector.year}-${paper.selector.abroad ? 'a' : ''}${paper.selector.newSystem ? 'n' : ''}${paper.selector.round ?? 0}`}
-                label={`${label} — ${t('exam.konkurPaper', { count: num(paper.questionCount), minutes: num(minutes) })}`}
-                variant="secondary"
-                size="sm"
-                onPress={() => navigation.navigate('Exam', { config })}
-              />
+                style={styles.paperRow}
+              >
+                <AppButton
+                  label={`${label} — ${t('exam.konkurPaper', { count: num(paper.questionCount), minutes: num(minutes) })}`}
+                  variant="secondary"
+                  size="sm"
+                  onPress={() => navigation.navigate('Exam', { config })}
+                />
+                {stats && (
+                  <AppText size="xs" color={colors.textSecondary}>
+                    {t('exam.userAvg', { avg: num(Math.round(stats.mean)), count: num(stats.count) })}
+                  </AppText>
+                )}
+              </View>
             );
           })}
         </Card>
@@ -254,6 +279,9 @@ function Chip({ label, active, onPress }: { label: string; active: boolean; onPr
 const useStyles = makeStyles(colors => StyleSheet.create({
   section: {
     gap: spacing.sm,
+  },
+  paperRow: {
+    gap: spacing.xs,
   },
   row: {
     flexDirection: 'row',

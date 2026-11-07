@@ -2,6 +2,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ViroARSceneNavigator, ViroARTrackingTargets } from '@reactvision/react-viro';
 
 import { ArScene, type ArSceneAppProps } from '../../components/Ar/ArScene';
@@ -26,7 +27,8 @@ const TARGET_PHYSICAL_WIDTH_METERS = 0.21;
 // photo (ArScene) instead of laid out in a scrolling static list.
 export function ArSolutionScreen({ route, navigation }: Props) {
   const { t } = useTranslation();
-  const { photoUri, result } = route.params;
+  const insets = useSafeAreaInsets();
+  const { photoUri, problem, result } = route.params;
   const {
     currentIndex,
     isFirst,
@@ -80,6 +82,24 @@ export function ArSolutionScreen({ route, navigation }: Props) {
         viroAppProps={viroAppProps}
       />
 
+      {/* Top action bar: Quick switch to standard 2D view or dismiss */}
+      <View style={[styles.topBar, { top: insets.top + spacing.sm }]}>
+        <AppButton
+          label={t('common.close', { defaultValue: 'بستن' })}
+          icon="close"
+          variant="ghost"
+          size="sm"
+          onPress={() => navigation.goBack()}
+        />
+        <AppButton
+          label={t('solution.viewStandard', { defaultValue: 'حل معمولی (۲ بعدی)' })}
+          variant="secondary"
+          size="sm"
+          icon="visibility"
+          onPress={() => navigation.replace('Solution', { problem, result, photoUri })}
+        />
+      </View>
+
       {!tracking && <ArTrackingHint />}
 
       <View style={styles.overlay}>
@@ -117,6 +137,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'black',
+  },
+  topBar: {
+    position: 'absolute',
+    left: spacing.md,
+    right: spacing.md,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    zIndex: 10,
   },
   overlay: {
     position: 'absolute',

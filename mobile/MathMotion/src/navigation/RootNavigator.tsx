@@ -20,6 +20,7 @@ import { KonkurTipScreen } from '../screens/Konkur/KonkurTipScreen';
 import { TextbookChapterScreen } from '../screens/Textbook/TextbookChapterScreen';
 import { TextbookExerciseScreen } from '../screens/Textbook/TextbookExerciseScreen';
 import { PremiumScreen } from '../screens/Premium/PremiumScreen';
+import { ProfileScreen } from '../screens/Profile/ProfileScreen';
 import { ProblemInputScreen } from '../screens/ProblemInput/ProblemInputScreen';
 import { QuizScreen } from '../screens/Quiz/QuizScreen';
 import { RecognizedProblemsScreen } from '../screens/RecognizedProblems/RecognizedProblemsScreen';
@@ -85,11 +86,11 @@ export function RootNavigator() {
         component={ExamSetupScreen}
         options={{ title: t('exam.title') }}
       />
-      <Stack.Screen name="Exam" component={ExamScreen} options={{ title: t('exam.inProgress') }} />
+      <Stack.Screen name="Exam" component={ExamScreen} options={{ headerShown: false }} />
       <Stack.Screen
         name="ExamResult"
         component={ExamResultScreen}
-        options={{ title: t('exam.resultTitle') }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="Geometry"
@@ -102,27 +103,28 @@ export function RootNavigator() {
         component={SettingsScreen}
         options={{ title: t('settings.title') }}
       />
+      <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Premium" component={PremiumScreen} options={{ title: t('premium.title') }} />
-      <Stack.Screen name="Topics" component={TopicsScreen} options={{ title: t('topics.title') }} />
-      <Stack.Screen name="Konkur" component={KonkurScreen} options={{ title: t('konkur.title') }} />
-      <Stack.Screen name="KonkurTip" component={KonkurTipScreen} />
+      <Stack.Screen name="Topics" component={TopicsScreen} options={{ title: t('topics.title'), headerShown: false }} />
+      <Stack.Screen name="Konkur" component={KonkurScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="KonkurTip" component={KonkurTipScreen} options={{ headerShown: false }} />
       <Stack.Screen
         name="KonkurNotebook"
         component={KonkurNotebookScreen}
-        options={{ title: t('konkur.progress.title') }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen name="KonkurDaily" component={KonkurDailyScreen} options={{ title: t('konkur.daily.title') }} />
       <Stack.Screen name="FormulaSheet" component={FormulaSheetScreen} options={{ title: t('konkur.formulas.title') }} />
       <Stack.Screen
         name="FormulaChapter"
         component={FormulaChapterScreen}
-        options={{ title: t('konkur.formulas.title') }}
+        options={{ title: t('konkur.formulas.title'), headerShown: false }}
       />
       {/* Titles are set by the screens from the chapter / exercise. */}
       <Stack.Screen name="TextbookChapter" component={TextbookChapterScreen} options={{ title: t('textbook.title') }} />
       <Stack.Screen name="TextbookExercise" component={TextbookExerciseScreen} options={{ title: t('textbook.title') }} />
       {/* Title is set by TopicScreen itself from the topic's i18n key. */}
-      <Stack.Screen name="Topic" component={TopicScreen} />
+      <Stack.Screen name="Topic" component={TopicScreen} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 }

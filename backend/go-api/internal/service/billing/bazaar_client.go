@@ -45,6 +45,17 @@ var (
 	ErrNotConfigured = errors.New("cafe bazaar API token is not configured")
 	// ErrPurchaseNotValid: Bazaar says this token was never bought, or was refunded.
 	ErrPurchaseNotValid = errors.New("purchase is not valid")
+	// errNotYetKnown: Bazaar answered not_found — right after a purchase
+	// its database sometimes hasn't registered the token yet, so this is
+	// retried a few times before it is reported as an invalid purchase.
+	errNotYetKnown = errors.New("bazaar does not know this purchase (yet)")
+)
+
+// How ValidatePurchase retries a not_found answer, and how long it waits
+// between attempts. Vars (not consts) only so tests can shrink the wait.
+var (
+	validateAttempts  = 3
+	validateRetryWait = 1500 * time.Millisecond
 )
 
 // Settings is where the API token is read from on every call, so a token
@@ -86,8 +97,26 @@ type bazaarError struct {
 // purchase of productID. productID is part of the URL, so a token for a
 // cheaper product can't be passed off as a pricier plan. Returns
 // ErrPurchaseNotValid when Bazaar says no, any other error when Bazaar
-// couldn't be asked.
+// couldn't be asked. A not_found answer is retried: the purchase the app
+// just came back from can take a moment to show up on Bazaar's side.
 func (c *BazaarClient) ValidatePurchase(ctx context.Context, packageName, productID, purchaseToken string) error {
+	for attempt := 1; ; attempt++ {
+		err := c.validateOnce(ctx, packageName, productID, purchaseToken)
+		if err == nil || !errors.Is(err, errNotYetKnown) {
+			return err
+		}
+		if attempt >= validateAttempts {
+			return ErrPurchaseNotValid
+		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(validateRetryWait):
+		}
+	}
+}
+
+func (c *BazaarClient) validateOnce(ctx context.Context, packageName, productID, purchaseToken string) error {
 	secret := strings.TrimSpace(c.settings.Get(settingskeys.KeyBazaarAPISecret))
 	if secret == "" {
 		return ErrNotConfigured
@@ -120,10 +149,12 @@ func (c *BazaarClient) ValidatePurchase(ctx context.Context, packageName, produc
 	if resp.StatusCode != http.StatusOK {
 		var be bazaarError
 		// Per Bazaar's docs only not_found means "no such purchase" (a
-		// possibly forged token); anything else is a problem on our side
-		// (bad token, wrong package name) or theirs.
+		// possibly forged token, or a brand-new one Bazaar hasn't
+		// registered yet — ValidatePurchase retries and tells); anything
+		// else is a problem on our side (bad token, wrong package name)
+		// or theirs.
 		if json.Unmarshal(body, &be) == nil && be.Error == "not_found" {
-			return ErrPurchaseNotValid
+			return errNotYetKnown
 		}
 		return fmt.Errorf("bazaar validate returned %d: %s", resp.StatusCode, strings.TrimSpace(string(body)))
 	}

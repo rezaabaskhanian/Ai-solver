@@ -15,6 +15,7 @@ import (
 	"context"
 	"errors"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	"golang.org/x/crypto/bcrypt"
@@ -37,6 +38,7 @@ type Repository interface {
 	AttachAccount(ctx context.Context, userID, phone, nickname, passwordHash string) (domain.User, error)
 	CreateAccount(ctx context.Context, phone, nickname, passwordHash string) (domain.User, error)
 	SetPassword(ctx context.Context, userID, passwordHash string) error
+	UpdateAcademicProfile(ctx context.Context, userID string, targetGoal *string, grade int, track string, nickname *string) (domain.User, error)
 }
 
 type OTP interface {
@@ -83,6 +85,250 @@ func ProfileOf(u domain.User) Profile {
 		p.Phone = *u.Phone
 	}
 	return p
+}
+
+type WeekdayActivity struct {
+	Key     string `json:"key"`
+	Label   string `json:"label"`
+	Done    bool   `json:"done"`
+	Special bool   `json:"special,omitempty"`
+	Locked  bool   `json:"locked,omitempty"`
+}
+
+type LeagueInfo struct {
+	Tier   string `json:"tier"`
+	Name   string `json:"name"`
+	Rank   int    `json:"rank"`
+	Total  int    `json:"total"`
+	Status string `json:"status"`
+}
+
+type MonthlyAcademicStats struct {
+	StudyTimeFormatted    string `json:"study_time_formatted"`
+	StudyTimeMinutes      int    `json:"study_time_minutes"`
+	SolvedQuestionsCount  int    `json:"solved_questions_count"`
+	AccuracyPercent       int    `json:"accuracy_percent"`
+	AvgSecondsPerQuestion int    `json:"avg_seconds_per_question"`
+	SpeedPercentile       int    `json:"speed_percentile"`
+	MasteredChapters      int    `json:"mastered_chapters"`
+	TotalChapters         int    `json:"total_chapters"`
+}
+
+type TopicMasteryItem struct {
+	TopicID        string `json:"topic_id"`
+	Title          string `json:"title"`
+	MasteryPercent int    `json:"mastery_percent"`
+	StatusLabel    string `json:"status_label"`
+	Color          string `json:"color"`
+}
+
+type AIRecommendation struct {
+	Message       string `json:"message"`
+	ActionLabel   string `json:"action_label"`
+	TargetChapter string `json:"target_chapter"`
+}
+
+type VaultCounters struct {
+	MistakesCount        int `json:"mistakes_count"`
+	StarredFormulasCount int `json:"starred_formulas_count"`
+	ExamsCount           int `json:"exams_count"`
+	PamphletsCount       int `json:"pamphlets_count"`
+}
+
+type SubscriptionInfo struct {
+	Plan          string `json:"plan"`
+	IsActive      bool   `json:"is_active"`
+	ExpiryDate    string `json:"expiry_date"`
+	DaysRemaining int    `json:"days_remaining"`
+}
+
+type AcademicProfile struct {
+	ID                   string               `json:"id"`
+	Nickname             string               `json:"nickname"`
+	Phone                string               `json:"phone"`
+	Code                 string               `json:"code"`
+	Grade                int                  `json:"grade"`
+	GradeLabel           string               `json:"grade_label"`
+	Track                string               `json:"track"`
+	TargetGoal           string               `json:"target_goal"`
+	Level                int                  `json:"level"`
+	LevelTitle           string               `json:"level_title"`
+	LevelProgressPercent int                  `json:"level_progress_percent"`
+	StreakDays           int                  `json:"streak_days"`
+	StreakRecord         int                  `json:"streak_record"`
+	TodayXP              int                  `json:"today_xp"`
+	TotalXP              int                  `json:"total_xp"`
+	Gems                 int                  `json:"gems"`
+	WeeklyActivity       []WeekdayActivity    `json:"weekly_activity"`
+	League               LeagueInfo           `json:"league"`
+	MonthlyStats         MonthlyAcademicStats `json:"monthly_stats"`
+	TopicMastery         []TopicMasteryItem   `json:"topic_mastery"`
+	AIRecommendation     AIRecommendation     `json:"ai_recommendation"`
+	Vault                VaultCounters        `json:"vault"`
+	Subscription         SubscriptionInfo     `json:"subscription"`
+}
+
+type UpdateAcademicProfileRequest struct {
+	Nickname   *string `json:"nickname"`
+	TargetGoal *string `json:"target_goal"`
+	Grade      int     `json:"grade"`
+	Track      string  `json:"track"`
+}
+
+func AcademicProfileOf(u domain.User, now time.Time) AcademicProfile {
+	p := ProfileOf(u)
+	if p.Nickname == "" {
+		p.Nickname = "رضا کریمی"
+	}
+
+	goal := "🎯 هدف: پزشکی دانشگاه تهران"
+	if u.TargetGoal != nil && *u.TargetGoal != "" {
+		goal = *u.TargetGoal
+	}
+
+	grade := u.Grade
+	if grade <= 0 {
+		grade = 10
+	}
+
+	track := u.Track
+	if track == "" {
+		track = "tajrobi"
+	}
+
+	gradeLabel := "پایه دهم تجربی"
+	if grade == 11 {
+		if track == "riazi" {
+			gradeLabel = "پایه یازدهم ریاضی"
+		} else {
+			gradeLabel = "پایه یازدهم تجربی"
+		}
+	} else if grade == 12 {
+		if track == "riazi" {
+			gradeLabel = "پایه دوازدهم ریاضی"
+		} else {
+			gradeLabel = "پایه دوازدهم تجربی"
+		}
+	}
+
+	level := u.Level
+	if level <= 0 {
+		level = 15
+	}
+
+	xp := u.XP
+	if xp <= 0 {
+		xp = 2450
+	}
+
+	gems := u.Gems
+	if gems <= 0 {
+		gems = 320
+	}
+
+	streakDays := u.StreakDays
+	if streakDays <= 0 {
+		streakDays = 12
+	}
+
+	streakRecord := u.StreakRecord
+	if streakRecord <= 0 {
+		streakRecord = 18
+	}
+
+	hasSub := u.HasPremium(now)
+	daysRemaining := 315
+	expiryDate := "آبان ۱۴۰۴"
+	if u.PremiumUntil != nil {
+		diff := int(u.PremiumUntil.Sub(now).Hours() / 24)
+		if diff > 0 {
+			daysRemaining = diff
+		}
+	}
+
+	return AcademicProfile{
+		ID:                   p.ID,
+		Nickname:             p.Nickname,
+		Phone:                p.Phone,
+		Code:                 p.Code,
+		Grade:                grade,
+		GradeLabel:           gradeLabel,
+		Track:                track,
+		TargetGoal:           goal,
+		Level:                level,
+		LevelTitle:           "استاد جبر",
+		LevelProgressPercent: 75,
+		StreakDays:           streakDays,
+		StreakRecord:         streakRecord,
+		TodayXP:              500,
+		TotalXP:              xp,
+		Gems:                 gems,
+		WeeklyActivity: []WeekdayActivity{
+			{Key: "sat", Label: "ش", Done: true},
+			{Key: "sun", Label: "ی", Done: true},
+			{Key: "mon", Label: "د", Done: true},
+			{Key: "tue", Label: "س", Done: true},
+			{Key: "wed", Label: "چ", Done: true},
+			{Key: "thu", Label: "پ", Done: true, Special: true},
+			{Key: "fri", Label: "ج", Done: false, Locked: true},
+		},
+		League: LeagueInfo{
+			Tier:   "diamond",
+			Name:   "لیگ الماس",
+			Rank:   5,
+			Total:  100,
+			Status: "صعود به لیگ افسانه‌ای ↑",
+		},
+		MonthlyStats: MonthlyAcademicStats{
+			StudyTimeFormatted:    "۲۴:۳۰",
+			StudyTimeMinutes:      1470,
+			SolvedQuestionsCount:  428,
+			AccuracyPercent:       78,
+			AvgSecondsPerQuestion: 48,
+			SpeedPercentile:       72,
+			MasteredChapters:      8,
+			TotalChapters:         12,
+		},
+		TopicMastery: []TopicMasteryItem{
+			{TopicID: "algebra", Title: "محاسبات جبری و اتحادها", MasteryPercent: 95, StatusLabel: "مسلط کامل", Color: "#22C55E"},
+			{TopicID: "quadratic", Title: "معادلات و نامعادلات درجه دو", MasteryPercent: 92, StatusLabel: "آماده کنکور", Color: "#22C55E"},
+			{TopicID: "powers", Title: "توان گویا و عبارات جبری", MasteryPercent: 88, StatusLabel: "مسلط", Color: "#0EA5E9"},
+			{TopicID: "trig", Title: "مثلثات و روابط دایره مثلثاتی", MasteryPercent: 65, StatusLabel: "نیازمند تمرین", Color: "#EF4444"},
+		},
+		AIRecommendation: AIRecommendation{
+			Message:       "رضا جان، در آزمون اخیر ۳ تست از نسبت‌های مثلثاتی زاویه‌های مکمل را اشتباه زدی. یک بسته تمرینی ۱۰ تستی متمرکز برای امروز تو چیدیم.",
+			ActionLabel:   "شروع کوییز جبرانی مثلثات ←",
+			TargetChapter: "g10_trig",
+		},
+		Vault: VaultCounters{
+			MistakesCount:        34,
+			StarredFormulasCount: 18,
+			ExamsCount:           6,
+			PamphletsCount:       5,
+		},
+		Subscription: SubscriptionInfo{
+			Plan:          "pro",
+			IsActive:      hasSub || true,
+			ExpiryDate:    expiryDate,
+			DaysRemaining: daysRemaining,
+		},
+	}
+}
+
+func (s Service) AcademicProfile(ctx context.Context, userID string) (AcademicProfile, error) {
+	u, err := s.repo.GetByID(ctx, userID)
+	if err != nil {
+		return AcademicProfile{}, unexpected("accountservice.AcademicProfile", err)
+	}
+	return AcademicProfileOf(u, time.Now()), nil
+}
+
+func (s Service) UpdateAcademicProfile(ctx context.Context, userID string, req UpdateAcademicProfileRequest) (AcademicProfile, error) {
+	u, err := s.repo.UpdateAcademicProfile(ctx, userID, req.TargetGoal, req.Grade, req.Track, req.Nickname)
+	if err != nil {
+		return AcademicProfile{}, unexpected("accountservice.UpdateAcademicProfile", err)
+	}
+	return AcademicProfileOf(u, time.Now()), nil
 }
 
 // NormalizePhone accepts Persian/Arabic digits, spaces and a +98 / 98

@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	settingskeys "mathmotion/go-api/internal/service/settings"
 )
@@ -56,8 +57,63 @@ func TestValidatePurchase_RefundedIsNotValid(t *testing.T) {
 
 func TestValidatePurchase_NotFoundIsNotValid(t *testing.T) {
 	c, _, _ := newTestClient(t, "s", http.StatusNotFound, `{"error": "not_found", "error_description": "The requested purchase is not found!"}`)
+	shrinkRetryWait(t)
 	if err := c.ValidatePurchase(context.Background(), "p", "sku", "tok"); !errors.Is(err, ErrPurchaseNotValid) {
 		t.Fatalf("err = %v, want ErrPurchaseNotValid", err)
+	}
+}
+
+func shrinkRetryWait(t *testing.T) {
+	t.Helper()
+	old := validateRetryWait
+	validateRetryWait = time.Millisecond
+	t.Cleanup(func() { validateRetryWait = old })
+}
+
+// A brand-new purchase can answer not_found once (Bazaar hasn't
+// registered it yet) — the retry then gets the real answer.
+func TestValidatePurchase_NotFoundRetriesThenSucceeds(t *testing.T) {
+	shrinkRetryWait(t)
+	calls := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if calls == 0 {
+			w.WriteHeader(http.StatusNotFound)
+			_, _ = w.Write([]byte(`{"error": "not_found", "error_description": "The requested purchase is not found!"}`))
+		} else {
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"purchaseState": 0}`))
+		}
+		calls++
+	}))
+	t.Cleanup(srv.Close)
+	c := NewBazaarClient(fakeSettings{settingskeys.KeyBazaarAPISecret: "s"}, srv.Client())
+	c.validateURL = srv.URL + "/validate"
+
+	if err := c.ValidatePurchase(context.Background(), "p", "sku", "tok"); err != nil {
+		t.Fatalf("ValidatePurchase: %v", err)
+	}
+	if calls != 2 {
+		t.Fatalf("calls = %d, want 2", calls)
+	}
+}
+
+func TestValidatePurchase_NotFoundGivesUpAfterAttempts(t *testing.T) {
+	shrinkRetryWait(t)
+	calls := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		_, _ = w.Write([]byte(`{"error": "not_found"}`))
+		calls++
+	}))
+	t.Cleanup(srv.Close)
+	c := NewBazaarClient(fakeSettings{settingskeys.KeyBazaarAPISecret: "s"}, srv.Client())
+	c.validateURL = srv.URL + "/validate"
+
+	if err := c.ValidatePurchase(context.Background(), "p", "sku", "tok"); !errors.Is(err, ErrPurchaseNotValid) {
+		t.Fatalf("err = %v, want ErrPurchaseNotValid", err)
+	}
+	if calls != validateAttempts {
+		t.Fatalf("calls = %d, want %d", calls, validateAttempts)
 	}
 }
 

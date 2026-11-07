@@ -14,9 +14,11 @@ func (h Handler) SetBillingRoutes(e *echo.Echo, mws ...echo.MiddlewareFunc) {
 // SetAdminRoutes registers the admin panel's «اشتراک‌ها» tab endpoints on
 // the admin group (gated by middleware.Admin — see httpserver.Server).
 func (h Handler) SetAdminRoutes(admin *echo.Group) {
-	admin.GET("/plans", h.Plans)
+	admin.GET("/plans", h.AdminPlans)
 	admin.PUT("/plans", h.SavePlan)
 	admin.DELETE("/plans/:id", h.DeletePlan)
+	admin.POST("/plans/:id/archive", h.ArchivePlan)
+	admin.GET("/sales", h.Sales)
 	admin.GET("/users", h.SearchUsers)
 	admin.POST("/users/:id/premium", h.GrantPremium)
 }

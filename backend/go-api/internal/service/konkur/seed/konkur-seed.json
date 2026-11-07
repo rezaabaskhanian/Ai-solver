@@ -23944,5 +23944,756 @@
         "number": 155
       }
     }
+  ],
+  "exercises": [
+    {
+      "id": "calculus1-g11c_trig-p82-1",
+      "bookId": "calculus1",
+      "chapterId": "g11c_trig",
+      "lesson": 1,
+      "section": "exercise",
+      "page": 82,
+      "number": 1,
+      "free": true,
+      "text": [
+        "اندازه زاویه‌های زیر را برحسب رادیان به دست آورید:"
+      ],
+      "parts": [
+        {
+          "label": "الف",
+          "text": [
+            "زاویه ۱۳۵ درجه"
+          ],
+          "solution": [
+            "از رابطه‌ی تبدیل درجه به رادیان استفاده می‌کنیم:",
+            {
+              "math": "\\frac{D}{180} = \\frac{R}{\\pi} \\implies R = \\frac{135 \\times \\pi}{180} = \\frac{3\\pi}{4}"
+            }
+          ],
+          "answer": [
+            {
+              "math": "\\frac{3\\pi}{4}"
+            }
+          ]
+        },
+        {
+          "label": "ب",
+          "text": [
+            "زاویه ۲۱۰ درجه"
+          ],
+          "solution": [
+            "از رابطه تبدیل درجه به رادیان:",
+            {
+              "math": "R = \\frac{210 \\times \\pi}{180} = \\frac{7\\pi}{6}"
+            }
+          ],
+          "answer": [
+            {
+              "math": "\\frac{7\\pi}{6}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "calculus1-g11c_trig-p95-4",
+      "bookId": "calculus1",
+      "chapterId": "g11c_trig",
+      "lesson": 4,
+      "section": "exercise",
+      "page": 95,
+      "number": 4,
+      "free": true,
+      "text": [
+        "با استفاده از روابط مثلثاتی مجموع دو زاویه، مقدار دقیق عبارت زیر را محاسبه کنید:",
+        {
+          "math": "\\sin(75^\\circ)"
+        }
+      ],
+      "solution": [
+        "زاویه ۷۵ درجه را به صورت مجموع دو زاویه معروف ۴۵ و ۳۰ درجه می‌نویسیم:",
+        {
+          "math": "75^\\circ = 45^\\circ + 30^\\circ"
+        },
+        "با استفاده از رابطه بسط سینوس مجموع دو زاویه:",
+        {
+          "math": "\\sin(\\alpha + \\beta) = \\sin\\alpha\\cos\\beta + \\cos\\alpha\\sin\\beta"
+        },
+        "جای‌گذاری مقادیر:",
+        {
+          "math": "\\sin(75^\\circ) = \\sin(45^\\circ)\\cos(30^\\circ) + \\cos(45^\\circ)\\sin(30^\\circ)"
+        },
+        {
+          "math": "\\sin(75^\\circ) = \\frac{\\sqrt{2}}{2} \\times \\frac{\\sqrt{3}}{2} + \\frac{\\sqrt{2}}{2} \\times \\frac{1}{2} = \\frac{\\sqrt{6} + \\sqrt{2}}{4}"
+        }
+      ],
+      "answer": [
+        {
+          "math": "\\frac{\\sqrt{6} + \\sqrt{2}}{4}"
+        }
+      ]
+    },
+    {
+      "id": "calculus2-g12c_derivative-p90-1",
+      "bookId": "calculus2",
+      "chapterId": "g12c_derivative",
+      "lesson": 1,
+      "section": "exercise",
+      "page": 90,
+      "number": 1,
+      "free": true,
+      "text": [
+        "با استفاده از تعریف حدی مشتق، مشتق تابع زیر را در نقطه x = 2 به دست آورید:",
+        {
+          "math": "f(x) = x^2 - 3x + 5"
+        }
+      ],
+      "solution": [
+        "از تعریف حدی مشتق استفاده می‌کنیم:",
+        {
+          "math": "f'(a) = \\lim_{x \\to a} \\frac{f(x) - f(a)}{x - a}"
+        },
+        "مقدار تابع در نقطه ۲:",
+        {
+          "math": "f(2) = 2^2 - 3(2) + 5 = 4 - 6 + 5 = 3"
+        },
+        "تشکیل کسر حد:",
+        {
+          "math": "\\lim_{x \\to 2} \\frac{(x^2 - 3x + 5) - 3}{x - 2} = \\lim_{x \\to 2} \\frac{x^2 - 3x + 2}{x - 2}"
+        },
+        "تجزیه صورت کسر:",
+        {
+          "math": "\\lim_{x \\to 2} \\frac{(x - 2)(x - 1)}{x - 2} = \\lim_{x \\to 2} (x - 1) = 2 - 1 = 1"
+        }
+      ],
+      "answer": [
+        {
+          "math": "f'(2) = 1"
+        }
+      ]
+    },
+    {
+      "id": "calculus2-g12c_derivative-p104-3",
+      "bookId": "calculus2",
+      "chapterId": "g12c_derivative",
+      "lesson": 2,
+      "section": "exercise",
+      "page": 104,
+      "number": 3,
+      "free": true,
+      "text": [
+        "مشتق توابع زیر را با استفاده از قوانین مشتق‌گیری محاسبه کنید:"
+      ],
+      "parts": [
+        {
+          "label": "الف",
+          "text": [
+            {
+              "math": "g(x) = (2x^3 - 1)(x^2 + 4)"
+            }
+          ],
+          "solution": [
+            "از قاعده مشتق ضرب دو تابع استفاده می‌کنیم:",
+            {
+              "math": "(uv)' = u'v + uv'"
+            },
+            {
+              "math": "u = 2x^3 - 1 \\implies u' = 6x^2"
+            },
+            {
+              "math": "v = x^2 + 4 \\implies v' = 2x"
+            },
+            {
+              "math": "g'(x) = 6x^2(x^2 + 4) + 2x(2x^3 - 1) = 6x^4 + 24x^2 + 4x^4 - 2x = 10x^4 + 24x^2 - 2x"
+            }
+          ],
+          "answer": [
+            {
+              "math": "10x^4 + 24x^2 - 2x"
+            }
+          ]
+        },
+        {
+          "label": "ب",
+          "text": [
+            {
+              "math": "h(x) = \\frac{3x - 1}{2x + 5}"
+            }
+          ],
+          "solution": [
+            "از قاعده مشتق تقسیم دو تابع استفاده می‌کنیم:",
+            {
+              "math": "(\\frac{u}{v})' = \\frac{u'v - uv'}{v^2}"
+            },
+            {
+              "math": "h'(x) = \\frac{3(2x + 5) - 2(3x - 1)}{(2x + 5)^2} = \\frac{6x + 15 - 6x + 2}{(2x + 5)^2} = \\frac{17}{(2x + 5)^2}"
+            }
+          ],
+          "answer": [
+            {
+              "math": "\\frac{17}{(2x + 5)^2}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "math10-g10_equations-p78-2",
+      "bookId": "math10",
+      "chapterId": "g10_equations",
+      "lesson": 1,
+      "section": "exercise",
+      "page": 78,
+      "number": 2,
+      "free": true,
+      "text": [
+        "معادله درجه دوم زیر را به روش تجزیه حل کنید:",
+        {
+          "math": "2x^2 - 5x + 2 = 0"
+        }
+      ],
+      "solution": [
+        "جمله وسط (۵x-) را تفکیک می‌کنیم یا از روش دسته‌بندی استفاده می‌کنیم:",
+        {
+          "math": "2x^2 - 4x - x + 2 = 0"
+        },
+        "فاکتورگیری به روش دسته‌بندی:",
+        {
+          "math": "2x(x - 2) - 1(x - 2) = 0 \\implies (2x - 1)(x - 2) = 0"
+        },
+        "ریشه‌ها برابرند با:",
+        {
+          "math": "x_1 = \\frac{1}{2},\\quad x_2 = 2"
+        }
+      ],
+      "answer": [
+        {
+          "math": "x = \\frac{1}{2},\\; 2"
+        }
+      ]
+    },
+    {
+      "id": "math10-g10_powers-p62-5",
+      "bookId": "math10",
+      "chapterId": "g10_powers",
+      "lesson": 4,
+      "section": "exercise",
+      "page": 62,
+      "number": 5,
+      "free": true,
+      "text": [
+        "مخرج کسر زیر را گویا کنید:",
+        {
+          "math": "\\frac{1}{\\sqrt[3]{2} - 1}"
+        }
+      ],
+      "solution": [
+        "با توجه به اتحاد چاق و لاغر (مجموع یا تفاضل مکعبات):",
+        {
+          "math": "(a - b)(a^2 + ab + b^2) = a^3 - b^3"
+        },
+        "صورت و مخرج کسر را در چاق مزدوج ضرب می‌کنیم:",
+        {
+          "math": "\\frac{1}{\\sqrt[3]{2} - 1} \\times \\frac{\\sqrt[3]{4} + \\sqrt[3]{2} + 1}{\\sqrt[3]{4} + \\sqrt[3]{2} + 1} = \\frac{\\sqrt[3]{4} + \\sqrt[3]{2} + 1}{(\\sqrt[3]{2})^3 - 1^3}"
+        },
+        "مخرج برابر ۱ می‌شود:",
+        {
+          "math": "= \\sqrt[3]{4} + \\sqrt[3]{2} + 1"
+        }
+      ],
+      "answer": [
+        {
+          "math": "\\sqrt[3]{4} + \\sqrt[3]{2} + 1"
+        }
+      ]
+    },
+    {
+      "id": "math2t-g11t_analytic-p35-3",
+      "bookId": "math2t",
+      "chapterId": "g11t_analytic",
+      "lesson": 3,
+      "section": "exercise",
+      "page": 35,
+      "number": 3,
+      "free": true,
+      "text": [
+        "معادله رادیکالی زیر را حل کنید و جواب‌های غیرقابل قبول را مشخص نمایید:",
+        {
+          "math": "\\sqrt{2x + 3} = x"
+        }
+      ],
+      "solution": [
+        "شرط وجود رادیکال و مثبت بودن طرف دوم:",
+        {
+          "math": "2x + 3 \\ge 0 \\implies x \\ge -\\frac{3}{2},\\quad x \\ge 0 \\implies x \\ge 0"
+        },
+        "دو طرف معادله را به توان ۲ می‌رسانیم:",
+        {
+          "math": "2x + 3 = x^2 \\implies x^2 - 2x - 3 = 0"
+        },
+        "تجزیه معادله درجه دوم:",
+        {
+          "math": "(x - 3)(x + 1) = 0 \\implies x = 3 \\;\\text{یا}\\; x = -1"
+        },
+        "با بررسی شرط x >= 0، جواب x = -1 غیرقابل قبول است و تنها جواب قابل قبول x = 3 می‌باشد."
+      ],
+      "answer": [
+        {
+          "math": "x = 3"
+        }
+      ]
+    },
+    {
+      "id": "math3t-g12t_function-p20-1",
+      "bookId": "math3t",
+      "chapterId": "g12t_function",
+      "lesson": 2,
+      "section": "exercise",
+      "page": 20,
+      "number": 1,
+      "free": true,
+      "text": [
+        "اگر توابع f و g به صورت زیر تعریف شده باشند:",
+        {
+          "math": "f(x) = 2x - 1,\\quad g(x) = x^2 + 3"
+        },
+        "ضابطه تابع مرکب (g ∘ f)(x) را به دست آورید."
+      ],
+      "solution": [
+        "طبق تعریف ترکیب دو تابع:",
+        {
+          "math": "(g \\circ f)(x) = g(f(x))"
+        },
+        "ضابطه f(x) را درون g قرار می‌دهیم:",
+        {
+          "math": "g(2x - 1) = (2x - 1)^2 + 3"
+        },
+        "بسط با اتحاد مربع دوجمله‌ای:",
+        {
+          "math": "= (4x^2 - 4x + 1) + 3 = 4x^2 - 4x + 4"
+        }
+      ],
+      "answer": [
+        {
+          "math": "4x^2 - 4x + 4"
+        }
+      ]
+    },
+    {
+      "id": "math7-g7_algebra-p38-1",
+      "bookId": "math7",
+      "chapterId": "g7_algebra",
+      "lesson": 4,
+      "section": "exercise",
+      "page": 38,
+      "number": 1,
+      "free": true,
+      "text": [
+        "معادله‌ی زیر را حل کنید:",
+        {
+          "math": "3x - 7 = 11"
+        }
+      ],
+      "solution": [
+        "عدد ۷- را با تغییر علامت به سمت دیگر معادله منتقل می‌کنیم:",
+        {
+          "math": "3x = 11 + 7 \\implies 3x = 18"
+        },
+        "طرفین را بر ضریب x یعنی ۳ تقسیم می‌کنیم:",
+        {
+          "math": "x = \\frac{18}{3} = 6"
+        }
+      ],
+      "answer": [
+        {
+          "math": "x = 6"
+        }
+      ]
+    },
+    {
+      "id": "math8-g8_algebra-p64-3",
+      "bookId": "math8",
+      "chapterId": "g8_algebra",
+      "lesson": 3,
+      "section": "exercise",
+      "page": 64,
+      "number": 3,
+      "free": true,
+      "text": [
+        "عبارت جبری زیر را با فاکتورگیری تجزیه کنید:",
+        {
+          "math": "6a^2b - 9ab^2"
+        }
+      ],
+      "solution": [
+        "بزرگ‌ترین شمارنده مشترک ضرایب عددی ۳ است و متغیرهای مشترک با کمترین توان ab هستند:",
+        {
+          "math": "B.M.M = 3ab"
+        },
+        "از 3ab فاکتور می‌گیریم:",
+        {
+          "math": "6a^2b - 9ab^2 = 3ab(2a - 3b)"
+        }
+      ],
+      "answer": [
+        {
+          "math": "3ab(2a - 3b)"
+        }
+      ]
+    },
+    {
+      "id": "math9-g9_algebraic-p88-2",
+      "bookId": "math9",
+      "chapterId": "g9_algebraic",
+      "lesson": 1,
+      "section": "exercise",
+      "page": 88,
+      "number": 2,
+      "free": true,
+      "text": [
+        "با استفاده از اتحاد حاصل را به دست آورید:",
+        {
+          "math": "(2x + 5y)(2x - 5y)"
+        }
+      ],
+      "solution": [
+        "این ضرب ساختار اتحاد مزدوج را دارد:",
+        {
+          "math": "(a + b)(a - b) = a^2 - b^2"
+        },
+        "محاسبه توان‌ها:",
+        {
+          "math": "(2x)^2 - (5y)^2 = 4x^2 - 25y^2"
+        }
+      ],
+      "answer": [
+        {
+          "math": "4x^2 - 25y^2"
+        }
+      ]
+    },
+    {
+      "id": "geometry1-g10h_thales-p42-1",
+      "bookId": "geometry1",
+      "chapterId": "g10h_thales",
+      "lesson": 1,
+      "section": "exercise",
+      "page": 42,
+      "number": 1,
+      "free": true,
+      "text": [
+        "در مثلث ABC خطی موازی با ضلع BC رسم شده است که اضلاع AB و AC را در نقاط D و E قطع می‌کند.",
+        "اگر AD = 4 و DB = 6 و AE = 6 باشد، طول پاره‌خط EC را بیابید."
+      ],
+      "solution": [
+        "با توجه به موازی بودن DE با BC طبق قضیه تالس داریم:",
+        {
+          "math": "\\frac{AD}{DB} = \\frac{AE}{EC}"
+        },
+        "جای‌گذاری مقادیر:",
+        {
+          "math": "\\frac{4}{6} = \\frac{6}{EC} \\implies 4 \\times EC = 36"
+        },
+        {
+          "math": "EC = \\frac{36}{4} = 9"
+        }
+      ],
+      "answer": [
+        {
+          "math": "EC = 9"
+        }
+      ]
+    },
+    {
+      "id": "stats11-g11s_probability-p55-2",
+      "bookId": "stats11",
+      "chapterId": "g11s_probability",
+      "lesson": 3,
+      "section": "exercise",
+      "page": 55,
+      "number": 2,
+      "free": true,
+      "text": [
+        "در یک خانواده دارای دو فرزند، می‌دانیم حداقل یکی از فرزندان پسر است. احتمال آنکه هر دو فرزند پسر باشند چقدر است؟"
+      ],
+      "solution": [
+        "فضای نمونه‌ای جنسیت دو فرزند:",
+        {
+          "math": "S = \\{(d, d), (d, p), (p, d), (p, p)\\}"
+        },
+        "پیشامد A: هر دو فرزند پسر باشند: A = {(p, p)}",
+        "پیشامد B: حداقل یکی پسر باشد با ۳ حالت",
+        "احتمال شرطی وقوع A به شرط B:",
+        {
+          "math": "P(A|B) = \\frac{n(A \\cap B)}{n(B)} = \\frac{1}{3}"
+        }
+      ],
+      "answer": [
+        {
+          "math": "\\frac{1}{3}"
+        }
+      ]
+    },
+    {
+      "id": "geometry3-g12h_matrices-p18-4",
+      "bookId": "geometry3",
+      "chapterId": "g12h_matrices",
+      "lesson": 2,
+      "section": "exercise",
+      "page": 18,
+      "number": 4,
+      "free": true,
+      "text": [
+        "دترمینان ماتریس A را به دست آورید:",
+        {
+          "math": "A = \\begin{bmatrix} 3 & 5 \\\\ 2 & 4 \\end{bmatrix}"
+        }
+      ],
+      "solution": [
+        "دترمینان یک ماتریس ۲×۲ از رابطه ad - bc به دست می‌آید:",
+        {
+          "math": "|A| = (3 \\times 4) - (5 \\times 2) = 12 - 10 = 2"
+        }
+      ],
+      "answer": [
+        {
+          "math": "|A| = 2"
+        }
+      ]
+    },
+    {
+      "id": "discrete12-g12d_numbers-p26-1",
+      "bookId": "discrete12",
+      "chapterId": "g12d_numbers",
+      "lesson": 3,
+      "section": "exercise",
+      "page": 26,
+      "number": 1,
+      "free": true,
+      "text": [
+        "باقی‌مانده تقسیم عدد 3⁴⁰ بر ۵ را با استفاده از ویژگی‌های هم‌نهشتی بیابید."
+      ],
+      "solution": [
+        "توان‌های عدد ۳ را به پیمانه ۵ بررسی می‌کنیم:",
+        {
+          "math": "3^2 = 9 \\equiv -1 \\pmod{5}"
+        },
+        "طرفین رابطه را به توان ۲۰ می‌رسانیم:",
+        {
+          "math": "(3^2)^{20} \\equiv (-1)^{20} \\pmod{5} \\implies 3^{40} \\equiv 1 \\pmod{5}"
+        },
+        "بنابراین باقی‌مانده تقسیم برابر ۱ است."
+      ],
+      "answer": [
+        {
+          "math": "r = 1"
+        }
+      ]
+    },
+    {
+      "id": "geometry2-g11h_circle-p28-2",
+      "bookId": "geometry2",
+      "chapterId": "g11h_circle",
+      "lesson": 2,
+      "section": "exercise",
+      "page": 28,
+      "number": 2,
+      "free": true,
+      "text": [
+        "دو وتر AB و CD از یک دایره درون دایره یکدیگر را در نقطه M قطع کرده‌اند.",
+        "اگر AM = 4 و MB = 9 و CM = 3 باشد، طول پاره‌خط MD را به دست آورید."
+      ],
+      "solution": [
+        "طبق قضیه رابطه طولی متقاطع وتری در دایره داریم:",
+        {
+          "math": "AM \\times MB = CM \\times MD"
+        },
+        "جای‌گذاری مقادیر:",
+        {
+          "math": "4 \\times 9 = 3 \\times MD \\implies 36 = 3MD"
+        },
+        "محاسبه طول MD:",
+        {
+          "math": "MD = \\frac{36}{3} = 12"
+        }
+      ],
+      "answer": [
+        {
+          "math": "MD = 12"
+        }
+      ]
+    },
+    {
+      "id": "geometry2-g11h_triangle-p72-1",
+      "bookId": "geometry2",
+      "chapterId": "g11h_triangle",
+      "lesson": 2,
+      "section": "exercise",
+      "page": 72,
+      "number": 1,
+      "free": true,
+      "text": [
+        "در مثلثی با اضلاع b = 5 و c = 8 و زاویه بین آنها A = 60°، طول ضلع a را با استفاده از قضیه کسینوس‌ها محاسبه کنید."
+      ],
+      "solution": [
+        "طبق قضیه کسینوس‌ها در مثلث دلخواه:",
+        {
+          "math": "a^2 = b^2 + c^2 - 2bc\\cos(A)"
+        },
+        "جای‌گذاری مقادیر:",
+        {
+          "math": "a^2 = 5^2 + 8^2 - 2(5)(8)\\cos(60^\\circ)"
+        },
+        {
+          "math": "a^2 = 25 + 64 - 80(\\frac{1}{2}) = 89 - 40 = 49"
+        },
+        "جذر می‌گیریم:",
+        {
+          "math": "a = \\sqrt{49} = 7"
+        }
+      ],
+      "answer": [
+        {
+          "math": "a = 7"
+        }
+      ]
+    },
+    {
+      "id": "calculus2-g12c_function-p24-2",
+      "bookId": "calculus2",
+      "chapterId": "g12c_function",
+      "lesson": 2,
+      "section": "exercise",
+      "page": 24,
+      "number": 2,
+      "free": true,
+      "text": [
+        "باقی‌مانده‌ی تقسیم چندجمله‌ای p(x) بر x - 2 را بدون انجام عمل تقسیم بیابید:",
+        {
+          "math": "p(x) = 2x^3 - 5x^2 + x + 4"
+        }
+      ],
+      "solution": [
+        "طبق قضیه تقسیم و بخش‌پذیری، باقی‌مانده تقسیم چندجمله‌ای p(x) بر دو‌جمله‌ای x - a برابر است با p(a).",
+        "در اینجا مقسوم‌علیه x - 2 است، بنابراین باید p(2) را محاسبه کنیم:",
+        {
+          "math": "R = p(2) = 2(2)^3 - 5(2)^2 + (2) + 4"
+        },
+        "محاسبه عبارات عددی:",
+        {
+          "math": "R = 2(8) - 5(4) + 2 + 4 = 16 - 20 + 6 = 2"
+        },
+        "بنابراین باقی‌مانده تقسیم برابر ۲ است."
+      ],
+      "answer": [
+        {
+          "math": "R = 2"
+        }
+      ]
+    },
+    {
+      "id": "calculus2-g12c_trig-p48-1",
+      "bookId": "calculus2",
+      "chapterId": "g12c_trig",
+      "lesson": 2,
+      "section": "exercise",
+      "page": 48,
+      "number": 1,
+      "free": true,
+      "text": [
+        "معادله‌ی مثلثاتی زیر را در بازه [0, 2π] حل کنید:",
+        {
+          "math": "2\\sin(x) - \\sqrt{3} = 0"
+        }
+      ],
+      "solution": [
+        "سینوس را در یک طرف تساوی تنها می‌کنیم:",
+        {
+          "math": "2\\sin(x) = \\sqrt{3} \\implies \\sin(x) = \\frac{\\sqrt{3}}{2}"
+        },
+        "می‌دانیم که سینوس در ربع اول و دوم مثبت است و برای زاویه π/3 برابر رادیکال ۳ دوم می‌باشد:",
+        {
+          "math": "x = 2k\\pi + \\frac{\\pi}{3} \\quad \\text{یا} \\quad x = 2k\\pi + \\frac{2\\pi}{3}"
+        },
+        "جواب‌های واقع در بازه [0, 2π]:",
+        {
+          "math": "x_1 = \\frac{\\pi}{3},\\quad x_2 = \\frac{2\\pi}{3}"
+        }
+      ],
+      "answer": [
+        {
+          "math": "x = \\frac{\\pi}{3},\\; \\frac{2\\pi}{3}"
+        }
+      ]
+    },
+    {
+      "id": "calculus2-g12c_limits-p72-3",
+      "bookId": "calculus2",
+      "chapterId": "g12c_limits",
+      "lesson": 2,
+      "section": "exercise",
+      "page": 72,
+      "number": 3,
+      "free": true,
+      "text": [
+        "حد تابع زیر را وقتی x به سمت مثبت بی‌نهایت میل می‌کند به دست آورید:",
+        {
+          "math": "\\lim_{x \\to +\\infty} \\frac{4x^3 - 2x + 5}{2x^3 + 7x^2 - 1}"
+        }
+      ],
+      "solution": [
+        "در محاسبه حد کسرهای چندجمله‌ای در بی‌نهایت، جملات با بالاترین درجه رفتار حد را مشخص می‌کنند:",
+        {
+          "math": "\\lim_{x \\to +\\infty} \\frac{4x^3 - 2x + 5}{2x^3 + 7x^2 - 1} = \\lim_{x \\to +\\infty} \\frac{4x^3}{2x^3}"
+        },
+        "ساده کردن x³ از صورت و مخرج:",
+        {
+          "math": "= \\lim_{x \\to +\\infty} \\frac{4}{2} = 2"
+        }
+      ],
+      "answer": [
+        {
+          "math": "2"
+        }
+      ]
+    },
+    {
+      "id": "calculus2-g12c_applications-p132-2",
+      "bookId": "calculus2",
+      "chapterId": "g12c_applications",
+      "lesson": 1,
+      "section": "exercise",
+      "page": 132,
+      "number": 2,
+      "free": true,
+      "text": [
+        "نقاط بحرانی و اکسترمم‌های نسبی تابع زیر را به دست آورید:",
+        {
+          "math": "f(x) = x^3 - 3x^2 + 2"
+        }
+      ],
+      "solution": [
+        "ابتدا مشتق مرتبه اول تابع را محاسبه می‌کنیم:",
+        {
+          "math": "f'(x) = 3x^2 - 6x"
+        },
+        "مشتق را مساوی صفر قرار می‌دهیم تا نقاط بحرانی مشخص شوند:",
+        {
+          "math": "3x(x - 2) = 0 \\implies x = 0 \\quad \\text{یا} \\quad x = 2"
+        },
+        "مقدار تابع در نقاط بحرانی:",
+        {
+          "math": "f(0) = 0 - 0 + 2 = 2 \\quad (\\text{ماکزیمم نسبی})"
+        },
+        {
+          "math": "f(2) = 2^3 - 3(2)^2 + 2 = 8 - 12 + 2 = -2 \\quad (\\text{مینیمم نسبی})"
+        }
+      ],
+      "answer": [
+        {
+          "math": "(0, 2) \\;\\text{ماکزیمم نسبی},\\quad (2, -2) \\;\\text{مینیمم نسبی}"
+        }
+      ]
+    }
   ]
 }

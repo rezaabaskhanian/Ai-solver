@@ -14,7 +14,7 @@ export type RootStackParamList = {
   // initialProblem pre-fills the input (a topic's example) — the user
   // still taps Solve/Quiz/Check themselves, so quota/paywall stay in play.
   ProblemInput: { initialProblem?: string } | undefined;
-  Solution: { problem: string; result: SolveResult };
+  Solution: { problem: string; result: SolveResult; photoUri?: string };
   History: undefined;
   Scan: undefined;
   // Shown after Scan recognizes the photo, before anything is solved
@@ -37,7 +37,7 @@ export type RootStackParamList = {
   // multiple-choice exam, see the score. Questions travel in params so
   // the result screen shows exactly what was asked.
   // Optional preselection, e.g. from a textbook chapter on Topics.
-  ExamSetup: { grade?: number; chapterIds?: string[] } | undefined;
+  ExamSetup: { grade?: number; chapterIds?: string[]; mode?: 'topics' | 'konkur' } | undefined;
   Exam: { config: ExamConfig };
   ExamResult: {
     config: ExamConfig;
@@ -69,6 +69,7 @@ export type RootStackParamList = {
   Geometry: undefined;
   // «راهنمای استفاده»: typing syntax, scan tips and feature overview.
   Guide: undefined;
+  Profile: undefined;
   // Appearance: light/dark mode, accent color and text color.
   Settings: undefined;
   // «اشتراک پرمیوم»: the Cafe Bazaar plans (monthly...) and the user code.

@@ -33,6 +33,8 @@ func (h Handler) SetRoutes(e *echo.Echo, rateLimit echo.MiddlewareFunc, device e
 	auth.POST("/reset-pass", h.ResetPassword)
 
 	e.GET("/api/v1/users/profile", h.Profile, rateLimit, device)
+	e.GET("/api/v1/users/academic-profile", h.AcademicProfile, rateLimit, device)
+	e.PUT("/api/v1/users/academic-profile", h.UpdateAcademicProfile, rateLimit, device)
 }
 
 type otpRequest struct {
@@ -148,3 +150,39 @@ func (h Handler) Profile(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, map[string]any{"user": accountservice.ProfileOf(u)})
 }
+
+// AcademicProfile handles GET /api/v1/users/academic-profile. Works for both
+// authenticated accounts and anonymous devices via the Device middleware.
+func (h Handler) AcademicProfile(c echo.Context) error {
+	u := middleware.UserFromContext(c)
+	if u.ID == "" {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"error": "unauthorized", "message": "شناسه کاربر نامعتبر است",
+		})
+	}
+	profile, err := h.accountSvc.AcademicProfile(c.Request().Context(), u.ID)
+	if err != nil {
+		return errorhandling.ErrorHandling(err, c)
+	}
+	return c.JSON(http.StatusOK, profile)
+}
+
+// UpdateAcademicProfile handles PUT /api/v1/users/academic-profile.
+func (h Handler) UpdateAcademicProfile(c echo.Context) error {
+	u := middleware.UserFromContext(c)
+	if u.ID == "" {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"error": "unauthorized", "message": "شناسه کاربر نامعتبر است",
+		})
+	}
+	var req accountservice.UpdateAcademicProfileRequest
+	if err := c.Bind(&req); err != nil {
+		return invalidBody(c)
+	}
+	profile, err := h.accountSvc.UpdateAcademicProfile(c.Request().Context(), u.ID, req)
+	if err != nil {
+		return errorhandling.ErrorHandling(err, c)
+	}
+	return c.JSON(http.StatusOK, profile)
+}
+

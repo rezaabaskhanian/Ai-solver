@@ -65,20 +65,20 @@ export function PremiumBanner({ compact = false }: { compact?: boolean }) {
     <View style={styles.card}>
       <View style={[styles.row, isRTL && styles.rowRTL]}>
         <View style={styles.icon}>
-          <Icon name="military-tech" size={26} color={colors.onPrimary} />
+          <Icon name="military-tech" size={26} color="#76E000" />
         </View>
         <View style={styles.flexOne}>
           <View style={[styles.titleRow, isRTL && styles.rowRTL]}>
-            <AppText weight="bold" size="lg" color={colors.onPrimary}>
+            <AppText weight="bold" size="lg" color="#FFFFFF">
               {t('home.proTitle')}
             </AppText>
             <View style={styles.tag}>
-              <AppText size="xs" weight="bold" color={colors.primary}>
+              <AppText size="xs" weight="bold" color="#76E000">
                 {t('home.proTag')}
               </AppText>
             </View>
           </View>
-          <AppText size="sm" color={colors.onPrimary} style={styles.body}>
+          <AppText size="sm" color="#94A3B8" style={styles.body}>
             {t('home.proBody')}
           </AppText>
         </View>
@@ -89,7 +89,7 @@ export function PremiumBanner({ compact = false }: { compact?: boolean }) {
         onPress={openPremium}
         style={({ pressed }) => [styles.button, pressed && styles.pressed]}
       >
-        <AppText weight="bold" align="center" color={DARK_TEXT}>
+        <AppText weight="bold" align="center" color="#0F1F05">
           {t('home.proButton')}
         </AppText>
       </Pressable>
@@ -97,21 +97,17 @@ export function PremiumBanner({ compact = false }: { compact?: boolean }) {
   );
 }
 
-// The banner's button is always white with dark text (as in the design),
-// which reads well on every accent and in dark mode.
-const DARK_TEXT = '#111827';
-
 const useStyles = makeStyles(colors => StyleSheet.create({
   card: {
-    backgroundColor: colors.primary,
-    borderRadius: radius.xl,
+    backgroundColor: '#0F172A',
+    borderRadius: 22,
     padding: spacing.lg,
     gap: spacing.md,
-    shadowColor: colors.primary,
-    shadowOpacity: 0.35,
+    shadowColor: '#000000',
+    shadowOpacity: 0.25,
     shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 6,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 4,
   },
   compactCard: {
     flexDirection: 'row',
@@ -119,15 +115,15 @@ const useStyles = makeStyles(colors => StyleSheet.create({
     gap: spacing.sm,
     padding: spacing.md,
     borderRadius: radius.lg,
-    backgroundColor: '#1F3A0F',
-    shadowColor: '#1F3A0F',
+    backgroundColor: '#0F172A',
+    shadowColor: '#000000',
     elevation: 3,
   },
   compactIcon: {
     width: 40,
     height: 40,
     borderRadius: radius.pill,
-    backgroundColor: colors.primary,
+    backgroundColor: '#1E293B',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -135,9 +131,10 @@ const useStyles = makeStyles(colors => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
-    minHeight: 44,
+    minHeight: 40,
     paddingHorizontal: spacing.md,
-    backgroundColor: colors.primary,
+    backgroundColor: '#76E000',
+    borderRadius: radius.pill,
   },
   row: {
     flexDirection: 'row',
@@ -154,8 +151,8 @@ const useStyles = makeStyles(colors => StyleSheet.create({
   icon: {
     width: 44,
     height: 44,
-    borderRadius: radius.md,
-    backgroundColor: 'rgba(0, 0, 0, 0.08)',
+    borderRadius: 14,
+    backgroundColor: '#1E293B',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -166,20 +163,25 @@ const useStyles = makeStyles(colors => StyleSheet.create({
     gap: spacing.sm,
   },
   tag: {
-    backgroundColor: colors.onPrimary,
+    backgroundColor: '#1E293B',
     borderRadius: radius.pill,
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
   },
   body: {
     marginTop: spacing.xs,
-    opacity: 0.9,
+    lineHeight: 20,
   },
   button: {
-    minHeight: 48,
+    minHeight: 46,
     justifyContent: 'center',
     borderRadius: radius.pill,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#76E000',
+    shadowColor: '#76E000',
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
   },
   pressed: {
     opacity: 0.85,

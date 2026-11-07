@@ -42,7 +42,7 @@ export function SolutionScreen({ route, navigation }: Props) {
   // hidden for them rather than shown and failing.
   const canPractice = PRACTICE_TYPES.includes(result.type);
 
-  const viewShotRef = useRef<ViewShot>(null);
+  const viewShotRef = useRef<any>(null);
   const [sharing, setSharing] = useState(false);
   const [shareErrorKey, setShareErrorKey] = useState<string | null>(null);
 
@@ -158,6 +158,14 @@ export function SolutionScreen({ route, navigation }: Props) {
           />
         )}
       </View>
+      {route.params.photoUri ? (
+        <AppButton
+          label={t('solution.viewInAr', { defaultValue: 'مشاهده حل در واقعیت افزوده (AR)' })}
+          icon="view-in-ar"
+          variant="secondary"
+          onPress={() => navigation.navigate('ArSolution', { photoUri: route.params.photoUri!, problem, result })}
+        />
+      ) : null}
       <AppButton
         label={sharing ? t('solution.sharing') : t('solution.shareImage')}
         icon="share"

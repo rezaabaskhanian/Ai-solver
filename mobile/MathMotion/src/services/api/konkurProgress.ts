@@ -42,6 +42,20 @@ export interface PaperStats {
   median: number;
   p25: number;
   p75: number;
+  // Average percent of the paper's participants.
+  // Optional: the deployed server may predate these fields.
+  mean?: number;
+  // Sanjesh-style taraz (5000 + 1000×z against the participants);
+  // null without enough participants, without spread, or without your result.
+  taraz?: number | null;
+}
+
+// One row of GET /api/v1/konkur/exam-results/stats without a paper_key:
+// the server only lists papers with enough participants (>= 5).
+export interface PaperSummary {
+  paper_key: string;
+  count: number;
+  mean: number;
 }
 
 export async function submitExamResult(payload: ExamResultPayload): Promise<void> {
@@ -52,5 +66,10 @@ export async function fetchPaperStats(paperKey: string): Promise<PaperStats> {
   const { data } = await apiClient.get<PaperStats>('/api/v1/konkur/exam-results/stats', {
     params: { paper_key: paperKey },
   });
+  return data;
+}
+
+export async function fetchAllPaperStats(): Promise<PaperSummary[]> {
+  const { data } = await apiClient.get<PaperSummary[]>('/api/v1/konkur/exam-results/stats');
   return data;
 }

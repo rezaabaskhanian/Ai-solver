@@ -27,7 +27,7 @@ func (r DB) PurchaseRecorded(ctx context.Context, purchaseToken string) (bool, e
 // RecordPurchase implements [billing.Repository]. purchase_token is
 // UNIQUE (migration 003), so a replayed token is a no-op (isNew=false)
 // and never extends Premium twice.
-func (r DB) RecordPurchase(ctx context.Context, userID, productID, purchaseToken string, days int) (bool, error) {
+func (r DB) RecordPurchase(ctx context.Context, userID, productID, purchaseToken string, days, priceToman int) (bool, error) {
 	tx, err := r.conn.Begin(ctx)
 	if err != nil {
 		return false, fmt.Errorf("beginning transaction: %w", err)
@@ -36,11 +36,11 @@ func (r DB) RecordPurchase(ctx context.Context, userID, productID, purchaseToken
 
 	var id string
 	err = tx.QueryRow(ctx, `
-		INSERT INTO purchases (id, user_id, product_id, purchase_token, days_granted)
-		VALUES ($1, $2, $3, $4, $5)
+		INSERT INTO purchases (id, user_id, product_id, purchase_token, days_granted, price_toman)
+		VALUES ($1, $2, $3, $4, $5, $6)
 		ON CONFLICT (purchase_token) DO NOTHING
 		RETURNING id
-	`, uuid.NewString(), userID, productID, purchaseToken, days).Scan(&id)
+	`, uuid.NewString(), userID, productID, purchaseToken, days, priceToman).Scan(&id)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return false, nil
 	}
@@ -95,18 +95,18 @@ func (r DB) SetPremium(ctx context.Context, userID string) error {
 
 // ---------- plans ----------
 
-const planColumns = `p.id, p.name, p.duration_days, p.price_toman, p.product_id,
+const planColumns = `p.id, p.name, p.duration_days, p.price_toman, p.product_id, p.archived,
 	(SELECT COUNT(*) FROM purchases pu WHERE pu.product_id = p.product_id)`
 
 func scanPlan(row pgx.Row) (billing.Plan, error) {
 	var p billing.Plan
-	err := row.Scan(&p.ID, &p.Name, &p.DurationDays, &p.PriceToman, &p.ProductID, &p.PurchaseCount)
+	err := row.Scan(&p.ID, &p.Name, &p.DurationDays, &p.PriceToman, &p.ProductID, &p.Archived, &p.PurchaseCount)
 	return p, err
 }
 
-// ListPlans implements [billing.Repository].
+// ListPlans implements [billing.Repository] — archived plans too, last.
 func (r DB) ListPlans(ctx context.Context) ([]billing.Plan, error) {
-	rows, err := r.conn.Query(ctx, `SELECT `+planColumns+` FROM subscription_plans p ORDER BY p.duration_days`)
+	rows, err := r.conn.Query(ctx, `SELECT `+planColumns+` FROM subscription_plans p ORDER BY p.archived, p.duration_days`)
 	if err != nil {
 		return nil, fmt.Errorf("listing plans: %w", err)
 	}
@@ -158,6 +158,78 @@ func (r DB) DeletePlan(ctx context.Context, id string) error {
 		return fmt.Errorf("deleting plan: %w", err)
 	}
 	return nil
+}
+
+// SetPlanArchived implements [billing.Repository].
+func (r DB) SetPlanArchived(ctx context.Context, id string, archived bool) error {
+	tag, err := r.conn.Exec(ctx, `UPDATE subscription_plans SET archived = $2 WHERE id = $1`, id, archived)
+	if err != nil {
+		return fmt.Errorf("archiving plan: %w", err)
+	}
+	if tag.RowsAffected() == 0 {
+		return billing.ErrNotFound
+	}
+	return nil
+}
+
+// SalesReport implements [billing.Repository]. Revenue is the price stored
+// on each purchase (migration 015); the lifetime unlock counts with 0.
+func (r DB) SalesReport(ctx context.Context) (billing.SalesReport, error) {
+	rep := billing.SalesReport{ByPlan: []billing.SalesRow{}, ByMonth: []billing.SalesMonth{}}
+
+	err := r.conn.QueryRow(ctx, `
+		SELECT COUNT(*), COALESCE(SUM(price_toman), 0),
+		       COUNT(*) FILTER (WHERE verified_at > now() - interval '30 days'),
+		       COALESCE(SUM(price_toman) FILTER (WHERE verified_at > now() - interval '30 days'), 0),
+		       (SELECT COUNT(*) FROM users WHERE is_premium OR is_unlimited OR premium_until > now())
+		  FROM purchases
+	`).Scan(&rep.TotalCount, &rep.TotalToman, &rep.Last30Count, &rep.Last30Toman, &rep.ActivePremium)
+	if err != nil {
+		return rep, fmt.Errorf("reading sales totals: %w", err)
+	}
+
+	rows, err := r.conn.Query(ctx, `
+		SELECT pu.product_id, COALESCE(MAX(p.name), ''), COUNT(*), COALESCE(SUM(pu.price_toman), 0)
+		  FROM purchases pu
+		  LEFT JOIN subscription_plans p ON p.product_id = pu.product_id
+		 GROUP BY pu.product_id
+		 ORDER BY 4 DESC, 3 DESC
+	`)
+	if err != nil {
+		return rep, fmt.Errorf("reading sales per plan: %w", err)
+	}
+	for rows.Next() {
+		var row billing.SalesRow
+		if err := rows.Scan(&row.ProductID, &row.Name, &row.Count, &row.Toman); err != nil {
+			rows.Close()
+			return rep, fmt.Errorf("scanning sales row: %w", err)
+		}
+		rep.ByPlan = append(rep.ByPlan, row)
+	}
+	rows.Close()
+	if err := rows.Err(); err != nil {
+		return rep, fmt.Errorf("reading sales per plan: %w", err)
+	}
+
+	rows, err = r.conn.Query(ctx, `
+		SELECT to_char(date_trunc('month', verified_at), 'YYYY-MM'), COUNT(*), COALESCE(SUM(price_toman), 0)
+		  FROM purchases
+		 GROUP BY 1
+		 ORDER BY 1 DESC
+		 LIMIT 12
+	`)
+	if err != nil {
+		return rep, fmt.Errorf("reading sales per month: %w", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var m billing.SalesMonth
+		if err := rows.Scan(&m.Month, &m.Count, &m.Toman); err != nil {
+			return rep, fmt.Errorf("scanning sales month: %w", err)
+		}
+		rep.ByMonth = append(rep.ByMonth, m)
+	}
+	return rep, rows.Err()
 }
 
 // ---------- users (admin panel) ----------

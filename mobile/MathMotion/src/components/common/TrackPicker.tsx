@@ -14,7 +14,8 @@ const ICONS: Record<StudyTrack, IconName> = {
 };
 
 interface Props {
-  value: StudyTrack;
+  // null: nothing picked yet — both cards look the same.
+  value: StudyTrack | null;
   onChange: (track: StudyTrack) => void;
 }
 

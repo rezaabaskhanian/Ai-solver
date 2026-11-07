@@ -73,6 +73,27 @@ func (f *fakeRepo) SetPassword(ctx context.Context, userID, hash string) error {
 	return nil
 }
 
+func (f *fakeRepo) UpdateAcademicProfile(ctx context.Context, userID string, targetGoal *string, grade int, track string, nickname *string) (domain.User, error) {
+	u, ok := f.byID[userID]
+	if !ok {
+		return domain.User{}, domain.ErrNotFound
+	}
+	if targetGoal != nil {
+		u.TargetGoal = targetGoal
+	}
+	if grade > 0 {
+		u.Grade = grade
+	}
+	if track != "" {
+		u.Track = track
+	}
+	if nickname != nil {
+		u.Name = nickname
+	}
+	f.byID[userID] = u
+	return u, nil
+}
+
 // fakeOTP accepts the token "ok" for any phone/purpose.
 type fakeOTP struct{ sent []string }
 

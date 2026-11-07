@@ -110,6 +110,22 @@ export function TextbookChapterScreen({ route, navigation }: Props) {
         </Card>
       )}
 
+      {/* AI Assistant Limit Notice */}
+      <Card style={styles.aiNoticeCard}>
+        <View style={[styles.aiNoticeHeader, isRTL && styles.rowRTL]}>
+          <Icon name="auto-awesome" size={18} color="#4F46E5" />
+          <AppText weight="bold" size="sm" color="#4F46E5">
+            {t('textbook.aiAssistantTitle', { defaultValue: 'راهنمای هوش مصنوعی مجهول' })}
+          </AppText>
+        </View>
+        <AppText size="xs" color={colors.textSecondary} style={styles.aiNoticeBody}>
+          {t('textbook.aiQuotaNotice', {
+            defaultValue:
+              'برای تقویت یادگیری مستقل، در تمرینات کتاب می‌توانید حداکثر تا ۲ سوال از دستیار هوش مصنوعی کمک بگیرید.',
+          })}
+        </AppText>
+      </Card>
+
       {groups.map(group => (
         <View key={group.lesson} style={styles.group}>
           <View style={[styles.groupHeader, isRTL && styles.rowRTL]}>
@@ -169,6 +185,20 @@ const useStyles = makeStyles(colors => StyleSheet.create({
   },
   header: {
     gap: spacing.sm,
+  },
+  aiNoticeCard: {
+    backgroundColor: '#F5F3FF',
+    borderColor: '#E0E7FF',
+    borderWidth: 1,
+    gap: spacing.xs,
+  },
+  aiNoticeHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  aiNoticeBody: {
+    lineHeight: 18,
   },
   track: {
     height: 6,

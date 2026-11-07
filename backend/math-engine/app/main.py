@@ -34,6 +34,7 @@ from .solver.parser import ParseError, parse_problem
 from .solver.plot import PlotError, solve_plot, verify_plot
 from .solver.practice import UnsupportedPracticeType, generate_practice_problem
 from .solver.quadratic import solve_quadratic
+from .solver.rational import RationalUnsupported, solve_rational_equation
 from .solver.cubic import CubicUnsupported, solve_cubic
 from .solver.biquadratic import solve_biquadratic
 from .solver.linear_system import solve_linear_system, verify_linear_system
@@ -116,6 +117,17 @@ def solve(req: SolveRequest):
             step_data, roots = solve_cubic(parsed.lhs, parsed.rhs, parsed.symbol)
         except CubicUnsupported as exc:
             return _unsupported(exc.message)
+        verified = all(
+            verify_equation_root(parsed.lhs, parsed.rhs, parsed.symbol, r) for r in roots
+        )
+        answer = format_roots(parsed.symbol, roots)
+
+    elif parsed.problem_type == "rational_equation":
+        try:
+            step_data, roots = solve_rational_equation(parsed.lhs, parsed.rhs, parsed.symbol)
+        except RationalUnsupported as exc:
+            return _unsupported(exc.message)
+        # Empty when every candidate made a denominator zero (or none existed).
         verified = all(
             verify_equation_root(parsed.lhs, parsed.rhs, parsed.symbol, r) for r in roots
         )

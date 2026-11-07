@@ -43,7 +43,7 @@ export function FinalAnswerCard({ answer, verified, type }: FinalAnswerCardProps
             <MathExpression key={line} expression={line} size="xl" emphasize />
           ))}
         </View>
-        {answer === '∅' && (type === 'quadratic_equation' || type === 'biquadratic_equation') && (
+        {answer === '∅' && (type === 'quadratic_equation' || type === 'biquadratic_equation' || type === 'rational_equation') && (
           <AppText weight="medium" align="center">
             {t('solution.emptyAnswer')}
           </AppText>

@@ -38,6 +38,14 @@ type User struct {
 	IsPremium    bool
 	PremiumUntil *time.Time
 	IsUnlimited  bool
+	TargetGoal   *string
+	Grade        int
+	Track        string
+	Level        int
+	XP           int
+	Gems         int
+	StreakDays   int
+	StreakRecord int
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 }

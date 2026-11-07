@@ -6,6 +6,7 @@ export type ProblemType =
   | 'quadratic_equation'
   | 'cubic_equation'
   | 'biquadratic_equation'
+  | 'rational_equation'
   | 'linear_system'
   | 'expression'
   | 'arithmetic'

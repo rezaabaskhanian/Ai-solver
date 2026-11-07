@@ -9,8 +9,42 @@ import (
 	billingservice "mathmotion/go-api/internal/service/billing"
 )
 
-// Plans handles GET /api/v1/billing/plans (the app's plan picker) and
-// GET /admin/plans.
+// AdminPlans handles GET /admin/plans: every plan, archived ones included.
+func (h Handler) AdminPlans(c echo.Context) error {
+	plans, err := h.billingSvc.ListAllPlans(c.Request().Context())
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "internal", "message": "Could not load the plans.",
+		})
+	}
+	return c.JSON(http.StatusOK, map[string]any{"plans": plans})
+}
+
+// ArchivePlan handles POST /admin/plans/:id/archive with {"archived": true|false}.
+func (h Handler) ArchivePlan(c echo.Context) error {
+	var req struct {
+		Archived bool `json:"archived"`
+	}
+	if err := c.Bind(&req); err != nil {
+		return invalidBody(c)
+	}
+	if err := h.billingSvc.ArchivePlan(c.Request().Context(), c.Param("id"), req.Archived); err != nil {
+		return errorhandling.ErrorHandling(err, c)
+	}
+	return c.JSON(http.StatusOK, map[string]string{"message": "saved"})
+}
+
+// Sales handles GET /admin/sales.
+func (h Handler) Sales(c echo.Context) error {
+	report, err := h.billingSvc.Sales(c.Request().Context())
+	if err != nil {
+		return errorhandling.ErrorHandling(err, c)
+	}
+	return c.JSON(http.StatusOK, report)
+}
+
+// Plans handles GET /api/v1/billing/plans (the app's plan picker, archived
+// plans left out).
 func (h Handler) Plans(c echo.Context) error {
 	plans, err := h.billingSvc.ListPlans(c.Request().Context())
 	if err != nil {

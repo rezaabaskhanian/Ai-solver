@@ -26,19 +26,19 @@ export function FreeQuotaCard() {
 
   const remaining = Math.max(freeSolvesLimit - freeSolvesUsed, 0);
   const ratio = freeSolvesLimit > 0 ? remaining / freeSolvesLimit : 0;
-  const barColor = remaining === 0 ? colors.danger : colors.primary;
+  const barColor = remaining === 0 ? '#EF4444' : '#76E000';
 
   return (
     <View style={[styles.card, isRTL && styles.rowRTL]}>
       <View style={[styles.row, isRTL && styles.rowRTL]}>
         <View style={styles.icon}>
-          <Icon name={isPremium ? 'star' : 'bolt'} size={20} color={colors.primaryText} />
+          <Icon name={isPremium ? 'star' : 'bolt'} size={20} color="#15803D" />
         </View>
         <View>
-          <AppText size="sm" weight="bold">
+          <AppText size="sm" weight="bold" color="#111827">
             {isPremium ? t('home.premiumTitle') : t(daily ? 'home.quotaTitleDaily' : 'home.quotaTitle')}
           </AppText>
-          <AppText size="xs" color={remaining === 0 && !isPremium ? colors.danger : colors.textSecondary}>
+          <AppText size="xs" color={remaining === 0 && !isPremium ? '#EF4444' : '#6B7280'}>
             {isPremium
               ? premiumScanLimit > 0
                 ? t('home.premiumScans', { used: premiumScansUsed, limit: premiumScanLimit })
@@ -69,15 +69,15 @@ const useStyles = makeStyles(colors => StyleSheet.create({
     justifyContent: 'space-between',
     gap: spacing.md,
     padding: spacing.md,
-    borderRadius: radius.lg,
-    backgroundColor: colors.surface,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: colors.border,
-    shadowColor: '#0F2A12',
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 1,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000000',
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 2,
   },
   row: {
     flexDirection: 'row',
@@ -92,16 +92,15 @@ const useStyles = makeStyles(colors => StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: radius.pill,
-    backgroundColor: colors.primaryMuted,
+    backgroundColor: '#DCFCE7',
     alignItems: 'center',
     justifyContent: 'center',
   },
   track: {
-    width: 110,
-    height: 10,
-    padding: 2,
+    width: 100,
+    height: 8,
     borderRadius: radius.pill,
-    backgroundColor: colors.surfaceMuted,
+    backgroundColor: '#F3F4F6',
     overflow: 'hidden',
   },
   fill: {
