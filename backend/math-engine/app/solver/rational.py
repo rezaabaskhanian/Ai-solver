@@ -22,11 +22,18 @@ class RationalUnsupported(Exception):
 
 
 def is_rational_equation(lhs: sympy.Expr, rhs: sympy.Expr, symbol: sympy.Symbol) -> bool:
-    """x appears in a denominator and both the combined numerator and
+    """x appears in a denominator in lhs or rhs and both the combined numerator and
     denominator are polynomials in x (so not sin(x)/x or 1/sqrt(x))."""
-    num, den = sympy.fraction(sympy.together(lhs - rhs))
-    if not den.has(symbol):
+    has_den = bool(_excluded_values(lhs, rhs, symbol))
+    if not has_den:
+        for side in (lhs, rhs):
+            for node in sympy.preorder_traversal(side):
+                if node.is_Pow and node.exp.is_negative and node.base.has(symbol):
+                    has_den = True
+                    break
+    if not has_den:
         return False
+    num, den = sympy.fraction(sympy.together(lhs - rhs))
     return num.is_polynomial(symbol) and den.is_polynomial(symbol)
 
 

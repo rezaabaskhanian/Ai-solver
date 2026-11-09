@@ -50,6 +50,54 @@ _LOG_SUBSCRIPT_BASE = re.compile(r"log([₀₁₂₃₄₅₆₇₈₉]+)")
 _LOG_BRACED_BASE = re.compile(r"log_\{\s*([0-9]+)\s*\}")
 
 
+def _convert_latex_fractions(text: str) -> str:
+    """Convert LaTeX fraction and operator notation into plain math expressions:
+    \\frac{A}{B}, \\dfrac{A}{B}, \\tfrac{A}{B}, {A}/{B} -> ((A)/(B))
+    \\left( \\right) -> ( )
+    \\cdot, \\times -> *
+    \\div -> /
+    """
+    text = re.sub(r"\\left\b", "", text)
+    text = re.sub(r"\\right\b", "", text)
+    text = text.replace(r"\cdot", "*").replace(r"\times", "*").replace(r"\div", "/")
+
+    def find_balanced(s: str, start: int):
+        if start >= len(s) or s[start] != "{":
+            return None, start
+        depth = 0
+        for i in range(start, len(s)):
+            if s[i] == "{":
+                depth += 1
+            elif s[i] == "}":
+                depth -= 1
+                if depth == 0:
+                    return s[start + 1:i], i + 1
+        return None, start
+
+    pattern = re.compile(r"\\?(?:d|t)?frac\s*\{")
+    while True:
+        m = pattern.search(text)
+        if not m:
+            break
+        num, end_num = find_balanced(text, m.end() - 1)
+        if num is None:
+            break
+        den_start = end_num
+        while den_start < len(text) and text[den_start].isspace():
+            den_start += 1
+        den, end_den = find_balanced(text, den_start)
+        if den is None:
+            break
+        converted_num = _convert_latex_fractions(num)
+        converted_den = _convert_latex_fractions(den)
+        replacement = f"(({converted_num})/({converted_den}))"
+        text = text[:m.start()] + replacement + text[end_den:]
+
+    braced_div = re.compile(r"\{([^{}]+)\}\s*/\s*\{([^{}]+)\}")
+    text = braced_div.sub(r"((\1)/(\2))", text)
+    return text
+
+
 def normalize_input(raw: str) -> str:
     """Turn typed math input into a string sympy can parse.
 
@@ -61,6 +109,7 @@ def normalize_input(raw: str) -> str:
     `parser._try_ocr_correction`.
     """
     text = raw.strip().translate(_DIGIT_TRANSLATION)
+    text = _convert_latex_fractions(text)
 
     for old, new in _SYMBOL_REPLACEMENTS.items():
         text = text.replace(old, new)

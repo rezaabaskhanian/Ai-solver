@@ -53,3 +53,11 @@ def test_degree_sign_lookalikes_and_persian_digits():
     assert normalize_input("sin(30º)") == "sin((30*pi/180))"
     assert normalize_input("tan(45˚)") == "tan((45*pi/180))"
     assert normalize_input("sin(۳۰°)") == "sin((30*pi/180))"
+
+
+def test_latex_fractions_and_operators():
+    assert normalize_input(r"\frac{x+1}{x-2} = 3") == "((x+1)/(x-2)) = 3"
+    assert normalize_input(r"\dfrac{2}{x-3} = \dfrac{5}{x+1}") == "((2)/(x-3)) = ((5)/(x+1))"
+    assert normalize_input(r"\left(\frac{1}{x}\right) = 2") == "(((1)/(x))) = 2"
+    assert normalize_input(r"\frac{1}{x} \cdot \frac{2}{x}") == "((1)/(x)) * ((2)/(x))"
+    assert normalize_input(r"{x+1}/{x-2} = 3") == "((x+1)/(x-2)) = 3"

@@ -22,6 +22,8 @@ import (
 const recognitionPrompt = `You will be shown a photo that may contain one or more handwritten or ` +
 	`printed math problems. Transcribe EVERY distinct problem exactly as written, one per line, ` +
 	`using plain ASCII (e.g. x^2, sqrt(x), sin(x), *, /  — no LaTeX, no unicode math symbols). ` +
+	`Fractions MUST ALWAYS be transcribed with parentheses and a slash: e.g. (x+1)/(x-2) = 3 or ` +
+	`1/(x-1) + 2/(x^2-1) = 1 (NEVER output \frac or \dfrac or LaTeX). ` +
 	`Use exactly this notation for calculus and logarithms: derivative d/dx(expr), integral ` +
 	`integrate(expr, x), limit lim(x->a) expr (lim(x->oo) for infinity, lim(x->0+) / lim(x->0-) ` +
 	`for one-sided limits), log with base b log_b(expr), a log written without a base log(expr), ` +
@@ -270,6 +272,13 @@ func parseProblems(text string) ([]string, error) {
 	var problems []string
 	for _, line := range strings.Split(text, "\n") {
 		line = strings.TrimSpace(line)
+		line = strings.TrimPrefix(line, "- ")
+		line = strings.TrimPrefix(line, "* ")
+		line = strings.ReplaceAll(line, `\left(`, "(")
+		line = strings.ReplaceAll(line, `\right)`, ")")
+		line = strings.ReplaceAll(line, `\cdot`, "*")
+		line = strings.ReplaceAll(line, `\times`, "*")
+		line = strings.ReplaceAll(line, `\div`, "/")
 		if line != "" && line != "NONE" {
 			problems = append(problems, line)
 		}
